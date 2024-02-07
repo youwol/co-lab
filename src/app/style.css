@@ -1,0 +1,159 @@
+.CodeMirror {
+    height: 100% !important;
+}
+
+html {
+    font-size: 18px;
+}
+.ilab {
+    font-size: 30px;
+    font-weight: 700;
+    color: #005A9C;
+}
+.ilab .i {
+    color: #E63946;
+    font-style: italic;
+    font-size: 30px;
+}
+.ilab .light {
+    font-weight: 100;
+    color: #58A4B0; /* Lighter blue for contrast */
+}
+/* Initially hide the scrollbar for the element */
+.scrollbar-on-hover {
+    overflow: hidden;
+}
+
+/* Display the scrollbar when the element is being hovered */
+.scrollbar-on-hover:hover {
+    overflow: auto;
+}
+
+
+.mkdocs-ts-side-nav{
+    width: 20rem;
+    line-height: 1.5rem;
+    font-size: 0.9rem;
+    position: sticky;
+    top: 0px
+}
+
+.mkdocs-ts-side-nav .fv-tree-expand{
+    display: none!important;
+}
+.mkdocs-ts-top-banner{
+    max-height: 50px;
+}
+
+.mkdocs-ts-page{
+    font-size: 1rem;
+    line-height: 1.6
+}
+
+.mkdocs-ts-expand-nav-node {
+    transition: transform 0.5s ease 0s;
+}
+
+.connectionView-bg-blur {
+    position: relative;
+}
+
+.connectionView-bg-blur::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    backdrop-filter: blur(2px);
+    background-color: rgba(220, 159, 53, 0.05);
+    cursor: default;
+    z-index: 3;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.fv-hover-fill-focus:hover {
+    fill: #ffbb00;
+}
+
+.fv-tree-arianeLine {
+    display: none;
+}
+
+.dag-flow-node-title {
+    font-size: 8px;
+    font-weight: bold;
+    font-family: sans-serif;
+    text-anchor: middle;
+    alignment-baseline: middle;
+    fill: black;
+}
+
+.dag-flow-node-status {
+    font-size: 16px;
+    text-anchor: middle;
+    user-select: none;
+    transform: translateY(5px);
+    pointer-events: auto;
+}
+
+.dag-flow-node-run {
+    font-size: 10px;
+    text-anchor: middle;
+    user-select: none;
+    pointer-events: auto;
+}
+
+.dag-flow-node-settings {
+    font-size: 10px;
+    text-anchor: middle;
+    user-select: none;
+    pointer-events: auto;
+}
+
+.dag-flow-link {
+    fill: none;
+    stroke-width: 3px;
+    stroke: black;
+}
+
+g.pending {
+    animation: rotate 2s linear infinite;
+}
+
+circle.pending {
+    stroke-linecap: round;
+    stroke: cadetblue;
+    stroke-width: 2px;
+    animation: dash 1.5s ease-in-out infinite;
+}
+
+@keyframes rotate {
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes dash {
+    0% {
+        stroke-dasharray: 1, 150;
+        stroke-dashoffset: 0;
+    }
+    50% {
+        stroke-dasharray: 90, 150;
+        stroke-dashoffset: -35;
+    }
+    100% {
+        stroke-dasharray: 90, 150;
+        stroke-dashoffset: -124;
+    }
+}
+
