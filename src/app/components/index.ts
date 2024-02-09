@@ -1,17 +1,15 @@
 import { AppState } from '../app-state'
-import * as Javascript from './javascript'
-import * as Python from './python'
 import * as Backends from './backends'
+import * as Frontends from './frontends'
 import { ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
 import { parseMd, Router } from '@youwol/mkdocs-ts'
 export * from './state'
 
 export const navigation = (appState: AppState) => ({
     name: 'Components',
-    withIcon: { tag: 'i', class: 'fas  fa-microchip mr-2' },
+    icon: { tag: 'i', class: 'fas  fa-microchip mr-2' },
     html: ({ router }) => new PageView({ router, appState }),
-    '/javascript': Javascript.navigation(appState),
-    '/python': Python.navigation(appState),
+    '/frontends': Frontends.navigation(appState),
     '/backends': Backends.navigation(appState),
 })
 

@@ -1,10 +1,11 @@
-import { AppState } from '../../app-state'
-import { PackageView } from '../package.views'
+import { AppState } from '../../../app-state'
+import { PackageView } from '../../package.views'
 import { lastValueFrom } from 'rxjs'
 import * as pyYw from '@youwol/local-youwol-client'
 import { raiseHTTPErrors } from '@youwol/http-primitives'
 import { parseMd, Router, Views } from '@youwol/mkdocs-ts'
 import { ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
+import { NavIconSvg } from '../../../common'
 
 const cdnStatus = await lastValueFrom(
     new pyYw.PyYouwolClient().admin.localCdn
@@ -14,10 +15,7 @@ const cdnStatus = await lastValueFrom(
 
 export const navigation = (appState: AppState) => ({
     name: 'Javascript/WASM',
-    withIcon: {
-        tag: 'div',
-        class: 'fas fa-code mx-2',
-    },
+    icon: new NavIconSvg({ filename: 'icon-js.svg' }),
     html: ({ router }) => new PageView({ router, appState }),
     ...cdnStatus.packages.reduce((acc, e) => {
         return {
