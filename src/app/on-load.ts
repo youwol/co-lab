@@ -1,5 +1,5 @@
 import { ChildrenLike, render, VirtualDOM } from '@youwol/rx-vdom'
-import { parseMd, Router, Views } from '@youwol/mkdocs-ts'
+import { parseMd, Router, Views, ExplicitNode } from '@youwol/mkdocs-ts'
 import { setup } from '../auto-generated'
 
 import { TopBannerView } from './top-banner.view'
@@ -9,7 +9,11 @@ import * as Explorer from './explorer'
 import * as Projects from './projects'
 import * as Environment from './environment'
 import * as Dashboard from './dashboard'
+import * as Mounted from './mounted'
 import { CoLabLogo } from './common'
+import { pyYwDocLink } from './common/py-yw-references.view'
+import { ImmutableTree } from '@youwol/rx-tree-views'
+import { mountFolder } from './mounted'
 
 const appState = new AppState()
 
@@ -21,10 +25,25 @@ export const navigation = {
     '/components': Components.navigation(appState),
     '/projects': Projects.navigation(appState),
     '/explorer': Explorer.navigation(appState),
+    '/mounted': Mounted.navigation(appState),
 }
 const router = new Router({
     navigation,
     basePath: `/applications/${setup.name}/${setup.version}`,
+    update: {
+        from$: appState.hdFolder$,
+        then: ({
+            data,
+            router,
+            treeState,
+        }: {
+            router: Router
+            treeState: ImmutableTree.State<ExplicitNode>
+            data: string
+        }) => {
+            mountFolder({ folder: data, router, treeState })
+        },
+    },
 })
 
 class PageView implements VirtualDOM<'div'> {
