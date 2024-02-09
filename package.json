@@ -1,7 +1,7 @@
 {
     "name": "@youwol/co-lab",
     "description": "The YouWol's collaborative laboratory application.",
-    "version": "0.1.0",
+    "version": "0.1.1-wip",
     "author": "greinisch@youwol.com",
     "homepage": "https://github.com/youwol/co-lab#README.md",
     "main": "dist/index.html",
