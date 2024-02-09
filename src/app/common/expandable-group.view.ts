@@ -23,12 +23,14 @@ export class ExpandableGroupView implements VirtualDOM<'div'> {
         title,
         icon,
         content,
+        expanded,
     }: {
         title: string | AnyVirtualDOM
         icon: string | AnyVirtualDOM
         content: () => AnyVirtualDOM
+        expanded?: boolean
     }) {
-        const expanded$ = new BehaviorSubject(false)
+        const expanded$ = new BehaviorSubject(expanded || false)
         this.children = [
             {
                 tag: 'div',
