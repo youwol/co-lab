@@ -9,7 +9,10 @@ export function pyYwDocLink(title: string, path: string) {
 export class PyYwReferencesView implements VirtualDOM<'div'> {
     public readonly tag = 'div'
     public readonly children: ChildrenLike
-    constructor(params: { router: Router; items: any[] }) {
+    constructor(params: {
+        router: Router
+        items: { title: string; description: string; path: string }[]
+    }) {
         const basePath = '/applications/@youwol/py-youwol-doc/latest?nav='
         this.children = [
             parseMd({

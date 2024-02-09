@@ -123,9 +123,7 @@ export class AdminLogsView implements VirtualDOM<'div'> {
      */
     public readonly fetchingLogs$ = new BehaviorSubject<boolean>(false)
 
-    constructor(params: {}) {
-        Object.assign(this, params)
-
+    constructor() {
         this.children = [
             {
                 tag: 'div',

@@ -299,7 +299,7 @@ export class State {
     }
 
     newProjectFromTemplate(
-        projectTemplate: Routers.Environment.ProjectTemplate,
+        _projectTemplate: Routers.Environment.ProjectTemplate,
     ) {
         // this.screensId[projectTemplate.type] = this.appState.registerScreen({
         //     topic: 'Projects',

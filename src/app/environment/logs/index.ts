@@ -17,7 +17,7 @@ export class PageView implements VirtualDOM<'div'> {
     public readonly tag = 'div'
     public readonly children: ChildrenLike
 
-    constructor({ appState, router }: { appState: AppState; router: Router }) {
+    constructor({ router }: { appState: AppState; router: Router }) {
         this.children = [
             parseMd({
                 src: `
@@ -34,7 +34,7 @@ export class PageView implements VirtualDOM<'div'> {
                             router,
                         })
                     },
-                    logsView: () => new AdminLogsView({}),
+                    logsView: () => new AdminLogsView(),
                 },
             }),
         ]

@@ -29,7 +29,7 @@ export class FilesListView implements VirtualDOM<'div'> {
             source$: folderResp$,
             vdomMap: (resp: Routers.System.QueryFolderContentResponse) => {
                 return resp.files.map(
-                    (file) => new ItemView({ file, path, baseUrl, router }),
+                    (file) => new ItemView({ file, baseUrl, router }),
                 )
             },
         }
@@ -43,12 +43,10 @@ export class ItemView implements VirtualDOM<'div'> {
 
     constructor({
         file,
-        path,
         router,
         baseUrl,
     }: {
         file: string
-        path: string
         baseUrl: string
         router: Router
     }) {
