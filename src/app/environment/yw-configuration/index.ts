@@ -1,10 +1,12 @@
 import { AppState } from '../../app-state'
-import { ConfigFileView } from './config-file.view'
+import { CodeEditorView } from '../../common/code-editor.view'
 import { parseMd, Router, Views } from '@youwol/mkdocs-ts'
 import { ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
 import { HdPathBookView } from '../../common'
 import { PyYwReferencesView } from '../../common/py-yw-references.view'
-import { map } from 'rxjs/operators'
+import { map, mergeMap } from 'rxjs/operators'
+import { raiseHTTPErrors } from '@youwol/http-primitives'
+import { PyYouwolClient } from '@youwol/local-youwol-client'
 
 export const navigation = (appState: AppState) => ({
     html: ({ router }) => new PageView({ appState, router }),
@@ -44,7 +46,17 @@ Below is displayed the current configuration of the local YouWol server:
                             ),
                         })
                     },
-                    fileView: () => new ConfigFileView({ appState }),
+                    fileView: () =>
+                        new CodeEditorView({
+                            language: 'python',
+                            content: appState.environment$.pipe(
+                                mergeMap(() =>
+                                    new PyYouwolClient().admin.environment
+                                        .getFileContent$()
+                                        .pipe(raiseHTTPErrors()),
+                                ),
+                            ),
+                        }),
                     refDoc: () => {
                         return new PyYwReferencesView({
                             router: params.router,

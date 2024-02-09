@@ -1,16 +1,33 @@
-import { ChildrenLike, RxHTMLElement, VirtualDOM } from '@youwol/rx-vdom'
-import { combineLatest, from, Observable } from 'rxjs'
+import { combineLatest, from, Observable, of } from 'rxjs'
 import { install } from '@youwol/webpm-client'
-import { mergeMap, shareReplay } from 'rxjs/operators'
-import { PyYouwolClient } from '@youwol/local-youwol-client'
-import { raiseHTTPErrors } from '@youwol/http-primitives'
-import { AppState } from '../../app-state'
+import { shareReplay } from 'rxjs/operators'
+import { ChildrenLike, RxHTMLElement, VirtualDOM } from '@youwol/rx-vdom'
 
-function fetchCodeMirror$(): Observable<WindowOrWorkerGlobalScope> {
+export type CodeLanguage =
+    | 'python'
+    | 'javascript'
+    | 'markdown'
+    | 'html'
+    | 'css'
+    | 'yaml'
+    | 'unknown'
+
+function fetchCodeMirror$(
+    language: CodeLanguage,
+): Observable<WindowOrWorkerGlobalScope> {
+    const scripts = {
+        python: ['codemirror#5.52.0~mode/python.min.js'],
+        javascript: ['codemirror#5.52.0~mode/javascript.min.js'],
+        markdown: ['codemirror#5.52.0~mode/markdown.min.js'],
+        html: ['codemirror#5.52.0~mode/htmlmixed.min.js'],
+        yaml: ['codemirror#5.52.0~mode/yaml.min.js'],
+        css: ['codemirror#5.52.0~mode/css.min.js'],
+        unknown: [],
+    }
     return from(
         install({
             modules: ['codemirror'],
-            scripts: ['codemirror#5.52.0~mode/python.min.js'],
+            scripts: scripts[language],
             css: ['codemirror#5.52.0~codemirror.min.css'],
         }),
     ).pipe(shareReplay(1))
@@ -19,7 +36,7 @@ function fetchCodeMirror$(): Observable<WindowOrWorkerGlobalScope> {
 /**
  * @category View
  */
-export class ConfigFileView implements VirtualDOM<'div'> {
+export class CodeEditorView implements VirtualDOM<'div'> {
     /**
      * @group Immutable DOM Constants
      */
@@ -37,7 +54,7 @@ export class ConfigFileView implements VirtualDOM<'div'> {
     /**
      * @group Immutable DOM Constants
      */
-    public readonly class = 'w-100 h-100 p-2 overflow-auto'
+    public readonly class = 'w-100 overflow-auto'
 
     /**
      * @group Immutable DOM Constants
@@ -51,17 +68,18 @@ export class ConfigFileView implements VirtualDOM<'div'> {
      */
     public readonly children: ChildrenLike
 
-    constructor(params: { appState: AppState }) {
-        const { appState } = params
+    constructor({
+        language,
+        content,
+    }: {
+        language: CodeLanguage
+        content: string | Observable<string>
+    }) {
+        const content$ = typeof content == 'string' ? of(content) : content
 
-        const client = new PyYouwolClient().admin.environment
-
-        const configFile$ = appState.environment$.pipe(
-            mergeMap(() => client.getFileContent$().pipe(raiseHTTPErrors())),
-        )
         this.children = [
             {
-                source$: combineLatest([configFile$, fetchCodeMirror$()]),
+                source$: combineLatest([content$, fetchCodeMirror$(language)]),
                 vdomMap: ([content, _]: [string, unknown]) => {
                     return {
                         tag: 'div',
