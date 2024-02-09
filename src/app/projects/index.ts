@@ -8,8 +8,8 @@ import { ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
 import { SearchView } from './search.view'
 import { InfoSectionView } from '../common'
 import { pyYwDocLink } from '../common/py-yw-references.view'
-import { State } from './state'
 import { Routers } from '@youwol/local-youwol-client'
+import { icon } from './icons'
 
 export * from './state'
 
@@ -17,30 +17,33 @@ const projects = await lastValueFrom(
     new pyYw.PyYouwolClient().admin.projects.status$().pipe(raiseHTTPErrors()),
 )
 
+const skipNamespace = (name: string) => {
+    return name.split('/').slice(-1)[0]
+}
+
 export const navigation = (appState: AppState) => ({
     name: 'Projects',
-    withIcon: { tag: 'i', class: 'fas  fa-boxes mr-2' },
+    icon: { tag: 'i', class: 'fas  fa-boxes mr-2' },
     tableOfContent: Views.tocView,
     html: ({ router }) =>
         new PageView({
             router,
-            projectsState: appState.projectsState,
+            appState,
         }),
-    ...projects.results.reduce((acc, e) => {
+    ...projects.results['toSorted']((a, b) =>
+        skipNamespace(a.name).localeCompare(skipNamespace(b.name)),
+    ).reduce((acc, project) => {
         return {
             ...acc,
-            ['/' + e.id]: {
-                name: e.name,
+            ['/' + project.id]: {
+                name: skipNamespace(project.name),
                 tableOfContent: Views.tocView,
-                withIcon: {
-                    tag: 'div',
-                    class: 'fas fa-wrench mx-2',
-                },
+                icon: icon(project),
                 html: ({ router }) =>
                     new ProjectView({
                         router,
-                        project: e,
-                        projectsState: appState.projectsState,
+                        project,
+                        appState,
                     }),
             },
         }
@@ -51,13 +54,8 @@ export class PageView implements VirtualDOM<'div'> {
     public readonly tag = 'div'
     public readonly children: ChildrenLike
 
-    constructor({
-        router,
-        projectsState,
-    }: {
-        router: Router
-        projectsState: State
-    }) {
+    constructor({ router, appState }: { router: Router; appState: AppState }) {
+        const { projectsState } = appState
         this.children = [
             parseMd({
                 src: `
@@ -103,7 +101,6 @@ ${pyYwDocLink('ProjectTemplate', '/references/youwol/app/environment/models.Proj
 
 <searchView></searchView>
 
-<projectsListView></projectsListView>
 
 ## Failures
 
@@ -125,7 +122,7 @@ The following projects have failed to load:
                             projectsState,
                         })
                     },
-                    searchView: () => new SearchView({ projectsState }),
+                    searchView: () => new SearchView({ projectsState, router }),
                     projectsListView: () => ({
                         tag: 'ul',
                         children: {
@@ -134,13 +131,14 @@ The following projects have failed to load:
                             vdomMap: (projects: Routers.Projects.Project[]) =>
                                 projects.map((p) =>
                                     parseMd({
-                                        src: `*  [${p.name}](@nav/workspace/${p.id}): Description of the project`,
+                                        src: `*  [${p.name}](@nav/projects/${p.id})`,
                                         router,
                                     }),
                                 ),
                         },
                     }),
-                    failedListView: () => new FailuresView({ projectsState }),
+                    failedListView: () =>
+                        new FailuresView({ appState, router }),
                 },
             }),
         ]

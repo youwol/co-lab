@@ -1,4 +1,4 @@
-import { ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
+import { ChildrenLike, VirtualDOM, CSSAttribute } from '@youwol/rx-vdom'
 import { fromMarkdown, parseMd, Router } from '@youwol/mkdocs-ts'
 import { BehaviorSubject, Observable, of } from 'rxjs'
 import { setup } from '../../auto-generated'
@@ -6,6 +6,22 @@ import { AppState } from '../app-state'
 
 export const classesButton =
     'd-flex border p-2 rounded  fv-bg-secondary fv-hover-xx-lighter fv-pointer mx-2 align-items-center'
+
+export class NavIconSvg implements VirtualDOM<'div'> {
+    public readonly tag = 'div'
+    public readonly class = 'mr-2'
+    public readonly style: CSSAttribute
+    constructor({ filename }: { filename: string }) {
+        const basePath = `/applications/${setup.name}/${setup.version}`
+        this.style = {
+            width: '20px',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            height: '20px',
+            backgroundImage: `url(${basePath}/assets/${filename})`,
+        }
+    }
+}
 
 export class CoLabLogo implements VirtualDOM<'a'> {
     public readonly tag = 'a'
