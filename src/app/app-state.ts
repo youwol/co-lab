@@ -5,7 +5,6 @@ import * as Components from './components'
 import * as Environment from './environment'
 import { AnyVirtualDOM } from '@youwol/rx-vdom'
 import * as pyYw from '@youwol/local-youwol-client'
-import * as System from './system'
 import { WsRouter } from '@youwol/local-youwol-client'
 
 export type Topic =
@@ -57,11 +56,6 @@ export class AppState {
     public readonly environmentState: Environment.State
 
     /**
-     * @group State
-     */
-    public readonly systemState: System.State
-
-    /**
      * @group Observables
      */
     public readonly connectedLocal$: Observable<boolean>
@@ -86,8 +80,6 @@ export class AppState {
         this.projectsState = new Projects.State({ appState: this })
         this.cdnState = new Components.State({ appState: this })
         this.environmentState = new Environment.State({ appState: this })
-
-        this.systemState = new System.State({ appState: this })
 
         this.environmentClient.getStatus$().subscribe()
         this.projectsState.projects$.subscribe(() => {})

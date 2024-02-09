@@ -44,6 +44,7 @@ Below is displayed the current configuration of the local YouWol server:
                                     (env) => env.configuration.pathsBook.config,
                                 ),
                             ),
+                            appState,
                         })
                     },
                     fileView: () =>

@@ -49,7 +49,6 @@ This folder persist the artifacts & manifests created when working with projects
                     },
                     paths: (elem) =>
                         new HdPathBookView({
-                            router,
                             appState,
                             path: appState.environment$.pipe(
                                 map(
