@@ -1029,10 +1029,10 @@
   dependencies:
     undici-types "~5.26.4"
 
-"@types/node@18.19.8":
-  version "18.19.8"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-18.19.8.tgz#c1e42b165e5a526caf1f010747e0522cb2c9c36a"
-  integrity sha512-g1pZtPhsvGVTwmeVoexWZLTQaOvXwoSq//pTL0DHeNzUDrFnir4fgETdhjhIxjVnN+hKOuh98+E1eMLnUXstFg==
+"@types/node@^20.11.10":
+  version "20.11.17"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-20.11.17.tgz#cdd642d0e62ef3a861f88ddbc2b61e32578a9292"
+  integrity sha512-QmgQZGWu1Yw9TDyAP9ZzpFJKynYNeOvwMJmaxABfieQoVoiVOS6MN1WSpqpRcbeA5+RW82kraAVxCCJg+780Qw==
   dependencies:
     undici-types "~5.26.4"
 
@@ -1486,10 +1486,10 @@
     "@youwol/rx-vdom" "^1.0.1"
     rxjs "^7.5.6"
 
-"@youwol/mkdocs-ts@^0.1.1":
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/@youwol/mkdocs-ts/-/mkdocs-ts-0.1.1.tgz#bce32833c6d07f04c0ff97736db2ccd1ccc53089"
-  integrity sha512-lj1cTh6NQRhTe8DiW/UNd3dnOVERaVsVuFjqIoOOKnsuCw5T0XTTzK0mIgS2eXkyq8S+t0CNakCZmf/UoNa8GA==
+"@youwol/mkdocs-ts@^0.1.2":
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/@youwol/mkdocs-ts/-/mkdocs-ts-0.1.2.tgz#5184dfa556641f5f797a1407ff42c0e6c768c7fd"
+  integrity sha512-qKLrm3h146nfic24TPw16PAWi5VP6WJpmVw6rc4nAKCQMKYaRS+GwZRAVAQvagT8lLXLAube1VkXkh2r8j4sHw==
   dependencies:
     "@youwol/os-top-banner" "^0.2.0"
     "@youwol/rx-tree-views" "^0.3.1"
