@@ -9,7 +9,6 @@ import * as Explorer from './explorer'
 import * as Projects from './projects'
 import * as Environment from './environment'
 import * as Dashboard from './dashboard'
-import * as System from './system'
 import { CoLabLogo } from './common'
 
 const appState = new AppState()
@@ -22,7 +21,6 @@ export const navigation = {
     '/components': Components.navigation(appState),
     '/projects': Projects.navigation(appState),
     '/explorer': Explorer.navigation(appState),
-    '/system': System.navigation(appState),
 }
 const router = new Router({
     navigation,

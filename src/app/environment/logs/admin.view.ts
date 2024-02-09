@@ -11,7 +11,6 @@ import { raiseHTTPErrors } from '@youwol/http-primitives'
 import * as pyYw from '@youwol/local-youwol-client'
 import { BehaviorSubject, Observable, ReplaySubject } from 'rxjs'
 import { classesButton } from '../../common'
-import { State } from '../state'
 
 function getChildren(contextId: string) {
     return new pyYw.PyYouwolClient().admin.system
@@ -113,11 +112,6 @@ export class AdminLogsView implements VirtualDOM<'div'> {
     public readonly children: ChildrenLike
 
     /**
-     * @group States
-     */
-    public readonly systemState: State
-
-    /**
      * @group Observables
      */
     public readonly logs$ = new ReplaySubject<pyYw.Routers.System.LogsResponse>(
@@ -129,7 +123,7 @@ export class AdminLogsView implements VirtualDOM<'div'> {
      */
     public readonly fetchingLogs$ = new BehaviorSubject<boolean>(false)
 
-    constructor(params: { systemState: State }) {
+    constructor(params: {}) {
         Object.assign(this, params)
 
         this.children = [
@@ -166,7 +160,6 @@ export class AdminLogsView implements VirtualDOM<'div'> {
                 ],
             },
             new LogsView({
-                systemState: this.systemState,
                 logs$: this.logs$,
             }),
         ]
@@ -292,7 +285,6 @@ export class LogsView implements VirtualDOM<'div'> {
     public readonly logs$: Observable<pyYw.Routers.System.LogsResponse>
 
     constructor(params: {
-        systemState: State
         logs$: Observable<pyYw.Routers.System.LogsResponse>
     }) {
         Object.assign(this, params)

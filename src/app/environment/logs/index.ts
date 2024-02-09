@@ -8,7 +8,7 @@ export * from './admin.view'
 
 export const navigation = (appState: AppState) => ({
     name: 'Logs',
-    withIcon: { tag: 'i', class: 'fas fa-bug mr-2' },
+    icon: { tag: 'i', class: 'fas fa-bug mr-2' },
     tableOfContent: Views.tocView,
     html: ({ router }) => new PageView({ router, appState }),
 })
@@ -34,10 +34,7 @@ export class PageView implements VirtualDOM<'div'> {
                             router,
                         })
                     },
-                    logsView: () =>
-                        new AdminLogsView({
-                            systemState: appState.systemState,
-                        }),
+                    logsView: () => new AdminLogsView({}),
                 },
             }),
         ]

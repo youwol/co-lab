@@ -33,7 +33,7 @@ export class CoLabLogo implements VirtualDOM<'a'> {
                     },
                     {
                         tag: 'div',
-                        class: 'i mr-1 fas fa-globe-africa',
+                        class: 'i mr-1 fas fa-globe',
                         style: {
                             fontSize: '15px',
                         },
