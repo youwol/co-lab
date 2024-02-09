@@ -12,7 +12,7 @@ const tableOfContent = Views.tocView
 
 export const navigation = (appState: AppState) => ({
     name: 'Explorer',
-    withIcon: { tag: 'i', class: 'fas fa-folder mr-2' },
+    icon: { tag: 'i', class: 'fas fa-folder mr-2' },
     tableOfContent,
     html: ({ router }) => new PageView({ router, appState }),
     '/**': explorerNavigation,
@@ -29,7 +29,7 @@ export class PageView implements VirtualDOM<'div'> {
         ]).subscribe()
     }
 
-    constructor({ router, appState }: { router: Router; appState: AppState }) {
+    constructor({ router }: { router: Router; appState: AppState }) {
         this.children = [
             parseMd({
                 src: `
@@ -60,7 +60,7 @@ function explorerNavigation({
                 return {
                     children: details.userInfo.groups.map((g) => ({
                         name: g.path.split('/').slice(-1)[0],
-                        withIcon: {
+                        icon: {
                             tag: 'div',
                             class: g.id.includes('private')
                                 ? 'fas fa-user mx-2'
@@ -86,7 +86,7 @@ function explorerNavigation({
                         children: drives.map((d) => ({
                             name: d.name,
                             id: 'folder_' + d.driveId,
-                            withIcon: {
+                            icon: {
                                 tag: 'div',
                                 class: 'fas fa-hdd mx-2',
                             },
@@ -110,7 +110,7 @@ function explorerNavigation({
                             ...response.folders.map((d) => ({
                                 name: d.name,
                                 id: `folder_${d.folderId}`,
-                                withIcon: {
+                                icon: {
                                     tag: 'div',
                                     class: 'fas fa-folder mx-2',
                                 },
@@ -118,7 +118,7 @@ function explorerNavigation({
                             ...response.items.map((d) => ({
                                 name: d.name,
                                 id: `asset_${d.assetId}`,
-                                withClass: 'd-none',
+                                wrapperClass: 'd-none',
                                 leaf: true,
                             })),
                         ],

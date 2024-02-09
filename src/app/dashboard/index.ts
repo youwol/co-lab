@@ -10,7 +10,7 @@ import { NewAppsView, DesktopWidgetsView } from './views'
 export const navigation = (appState: AppState) => ({
     name: 'Dashboard',
     tableOfContent: Views.tocView,
-    withIcon: { tag: 'i', class: 'fas fa-tachometer-alt mr-2' },
+    icon: { tag: 'i', class: 'fas fa-tachometer-alt mr-2' },
     html: ({ router }) => new PageView({ appState, router }),
 })
 

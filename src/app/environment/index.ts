@@ -15,7 +15,7 @@ export * from './state'
 export const navigation = (appState: AppState) => ({
     name: 'Environment',
     tableOfContent: Views.tocView,
-    withIcon: { tag: 'i', class: 'fas fa-tasks mr-2' },
+    icon: { tag: 'i', class: 'fas fa-tasks mr-2' },
     html: ({ router }) => new PageView({ appState, router }),
     '/yw-configuration': YwConfiguration.navigation(appState),
     '/profiles': Profiles.navigation(appState),

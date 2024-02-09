@@ -12,7 +12,7 @@ export const navigation = (_appState: AppState) => ({
     name: 'Profiles',
     html: ({ router }) => new PageView({ router }),
     tableOfContent: Views.tocView,
-    withIcon: { tag: 'i', class: 'fas fa-user-friends mr-2' },
+    icon: { tag: 'i', class: 'fas fa-user-friends mr-2' },
 })
 
 export class PageView implements VirtualDOM<'div'> {

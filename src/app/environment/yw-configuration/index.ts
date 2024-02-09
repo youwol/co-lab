@@ -10,7 +10,7 @@ import { PyYouwolClient } from '@youwol/local-youwol-client'
 
 export const navigation = (appState: AppState) => ({
     html: ({ router }) => new PageView({ appState, router }),
-    withIcon: { tag: 'i', class: 'fas fa-wrench mr-2' },
+    icon: { tag: 'i', class: 'fas fa-wrench mr-2' },
     name: 'Server config.',
     tableOfContent: Views.tocView,
 })
