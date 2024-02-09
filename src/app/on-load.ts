@@ -93,42 +93,7 @@ publish as components—first locally on your PC, and subsequently to the wider 
  If you're looking for a more comprehensive overview, we invite you to check out our 
 ${pyYwDocLink('documentation', '/')}.
 
-<!--
-* **Browser-Based Applications**: Our platform hosts "executable blocks" as independent units that dynamically link 
-together to function within a browser. These units, known as 'components,' create an ecosystem easily utilized by
- applications or scripts to form a coherent run-time.
-
-* **Collaboration**: Integrating work from others into your projects is seamless with YouWol. 
-Powered by an online ecosystem, updates are published and can be automatically integrated as needed. 
-This ecosystem also features **assets** - conceptualized as 'projects' - which can be automatically retrieved 
-when necessary.
-
-* **Performance**: Requested resources are automatically downloaded to your PC, turning it into an 
-additional cache layer to avoid unnecessary downloads and enhance performance.
-
-* **Flexibility**: Our diverse array of component types ensures the most effective solution for any given problem.
- This includes JavaScript and its related languages, as well as C/C++/Rust/*etc.* through WebAssembly,
-  Python in the browser via Pyodide, and Python backends.
-
-* **Development Cycle**: The workspace is engineered to incorporate the versions of the components you're working 
-on effortlessly. Once you publish your package to your PC's database, it becomes accessible to the dependency resolver 
-and is linked accordingly. Moreover, several options are available to facilitate development servers for application or
- backend development.
- 
-## Example
-
-In a nutshell, it comes down to:
-\`\`\`javascript
-
-await youwol.install({
-    modules:['react'],
-    python: ['numpy', 'pandas'],
-    backends: ['scipy_backend']
-})
-// At that point all of the above dependencies are ready to be used
-\`\`\`
-
-                 `,
+  `,
                 router,
                 views: {
                     logo: () => new CoLabLogo({ router }),
