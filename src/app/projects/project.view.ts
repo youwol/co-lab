@@ -9,6 +9,7 @@ import { ExpandableGroupView } from '../common/expandable-group.view'
 import { NewProjectFromTemplateView } from './new-project.view'
 import { debounceTime, merge, mergeMap, of } from 'rxjs'
 import { AppState } from '../app-state'
+import { SelectedStepView } from './project/selected-step.view'
 
 export class ProjectView implements VirtualDOM<'div'> {
     public readonly tag = 'div'
@@ -43,6 +44,8 @@ A project is a folder on your computer featuring a \`yw_pipeline.py\` file.
 
 <flow></flow>
 
+<selectedStep></selectedStep>
+
 ## Artifacts
 
 <info>
@@ -69,6 +72,12 @@ Publishing a components means to publish all or a part of those artifacts.
                     },
                     flow: () =>
                         new FlowView({
+                            flowId: 'prod',
+                            projectsState,
+                            project,
+                        }),
+                    selectedStep: () =>
+                        new SelectedStepView({
                             flowId: 'prod',
                             projectsState,
                             project,
