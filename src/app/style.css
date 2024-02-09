@@ -8,16 +8,16 @@ html {
 .ilab {
     font-size: 30px;
     font-weight: 700;
-    color: #005A9C;
+    color: #005a9c;
 }
 .ilab .i {
-    color: #E63946;
+    color: #e63946;
     font-style: italic;
     font-size: 30px;
 }
 .ilab .light {
     font-weight: 100;
-    color: #58A4B0; /* Lighter blue for contrast */
+    color: #58a4b0; /* Lighter blue for contrast */
 }
 /* Initially hide the scrollbar for the element */
 .scrollbar-on-hover {
@@ -29,25 +29,24 @@ html {
     overflow: auto;
 }
 
-
-.mkdocs-ts-side-nav{
+.mkdocs-ts-side-nav {
     width: 20rem;
     line-height: 1.5rem;
     font-size: 0.9rem;
     position: sticky;
-    top: 0px
+    top: 0px;
 }
 
-.mkdocs-ts-side-nav .fv-tree-expand{
-    display: none!important;
+.mkdocs-ts-side-nav .fv-tree-expand {
+    display: none !important;
 }
-.mkdocs-ts-top-banner{
+.mkdocs-ts-top-banner {
     max-height: 50px;
 }
 
-.mkdocs-ts-page{
+.mkdocs-ts-page {
     font-size: 1rem;
-    line-height: 1.6
+    line-height: 1.6;
 }
 
 .mkdocs-ts-expand-nav-node {
@@ -156,4 +155,3 @@ circle.pending {
         stroke-dashoffset: -124;
     }
 }
-
