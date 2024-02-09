@@ -10,10 +10,11 @@ import * as Projects from './projects'
 import * as Environment from './environment'
 import * as Dashboard from './dashboard'
 import * as Mounted from './mounted'
-import { CoLabLogo } from './common'
+import { CoLabBanner, CoLabLogo } from './common'
 import { pyYwDocLink } from './common/py-yw-references.view'
 import { ImmutableTree } from '@youwol/rx-tree-views'
 import { mountFolder } from './mounted'
+import { Subject } from 'rxjs'
 
 const appState = new AppState()
 
@@ -51,10 +52,15 @@ class PageView implements VirtualDOM<'div'> {
     public readonly children: ChildrenLike
 
     constructor({ router }: { router: Router }) {
+        const loaded$ = new Subject<boolean>()
         this.children = [
-            parseMd({
-                src: `
-<logo></logo>
+            new CoLabBanner({ router, loaded$ }),
+            {
+                source$: loaded$,
+                vdomMap: () =>
+                    parseMd({
+                        src: `
+
 
 Welcome to the YouWol collaborative lab for consuming or producing web applications. 
 This space (the \`@youwol/co-lab\` application) lets you explore your lab's content.
@@ -94,11 +100,12 @@ publish as components—first locally on your PC, and subsequently to the wider 
 ${pyYwDocLink('documentation', '/')}.
 
   `,
-                router,
-                views: {
-                    logo: () => new CoLabLogo({ router }),
-                },
-            }),
+                        router,
+                        views: {
+                            logo: () => new CoLabLogo({ router }),
+                        },
+                    }),
+            },
         ]
     }
 }

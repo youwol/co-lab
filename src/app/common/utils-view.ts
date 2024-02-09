@@ -1,8 +1,9 @@
 import { ChildrenLike, VirtualDOM, CSSAttribute } from '@youwol/rx-vdom'
 import { fromMarkdown, parseMd, Router } from '@youwol/mkdocs-ts'
-import { BehaviorSubject, Observable, of } from 'rxjs'
+import { BehaviorSubject, Observable, of, Subject, timer } from 'rxjs'
 import { setup } from '../../auto-generated'
 import { AppState } from '../app-state'
+import { take } from 'rxjs/operators'
 
 export const classesButton =
     'd-flex border p-2 rounded  fv-bg-secondary fv-hover-xx-lighter fv-pointer mx-2 align-items-center'
@@ -349,4 +350,68 @@ export function fromMd(file: string) {
     return fromMarkdown({
         url: `/api/assets-gateway/raw/package/${setup.assetId}/${setup.version}/assets/${file}`,
     })
+}
+
+export class CoLabBanner implements VirtualDOM<'div'> {
+    public readonly tag = 'div'
+    public readonly class = 'h-100 w-100 mb-5'
+    public readonly children: ChildrenLike
+    public readonly style = {
+        position: 'relative' as const,
+    }
+
+    constructor({
+        router,
+        loaded$,
+    }: {
+        loaded$: Subject<boolean>
+        router: Router
+    }) {
+        const timer$ = timer(0, 1000).pipe(take(2))
+        const basePath = `/api/assets-gateway/raw/package/${setup.assetId}/${setup.version}/assets`
+        const style = { width: '100%', opacity: 0.1, filter: 'invert(1)' }
+        this.children = [
+            {
+                tag: 'img',
+                class: {
+                    source$: timer$,
+                    vdomMap: (i) => (i == 0 ? '' : 'd-none'),
+                },
+                style,
+                src: `${basePath}/co-lab-light.png`,
+                onload: () => loaded$.next(true),
+            },
+            {
+                tag: 'img',
+                class: {
+                    source$: timer(0, 1000).pipe(take(2)),
+                    vdomMap: (i) => (i == 0 ? 'd-none' : ''),
+                },
+                style,
+                src: `${basePath}/co-lab-high.png`,
+            },
+            {
+                tag: 'div',
+                class: {
+                    source$: loaded$,
+                    vdomMap: () => 'w-100',
+                    untilFirst: 'd-none',
+                },
+                style: {
+                    position: 'absolute' as const,
+                    top: '50%',
+                },
+                children: [
+                    {
+                        style: {
+                            transform: 'scale(3)',
+                        },
+                        tag: 'div',
+                        class: 'd-flex justify-content-center',
+                        children: [new CoLabLogo({ router })],
+                    },
+                ],
+            },
+        ]
+    }
 }
