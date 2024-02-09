@@ -1,4 +1,4 @@
-import { Observable } from 'rxjs'
+import { Observable, Subject } from 'rxjs'
 import { filter, map, shareReplay, take, tap } from 'rxjs/operators'
 import * as Projects from './projects'
 import * as Components from './components'
@@ -65,6 +65,8 @@ export class AppState {
      * @group Observables
      */
     public readonly connectedLocal$: Observable<boolean>
+
+    public readonly hdFolder$ = new Subject<string>()
 
     constructor() {
         pyYw.PyYouwolClient.startWs$()

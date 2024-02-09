@@ -2,6 +2,7 @@ import { ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
 import { fromMarkdown, parseMd, Router } from '@youwol/mkdocs-ts'
 import { BehaviorSubject, Observable, of } from 'rxjs'
 import { setup } from '../../auto-generated'
+import { AppState } from '../app-state'
 
 export const classesButton =
     'd-flex border p-2 rounded  fv-bg-secondary fv-hover-xx-lighter fv-pointer mx-2 align-items-center'
@@ -277,7 +278,13 @@ export class HdPathBookView implements VirtualDOM<'div'> {
     public readonly children: ChildrenLike
     public readonly class = 'd-flex align-items-center'
 
-    constructor({ path }: { path: string | Observable<string> }) {
+    constructor({
+        path,
+        appState,
+    }: {
+        path: string | Observable<string>
+        appState: AppState
+    }) {
         const path$ = typeof path === 'string' ? of(path) : path
         this.children = [
             {
@@ -306,6 +313,16 @@ export class HdPathBookView implements VirtualDOM<'div'> {
                     return new CopyClipboardView({
                         text: path,
                     })
+                },
+            },
+            {
+                source$: path$,
+                vdomMap: (path: string) => {
+                    return {
+                        tag: 'i',
+                        class: 'fas fa-folder-open p-1 rounded border fv-pointer fv-hover-text-focus mx-2',
+                        onclick: () => appState.hdFolder$.next(path),
+                    }
                 },
             },
         ]
