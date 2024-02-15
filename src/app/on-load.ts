@@ -15,6 +15,8 @@ import { pyYwDocLink } from './common/py-yw-references.view'
 import { ImmutableTree } from '@youwol/rx-tree-views'
 import { mountFolder } from './mounted'
 import { Subject } from 'rxjs'
+import { Routers } from '@youwol/local-youwol-client'
+import { mountBackends } from './environment/backends'
 
 const appState = new AppState()
 
@@ -31,20 +33,40 @@ export const navigation = {
 const router = new Router({
     navigation,
     basePath: `/applications/${setup.name}/${setup.version}`,
-    update: {
-        from$: appState.hdFolder$,
-        then: ({
-            data,
-            router,
-            treeState,
-        }: {
-            router: Router
-            treeState: ImmutableTree.State<ExplicitNode>
-            data: string
-        }) => {
-            mountFolder({ folder: data, router, treeState })
+    updates: [
+        {
+            from$: appState.hdFolder$,
+            then: ({
+                data,
+                router,
+                treeState,
+            }: {
+                router: Router
+                treeState: ImmutableTree.State<ExplicitNode>
+                data: string
+            }) => {
+                mountFolder({ folder: data, router, treeState })
+            },
         },
-    },
+        {
+            from$: appState.environment$,
+            then: ({
+                data,
+                router,
+                treeState,
+            }: {
+                router: Router
+                treeState: ImmutableTree.State<ExplicitNode>
+                data: Routers.Environment.EnvironmentStatusResponse
+            }) => {
+                mountBackends({
+                    backends: data.configuration.proxiedBackends,
+                    router,
+                    treeState,
+                })
+            },
+        },
+    ],
 })
 
 class PageView implements VirtualDOM<'div'> {

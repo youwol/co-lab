@@ -4,6 +4,7 @@ import { parseMd, Router, Views } from '@youwol/mkdocs-ts'
 import * as YwConfiguration from './yw-configuration'
 import * as Profiles from './profiles'
 import * as Databases from './databases'
+import * as Backends from './backends'
 import { ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
 import { pyYwDocLink } from '../common/py-yw-references.view'
 import { InfoSectionView } from '../common'
@@ -21,6 +22,7 @@ export const navigation = (appState: AppState) => ({
     '/profiles': Profiles.navigation(appState),
     '/databases': Databases.navigation(appState),
     '/logs': Logs.navigation(appState),
+    '/backends': Backends.navigation(appState),
 })
 
 export class PageView implements VirtualDOM<'div'> {
