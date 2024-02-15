@@ -1,37 +1,23 @@
-import { AppState } from '../../../app-state'
-import { PackageView } from '../../package.views'
+import { AppState } from '../../app-state'
+import { parseMd, Router } from '@youwol/mkdocs-ts'
+import { ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
+import { NavIconSvg } from '../../common'
 import { lastValueFrom } from 'rxjs'
 import * as pyYw from '@youwol/local-youwol-client'
 import { raiseHTTPErrors } from '@youwol/http-primitives'
-import { parseMd, Router, Views } from '@youwol/mkdocs-ts'
-import { ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
-import { NavIconSvg } from '../../../common'
+import { subRoutes } from '../index'
 
-const cdnStatus = await lastValueFrom(
+export const cdnStatus = await lastValueFrom(
     new pyYw.PyYouwolClient().admin.localCdn
         .getStatus$()
         .pipe(raiseHTTPErrors()),
 )
 
 export const navigation = (appState: AppState) => ({
-    name: 'Javascript/WASM',
+    name: 'Js/WASM',
     icon: new NavIconSvg({ filename: 'icon-js.svg' }),
     html: ({ router }) => new PageView({ router, appState }),
-    ...cdnStatus.packages.reduce((acc, e) => {
-        return {
-            ...acc,
-            ['/' + e.id]: {
-                name: e.name,
-                tableOfContent: Views.tocView,
-                html: ({ router }) =>
-                    new PackageView({
-                        router,
-                        cdnState: appState.cdnState,
-                        packageId: e.id,
-                    }),
-            },
-        }
-    }, {}),
+    ...subRoutes({ type: 'js/wasm', appState }),
 })
 
 class PageView implements VirtualDOM<'div'> {

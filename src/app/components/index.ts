@@ -1,15 +1,23 @@
 import { AppState } from '../app-state'
 import * as Backends from './backends'
-import * as Frontends from './frontends'
+import * as JsWasm from './js-wasm'
+import * as Pyodide from './pyodide'
 import { ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
-import { parseMd, Router } from '@youwol/mkdocs-ts'
+
+import { parseMd, Router, Views } from '@youwol/mkdocs-ts'
+import { PackageView } from './js-wasm/package.views'
+import { lastValueFrom } from 'rxjs'
+import * as pyYw from '@youwol/local-youwol-client'
+import { raiseHTTPErrors } from '@youwol/http-primitives'
+import { BackendView } from './backends/package.views'
 export * from './state'
 
 export const navigation = (appState: AppState) => ({
     name: 'Components',
     icon: { tag: 'i', class: 'fas  fa-microchip mr-2' },
     html: ({ router }) => new PageView({ router, appState }),
-    '/frontends': Frontends.navigation(appState),
+    '/js-wasm': JsWasm.navigation(appState),
+    '/pyodide': Pyodide.navigation(appState),
     '/backends': Backends.navigation(appState),
 })
 
@@ -37,4 +45,47 @@ Executables can be:
             }),
         ]
     }
+}
+
+const cdnStatus = await lastValueFrom(
+    new pyYw.PyYouwolClient().admin.localCdn
+        .getStatus$()
+        .pipe(raiseHTTPErrors()),
+)
+export function subRoutes({
+    appState,
+    type,
+}: {
+    appState: AppState
+    type: 'js/wasm' | 'backend'
+}) {
+    return cdnStatus.packages
+        .filter((elem) => {
+            return elem.versions[0].type === type
+        })
+        .reduce((acc, e) => {
+            return {
+                ...acc,
+                ['/' + e.id]: {
+                    name: e.name,
+                    tableOfContent: Views.tocView,
+                    icon: {
+                        tag: 'div',
+                        class: 'mx-2',
+                    },
+                    html: ({ router }) =>
+                        type == 'js/wasm'
+                            ? new PackageView({
+                                  router,
+                                  cdnState: appState.cdnState,
+                                  packageId: e.id,
+                              })
+                            : new BackendView({
+                                  router,
+                                  cdnState: appState.cdnState,
+                                  packageId: e.id,
+                              }),
+                },
+            }
+        }, {})
 }

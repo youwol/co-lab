@@ -1,5 +1,10 @@
-import { ChildrenLike, AnyVirtualDOM, VirtualDOM } from '@youwol/rx-vdom'
-import { State } from './state'
+import {
+    ChildrenLike,
+    AnyVirtualDOM,
+    VirtualDOM,
+    ChildLike,
+} from '@youwol/rx-vdom'
+import { State } from '../state'
 
 import { AssetsBackend, CdnBackend } from '@youwol/http-clients'
 import { raiseHTTPErrors } from '@youwol/http-primitives'
@@ -7,7 +12,7 @@ import * as pyYw from '@youwol/local-youwol-client'
 import { combineLatest, ReplaySubject, Subject } from 'rxjs'
 import { AssetLightDescription } from '@youwol/os-core'
 import { parseMd, Router } from '@youwol/mkdocs-ts'
-import { ExplorerView } from './package-explorer.view'
+import { ExplorerView } from '../package-explorer.view'
 import { map, mergeMap } from 'rxjs/operators'
 
 /**
@@ -36,7 +41,7 @@ export class PackageView implements VirtualDOM<'div'> {
     /**
      * @group Immutable DOM Constants
      */
-    public readonly children: ChildrenLike
+    public readonly children: ChildLike[]
 
     public readonly selectedVersion$ = new ReplaySubject<string>(1)
     constructor(params: {
