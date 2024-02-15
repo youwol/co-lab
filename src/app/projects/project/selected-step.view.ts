@@ -193,6 +193,7 @@ export class HeaderMenuView implements VirtualDOM<'div'> {
 
 export class ConfigView implements VirtualDOM<'div'> {
     public readonly tag = 'div'
+    public readonly class = 'overflow-auto'
     public readonly children: ChildrenLike
 
     constructor({
@@ -260,7 +261,7 @@ export class ManifestView implements VirtualDOM<'div'> {
     /**
      * @group Immutable DOM Constants
      */
-    public readonly class = ''
+    public readonly class = 'overflow-auto'
 
     /**
      * @group Immutable DOM Constants
@@ -384,7 +385,7 @@ export class RunOutputsView implements VirtualDOM<'div'> {
     /**
      * @group Immutable DOM Constants
      */
-    public readonly class = ''
+    public readonly class = 'overflow-auto'
 
     /**
      * @group Immutable DOM Constants
