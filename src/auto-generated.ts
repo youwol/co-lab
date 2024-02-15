@@ -1,13 +1,15 @@
 
 const runTimeDependencies = {
     "externals": {
-        "@youwol/mkdocs-ts": "^0.1.2",
+        "@youwol/mkdocs-ts": "^0.2.0",
         "@youwol/rx-vdom": "^1.0.1",
         "@youwol/webpm-client": "^3.0.0",
         "@youwol/http-clients": "^3.0.0",
         "@youwol/http-primitives": "^0.2.2",
-        "@youwol/local-youwol-client": "^0.2.2",
+        "@youwol/local-youwol-client": "^0.2.4",
+        "@youwol/os-core": "^0.2.0",
         "@youwol/os-widgets": "^0.2.2",
+        "@youwol/rx-tree-views": "0.3.1",
         "@youwol/rx-code-mirror-editors": "0.5.0",
         "rxjs": "^7.5.6",
         "d3": "^7.7.0"
@@ -17,13 +19,15 @@ const runTimeDependencies = {
     }
 }
 const externals = {
-    "@youwol/mkdocs-ts": "window['@youwol/mkdocs-ts_APIv01']",
+    "@youwol/mkdocs-ts": "window['@youwol/mkdocs-ts_APIv02']",
     "@youwol/rx-vdom": "window['@youwol/rx-vdom_APIv1']",
     "@youwol/webpm-client": "window['@youwol/webpm-client_APIv3']",
     "@youwol/http-clients": "window['@youwol/http-clients_APIv3']",
     "@youwol/http-primitives": "window['@youwol/http-primitives_APIv02']",
     "@youwol/local-youwol-client": "window['@youwol/local-youwol-client_APIv02']",
+    "@youwol/os-core": "window['@youwol/os-core_APIv02']",
     "@youwol/os-widgets": "window['@youwol/os-widgets_APIv02']",
+    "@youwol/rx-tree-views": "window['@youwol/rx-tree-views_APIv03']",
     "@youwol/rx-code-mirror-editors": "window['@youwol/rx-code-mirror-editors_APIv05']",
     "rxjs": "window['rxjs_APIv7']",
     "d3": "window['d3_APIv7']",
@@ -31,7 +35,7 @@ const externals = {
 }
 const exportedSymbols = {
     "@youwol/mkdocs-ts": {
-        "apiKey": "01",
+        "apiKey": "02",
         "exportedSymbol": "@youwol/mkdocs-ts"
     },
     "@youwol/rx-vdom": {
@@ -54,9 +58,17 @@ const exportedSymbols = {
         "apiKey": "02",
         "exportedSymbol": "@youwol/local-youwol-client"
     },
+    "@youwol/os-core": {
+        "apiKey": "02",
+        "exportedSymbol": "@youwol/os-core"
+    },
     "@youwol/os-widgets": {
         "apiKey": "02",
         "exportedSymbol": "@youwol/os-widgets"
+    },
+    "@youwol/rx-tree-views": {
+        "apiKey": "03",
+        "exportedSymbol": "@youwol/rx-tree-views"
     },
     "@youwol/rx-code-mirror-editors": {
         "apiKey": "05",
@@ -81,7 +93,9 @@ const mainEntry : {entryFile: string,loadDependencies:string[]} = {
         "@youwol/http-clients",
         "@youwol/http-primitives",
         "@youwol/local-youwol-client",
+        "@youwol/os-core",
         "@youwol/os-widgets",
+        "@youwol/rx-tree-views",
         "@youwol/rx-code-mirror-editors",
         "rxjs",
         "d3"
@@ -97,7 +111,7 @@ const entries = {
 export const setup = {
     name:'@youwol/co-lab',
         assetId:'QHlvdXdvbC9jby1sYWI=',
-    version:'0.1.1-wip',
+    version:'0.1.2-wip',
     shortDescription:"The YouWol's collaborative laboratory application.",
     developerDocumentation:'https://platform.youwol.com/applications/@youwol/cdn-explorer/latest?package=@youwol/co-lab&tab=doc',
     npmPackage:'https://www.npmjs.com/package/@youwol/co-lab',
@@ -143,7 +157,7 @@ export const setup = {
         const parameters = installParameters || {}
         const scripts = [
             ...(parameters.scripts || []),
-            `@youwol/co-lab#0.1.1-wip~dist/@youwol/co-lab/${entry.name}.js`
+            `@youwol/co-lab#0.1.2-wip~dist/@youwol/co-lab/${entry.name}.js`
         ]
         const modules = [
             ...(parameters.modules || []),

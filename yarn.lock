@@ -1469,10 +1469,10 @@
     jest-junit "^16.0.0"
     ts-jest "^29.1.2"
 
-"@youwol/local-youwol-client@^0.2.2":
-  version "0.2.2"
-  resolved "https://registry.yarnpkg.com/@youwol/local-youwol-client/-/local-youwol-client-0.2.2.tgz#62b4e2030c82d09fa139c6f06b49869c8cb75752"
-  integrity sha512-uXcy7JrdmzJtwdtUjQuG6FIAL5BksnOHyXcA3iAsg0BexhH6OL2PdMiZVBbkjkhbRVVSI6/tw4CIgW34dGJUSA==
+"@youwol/local-youwol-client@^0.2.4":
+  version "0.2.4"
+  resolved "https://registry.yarnpkg.com/@youwol/local-youwol-client/-/local-youwol-client-0.2.4.tgz#15440b3480c4af24812ae1eae667ff214a97ac0c"
+  integrity sha512-m1Bes4lyvYb6P/YsE7GNzSMOsOpdbWC0VU2UsTNva5KUnFEAy47BuPQ5q5KcZ44+xgoKiktMwj4G4NZIq/JBCA==
   dependencies:
     "@youwol/http-primitives" "^0.2.2"
     rxjs "^7.5.6"
@@ -1486,10 +1486,10 @@
     "@youwol/rx-vdom" "^1.0.1"
     rxjs "^7.5.6"
 
-"@youwol/mkdocs-ts@^0.1.2":
-  version "0.1.2"
-  resolved "https://registry.yarnpkg.com/@youwol/mkdocs-ts/-/mkdocs-ts-0.1.2.tgz#5184dfa556641f5f797a1407ff42c0e6c768c7fd"
-  integrity sha512-qKLrm3h146nfic24TPw16PAWi5VP6WJpmVw6rc4nAKCQMKYaRS+GwZRAVAQvagT8lLXLAube1VkXkh2r8j4sHw==
+"@youwol/mkdocs-ts@^0.2.0":
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/@youwol/mkdocs-ts/-/mkdocs-ts-0.2.0.tgz#80985843293e8a229cff4bd94efa017f9d463799"
+  integrity sha512-pCsHKYKyP6kxfoaz7LOmhndrOZhLedh4B2s5TamN8daa8umhJPJcDpblGu2eRtkaAfa0eB/lcXIdYUID2OAXgw==
   dependencies:
     "@youwol/os-top-banner" "^0.2.0"
     "@youwol/rx-tree-views" "^0.3.1"
@@ -1571,7 +1571,7 @@
     "@youwol/rx-vdom" "^1.0.1"
     rxjs "^7.5.6"
 
-"@youwol/rx-tree-views@^0.3.1":
+"@youwol/rx-tree-views@0.3.1", "@youwol/rx-tree-views@^0.3.1":
   version "0.3.1"
   resolved "https://registry.yarnpkg.com/@youwol/rx-tree-views/-/rx-tree-views-0.3.1.tgz#18d3245804c9c377441f58e3442a4a80ceb0c7d5"
   integrity sha512-IsqMuOLNAAWyc/7YMEnoUaEsASo3CaE2y0umlzqMXnI+3WZOBwZ1lpzUm7UvYI1giF3pPb9J9w9V/ZdTzZViAg==
