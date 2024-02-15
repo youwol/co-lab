@@ -1571,7 +1571,7 @@
     "@youwol/rx-vdom" "^1.0.1"
     rxjs "^7.5.6"
 
-"@youwol/rx-tree-views@^0.3.1":
+"@youwol/rx-tree-views@0.3.1", "@youwol/rx-tree-views@^0.3.1":
   version "0.3.1"
   resolved "https://registry.yarnpkg.com/@youwol/rx-tree-views/-/rx-tree-views-0.3.1.tgz#18d3245804c9c377441f58e3442a4a80ceb0c7d5"
   integrity sha512-IsqMuOLNAAWyc/7YMEnoUaEsASo3CaE2y0umlzqMXnI+3WZOBwZ1lpzUm7UvYI1giF3pPb9J9w9V/ZdTzZViAg==
