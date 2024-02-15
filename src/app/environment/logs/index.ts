@@ -2,9 +2,9 @@ import { AppState } from '../../app-state'
 import { parseMd, Router, Views } from '@youwol/mkdocs-ts'
 import { ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
 import { InfoSectionView } from '../../common'
-import { AdminLogsView } from './admin.view'
-
-export * from './admin.view'
+import { LogsExplorerView } from '../../common/logs-explorer.view'
+import { raiseHTTPErrors } from '@youwol/http-primitives'
+import * as pyYw from '@youwol/local-youwol-client'
 
 export const navigation = (appState: AppState) => ({
     name: 'Logs',
@@ -34,7 +34,15 @@ export class PageView implements VirtualDOM<'div'> {
                             router,
                         })
                     },
-                    logsView: () => new AdminLogsView(),
+                    logsView: () =>
+                        new LogsExplorerView({
+                            rootLogs$: new pyYw.PyYouwolClient().admin.system
+                                .queryRootLogs$({
+                                    fromTimestamp: Date.now(),
+                                    maxCount: 1000,
+                                })
+                                .pipe(raiseHTTPErrors()),
+                        }),
                 },
             }),
         ]

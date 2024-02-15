@@ -1,16 +1,17 @@
 import { ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
-import { map } from 'rxjs/operators'
-import { ImmutableTree } from '@youwol/rx-tree-views'
+import { BehaviorSubject, Observable, ReplaySubject } from 'rxjs'
+import * as pyYw from '@youwol/local-youwol-client'
+import { classesButton } from './utils-view'
+import { Routers } from '@youwol/local-youwol-client'
 import {
     AttributesView,
     LogView,
     MethodLabelView,
     TerminalState,
-} from '../../common/terminal'
+} from './terminal'
+import { ImmutableTree } from '@youwol/rx-tree-views'
 import { raiseHTTPErrors } from '@youwol/http-primitives'
-import * as pyYw from '@youwol/local-youwol-client'
-import { BehaviorSubject, Observable, ReplaySubject } from 'rxjs'
-import { classesButton } from '../../common'
+import { map } from 'rxjs/operators'
 
 function getChildren(contextId: string) {
     return new pyYw.PyYouwolClient().admin.system
@@ -90,27 +91,26 @@ export class LogNode extends ImmutableTree.Node {
 /**
  * @category View
  */
-export class AdminLogsView implements VirtualDOM<'div'> {
+export class LogsExplorerView implements VirtualDOM<'div'> {
     /**
      * @group Immutable DOM Constants
      */
     public readonly tag = 'div'
 
     /**
-     * @group Immutable Constants
-     */
-    static ClassSelector = 'admin-view'
-
-    /**
      * @group Immutable DOM Constants
      */
-    public readonly class = `${AdminLogsView.ClassSelector} w-100 h-100 d-flex flex-column p-2`
+    public readonly class = `w-100 h-100 d-flex flex-column p-2`
 
     /**
      * @group Immutable DOM Constants
      */
     public readonly children: ChildrenLike
 
+    /**
+     * @group Immutable
+     */
+    public readonly rootLogs$: Observable<Routers.System.QueryLogsResponse>
     /**
      * @group Observables
      */
@@ -123,7 +123,10 @@ export class AdminLogsView implements VirtualDOM<'div'> {
      */
     public readonly fetchingLogs$ = new BehaviorSubject<boolean>(false)
 
-    constructor() {
+    constructor(params: {
+        rootLogs$: Observable<Routers.System.QueryLogsResponse>
+    }) {
+        Object.assign(this, params)
         this.children = [
             {
                 tag: 'div',
@@ -166,13 +169,10 @@ export class AdminLogsView implements VirtualDOM<'div'> {
 
     refresh() {
         this.fetchingLogs$.next(true)
-        new pyYw.PyYouwolClient().admin.system
-            .queryRootLogs$({ fromTimestamp: Date.now(), maxCount: 1000 })
-            .pipe(raiseHTTPErrors())
-            .subscribe((logs) => {
-                this.logs$.next(logs)
-                this.fetchingLogs$.next(false)
-            })
+        this.rootLogs$.subscribe((response) => {
+            this.logs$.next({ logs: response.logs.reverse() })
+            this.fetchingLogs$.next(false)
+        })
     }
 
     clear() {
