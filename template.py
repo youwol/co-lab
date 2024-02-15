@@ -11,12 +11,12 @@ folder_path = Path(__file__).parent
 pkg_json = parse_json(folder_path / 'package.json')
 
 externals_deps = {
-    "@youwol/mkdocs-ts": "^0.1.2",
+    "@youwol/mkdocs-ts": "^0.2.0",
     "@youwol/rx-vdom": "^1.0.1",
     "@youwol/webpm-client": "^3.0.0",
     '@youwol/http-clients': '^3.0.0',
     '@youwol/http-primitives': '^0.2.2',
-    '@youwol/local-youwol-client': '^0.2.2',
+    '@youwol/local-youwol-client': '^0.2.4',
     '@youwol/os-widgets': '^0.2.2',
     "@youwol/rx-code-mirror-editors": "0.5.0",
     "rxjs": "^7.5.6",
