@@ -1,5 +1,5 @@
 import { Observable, Subject } from 'rxjs'
-import { filter, map, shareReplay, take, tap } from 'rxjs/operators'
+import { filter, map, shareReplay, take } from 'rxjs/operators'
 import * as Projects from './projects'
 import * as Components from './components'
 import * as Backends from './environment/backends'
@@ -82,7 +82,6 @@ export class AppState {
             })
         this.environment$ = this.environmentClient.webSocket.status$().pipe(
             map(({ data }) => data),
-            tap((env) => console.log('Got environment from WS', env)),
             shareReplay(1),
         )
         this.connectedLocal$ = pyYw.PyYouwolClient.ws.connected$
