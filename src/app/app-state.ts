@@ -2,6 +2,7 @@ import { Observable, Subject } from 'rxjs'
 import { filter, map, shareReplay, take, tap } from 'rxjs/operators'
 import * as Projects from './projects'
 import * as Components from './components'
+import * as Backends from './environment/backends'
 import * as Environment from './environment'
 import * as Notification from './environment/notifications'
 import { AnyVirtualDOM } from '@youwol/rx-vdom'
@@ -50,6 +51,11 @@ export class AppState {
      * @group State
      */
     public readonly cdnState: Components.State
+
+    /**
+     * @group State
+     */
+    public readonly backendsState = new Backends.State()
 
     /**
      * @group State
