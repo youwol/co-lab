@@ -42,6 +42,7 @@ export class PageView implements VirtualDOM<'div'> {
                                     maxCount: 1000,
                                 })
                                 .pipe(raiseHTTPErrors()),
+                            showHeaderMenu: true,
                         }),
                 },
             }),

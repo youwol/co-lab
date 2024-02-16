@@ -125,12 +125,15 @@ export class LogsExplorerView implements VirtualDOM<'div'> {
 
     constructor(params: {
         rootLogs$: Observable<Routers.System.QueryLogsResponse>
+        showHeaderMenu?: boolean
     }) {
         Object.assign(this, params)
         this.children = [
             {
                 tag: 'div',
-                class: 'd-flex align-items-center',
+                class:
+                    'align-items-center ' +
+                    (params.showHeaderMenu ? 'd-flex' : 'd-none'),
                 children: [
                     {
                         tag: 'div',
