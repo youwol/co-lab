@@ -82,7 +82,7 @@ export function subRoutes({
                               })
                             : new BackendView({
                                   router,
-                                  cdnState: appState.cdnState,
+                                  appState: appState,
                                   packageId: e.id,
                               }),
                 },
