@@ -5,6 +5,7 @@ import * as YwConfiguration from './yw-configuration'
 import * as Profiles from './profiles'
 import * as Databases from './databases'
 import * as Backends from './backends'
+import * as Notifications from './notifications'
 import { ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
 import { pyYwDocLink } from '../common/py-yw-references.view'
 import { InfoSectionView } from '../common'
@@ -23,6 +24,7 @@ export const navigation = (appState: AppState) => ({
     '/databases': Databases.navigation(appState),
     '/logs': Logs.navigation(appState),
     '/backends': Backends.navigation(appState),
+    '/notifications': Notifications.navigation(appState),
 })
 
 export class PageView implements VirtualDOM<'div'> {

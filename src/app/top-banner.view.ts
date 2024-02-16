@@ -6,6 +6,7 @@ import { Routers, PyYouwolClient } from '@youwol/local-youwol-client'
 import { AppState } from './app-state'
 import { Accounts } from '@youwol/http-clients'
 import { CoLabLogo } from './common'
+import { internalAnchor } from './common/links.view'
 
 /**
  * Top banner of the application
@@ -85,7 +86,13 @@ export class TopBannerView extends TopBannerBase {
                             },
                             {
                                 tag: 'div',
+                                class: 'd-flex align-items-center',
                                 children: [
+                                    new NotificationsView({
+                                        state: appState,
+                                        router,
+                                    }),
+                                    { tag: 'i', class: 'mx-2' },
                                     new ConnectionView({
                                         state: appState,
                                     }),
@@ -268,6 +275,47 @@ class ConnectionView implements VirtualDOM<'div'> {
                         ],
                     }
                 },
+            },
+        ]
+    }
+}
+
+class NotificationsView implements VirtualDOM<'div'> {
+    /**
+     * @group Immutable DOM Constants
+     */
+    public readonly tag = 'div'
+    /**
+     * @group Immutable DOM Constants
+     */
+    public readonly class = 'd-flex align-items-center'
+
+    /**
+     * @group Immutable DOM Constants
+     */
+    public readonly children: ChildrenLike
+
+    constructor({ state, router }: { state: AppState; router: Router }) {
+        const notifState = state.notificationsState
+        this.children = [
+            {
+                ...internalAnchor({
+                    path: '/environment/notifications',
+                    router,
+                }),
+                children: [
+                    {
+                        tag: 'i',
+                        class: {
+                            source$: notifState.backendEvents.installing$,
+                            vdomMap: (installing: unknown[]) => {
+                                return installing.length > 0
+                                    ? 'fas fa-plug text-success fv-blink'
+                                    : 'd-none'
+                            },
+                        },
+                    },
+                ],
             },
         ]
     }

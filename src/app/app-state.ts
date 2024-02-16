@@ -3,6 +3,7 @@ import { filter, map, shareReplay, take, tap } from 'rxjs/operators'
 import * as Projects from './projects'
 import * as Components from './components'
 import * as Environment from './environment'
+import * as Notification from './environment/notifications'
 import { AnyVirtualDOM } from '@youwol/rx-vdom'
 import * as pyYw from '@youwol/local-youwol-client'
 import { WsRouter } from '@youwol/local-youwol-client'
@@ -54,6 +55,11 @@ export class AppState {
      * @group State
      */
     public readonly environmentState: Environment.State
+
+    /**
+     * @group State
+     */
+    public readonly notificationsState = new Notification.State()
 
     /**
      * @group Observables
