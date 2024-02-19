@@ -1479,10 +1479,10 @@
     "@youwol/rx-vdom" "^1.0.1"
     rxjs "^7.5.6"
 
-"@youwol/mkdocs-ts@^0.2.0":
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/@youwol/mkdocs-ts/-/mkdocs-ts-0.2.0.tgz#80985843293e8a229cff4bd94efa017f9d463799"
-  integrity sha512-pCsHKYKyP6kxfoaz7LOmhndrOZhLedh4B2s5TamN8daa8umhJPJcDpblGu2eRtkaAfa0eB/lcXIdYUID2OAXgw==
+"@youwol/mkdocs-ts@^0.2.1":
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/@youwol/mkdocs-ts/-/mkdocs-ts-0.2.1.tgz#0c05c63ab3d0342223af01e3c83cf9b1e9840228"
+  integrity sha512-/nCbbOoH/6J0NiSMWhgIL+LUF9Av9laDlmMRJlnV5t5jjyGO+gAbw5z6Xl0dc12NONnZEckBZkfvTVqFmHq0AQ==
   dependencies:
     "@youwol/os-top-banner" "^0.2.0"
     "@youwol/rx-tree-views" "^0.3.1"
@@ -1965,6 +1965,11 @@ boolbase@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/boolbase/-/boolbase-1.0.0.tgz#68dff5fbe60c51eb37725ea9e3ed310dcc1e776e"
   integrity sha512-JZOSA7Mo9sNGB8+UjSgzdLtokWAky1zbztM3WRLCbZ70/3cTANmQmOdR7y2g+J0e2WXywy1yS468tY+IruqEww==
+
+bootstrap@^4.4.1:
+  version "4.6.2"
+  resolved "https://registry.yarnpkg.com/bootstrap/-/bootstrap-4.6.2.tgz#8e0cd61611728a5bf65a3a2b8d6ff6c77d5d7479"
+  integrity sha512-51Bbp/Uxr9aTuy6ca/8FbFloBUJZLHwnhTcnjIeRn2suQWsWzcuJhGjKDB5eppVte/8oCdOL3VuwxvZDUggwGQ==
 
 brace-expansion@^1.1.7:
   version "1.1.11"

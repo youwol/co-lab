@@ -29,7 +29,8 @@
         ]
     },
     "dependencies": {
-        "@youwol/mkdocs-ts": "^0.2.0",
+        "bootstrap": "^4.4.1",
+        "@youwol/mkdocs-ts": "^0.2.1",
         "@youwol/rx-vdom": "^1.0.1",
         "@youwol/webpm-client": "^3.0.0",
         "@youwol/http-clients": "^3.0.0",
@@ -71,7 +72,8 @@
     },
     "webpm": {
         "dependencies": {
-            "@youwol/mkdocs-ts": "^0.2.0",
+            "bootstrap": "^4.4.1",
+            "@youwol/mkdocs-ts": "^0.2.1",
             "@youwol/rx-vdom": "^1.0.1",
             "@youwol/webpm-client": "^3.0.0",
             "@youwol/http-clients": "^3.0.0",
