@@ -5,6 +5,18 @@ import { setup } from '../../auto-generated'
 import { AppState } from '../app-state'
 import { take } from 'rxjs/operators'
 
+export const styleShellStdOut = {
+    tag: 'pre' as const,
+    class: 'px-2',
+    style: {
+        backgroundColor: 'black',
+        color: 'white',
+        fontSize: 'smaller',
+        minHeight: '25vh',
+        maxHeight: '50vh',
+    },
+}
+
 export const classesButton =
     'd-flex border p-2 rounded  fv-bg-secondary fv-hover-xx-lighter fv-pointer mx-2 align-items-center'
 

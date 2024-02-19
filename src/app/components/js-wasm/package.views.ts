@@ -9,11 +9,12 @@ import { State } from '../state'
 import { AssetsBackend, CdnBackend } from '@youwol/http-clients'
 import { raiseHTTPErrors } from '@youwol/http-primitives'
 import * as pyYw from '@youwol/local-youwol-client'
-import { combineLatest, ReplaySubject, Subject } from 'rxjs'
+import { combineLatest, Observable, ReplaySubject, Subject } from 'rxjs'
 import { AssetLightDescription } from '@youwol/os-core'
 import { parseMd, Router } from '@youwol/mkdocs-ts'
 import { ExplorerView } from '../package-explorer.view'
 import { map, mergeMap } from 'rxjs/operators'
+import { ExplorerLinkView } from '../../common/links.view'
 
 /**
  * @category View
@@ -56,88 +57,66 @@ export class PackageView implements VirtualDOM<'div'> {
                 src: `
 # ${window.atob(this.packageId)}          
 
-*TODO: PROVIDE A LINK TO THE ASSET IN THE EXPLORER*
+<linkExplorer></linkExplorer>
 
 ## Versions      
-                `,
-                router: params.router,
-            }),
-            {
-                source$: this.cdnState.packagesEvent[this.packageId].info$,
-                vdomMap: (packageInfo: pyYw.Routers.LocalCdn.CdnPackage) => {
-                    this.selectedVersion$.next(packageInfo.versions[0].version)
-                    return new VersionsView({
-                        cdnState: this.cdnState,
-                        package: packageInfo,
-                        selectedVersion$: this.selectedVersion$,
-                    })
-                },
-            },
-            parseMd({
-                src: `
-## Explorer      
+
+<versions></versions>
+
+## Explorer
 
 *TODO: NEXT EXPLORER NEEDS TO BE REACTIVE*
-                `,
-                router: params.router,
-            }),
-            {
-                source$: combineLatest([
-                    new AssetsBackend.AssetsClient()
-                        .getAsset$({ assetId: window.btoa(this.packageId) })
-                        .pipe(raiseHTTPErrors()),
-                    this.selectedVersion$,
-                ]),
-                vdomMap: ([assetResponse, version]: [
-                    AssetLightDescription,
-                    string,
-                ]): AnyVirtualDOM => {
-                    const asset = {
-                        ...assetResponse,
-                        rawId: this.packageId,
-                    } as AssetLightDescription
-                    return new ExplorerView({ asset, version })
-                },
-            },
-            parseMd({
-                src: `
+
+<explorer></explorer>
+
 ## Links      
 
-*TODO: PROVIDE THE LINKS (bundle analysis, coverage, *etc.*)*
+
+<links></links>
+
                 `,
                 router: params.router,
-            }),
-            {
-                source$: this.selectedVersion$.pipe(
-                    mergeMap((version) =>
-                        new CdnBackend.Client()
-                            .getResource$({
-                                libraryId: this.packageId,
-                                version,
-                                restOfPath: '.yw_metadata.json',
-                            })
-                            .pipe(map((resp) => ({ resp, version }))),
-                    ),
-                    raiseHTTPErrors(),
-                ),
-                vdomMap: ({ resp, version }) => {
-                    console.log('resp', resp)
-                    return {
+                views: {
+                    linkExplorer: () => {
+                        return new ExplorerLinkView({
+                            router: params.router,
+                            name: window.atob(this.packageId),
+                        })
+                    },
+                    versions: () => ({
                         tag: 'div',
-                        children: resp.links.map((link) => {
-                            return parseMd({
-                                src: `
-### ${link.name}      
-
-<iframe height='800px' width='100%' src='/api/cdn-backend/resources/${this.packageId}/${version}/${link.url}'></iframe>
-
-                `,
-                                router: params.router,
-                            })
+                        children: [
+                            {
+                                source$:
+                                    this.cdnState.packagesEvent[this.packageId]
+                                        .info$,
+                                vdomMap: (
+                                    packageInfo: pyYw.Routers.LocalCdn.CdnPackage,
+                                ) => {
+                                    this.selectedVersion$.next(
+                                        packageInfo.versions[0].version,
+                                    )
+                                    return new VersionsView({
+                                        cdnState: this.cdnState,
+                                        package: packageInfo,
+                                        selectedVersion$: this.selectedVersion$,
+                                    })
+                                },
+                            },
+                        ],
+                    }),
+                    explorer: () =>
+                        new FilesView({
+                            selectedVersion$: this.selectedVersion$,
+                            packageId: this.packageId,
                         }),
-                    }
+                    links: () =>
+                        new LinksView({
+                            selectedVersion$: this.selectedVersion$,
+                            packageId: this.packageId,
+                        }),
                 },
-            },
+            }),
         ]
     }
 }
@@ -296,5 +275,98 @@ export class VersionsView implements VirtualDOM<'div'> {
                 },
             ],
         }
+    }
+}
+
+export class FilesView implements VirtualDOM<'div'> {
+    public readonly tag = 'div'
+    public readonly children: ChildrenLike
+
+    constructor({
+        selectedVersion$,
+        packageId,
+    }: {
+        packageId: string
+        selectedVersion$: Observable<string>
+    }) {
+        this.children = [
+            {
+                source$: combineLatest([
+                    new AssetsBackend.AssetsClient()
+                        .getAsset$({
+                            assetId: window.btoa(packageId),
+                        })
+                        .pipe(raiseHTTPErrors()),
+                    selectedVersion$,
+                ]),
+                vdomMap: ([assetResponse, version]: [
+                    AssetLightDescription,
+                    string,
+                ]): AnyVirtualDOM => {
+                    const asset = {
+                        ...assetResponse,
+                        rawId: packageId,
+                    } as AssetLightDescription
+                    return new ExplorerView({ asset, version })
+                },
+            },
+        ]
+    }
+}
+
+export class LinksView implements VirtualDOM<'div'> {
+    public readonly tag = 'div'
+    public readonly children: ChildrenLike
+
+    constructor({
+        selectedVersion$,
+        packageId,
+    }: {
+        packageId: string
+        selectedVersion$: Observable<string>
+    }) {
+        this.children = [
+            {
+                source$: selectedVersion$.pipe(
+                    mergeMap((version) =>
+                        new CdnBackend.Client()
+                            .getResource$({
+                                libraryId: packageId,
+                                version,
+                                restOfPath: '.yw_metadata.json',
+                            })
+                            .pipe(
+                                map((resp) => ({
+                                    resp,
+                                    version,
+                                })),
+                            ),
+                    ),
+                    raiseHTTPErrors(),
+                ),
+                vdomMap: ({ resp, version }) => {
+                    return {
+                        tag: 'ul',
+                        children: resp.links.map((link) => {
+                            const href =
+                                link.kind === 'artifactFile'
+                                    ? `/api/cdn-backend/resources/${packageId}/${version}/${link.url}`
+                                    : link.url
+                            return {
+                                tag: 'li',
+                                children: [
+                                    {
+                                        tag: 'a',
+                                        target: '_blank',
+                                        href,
+                                        innerText: link.name,
+                                    },
+                                ],
+                            }
+                        }),
+                    }
+                },
+            },
+        ]
     }
 }

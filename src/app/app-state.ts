@@ -1,8 +1,10 @@
 import { Observable, Subject } from 'rxjs'
-import { filter, map, shareReplay, take, tap } from 'rxjs/operators'
+import { filter, map, shareReplay, take } from 'rxjs/operators'
 import * as Projects from './projects'
 import * as Components from './components'
+import * as Backends from './environment/backends'
 import * as Environment from './environment'
+import * as Notification from './environment/notifications'
 import { AnyVirtualDOM } from '@youwol/rx-vdom'
 import * as pyYw from '@youwol/local-youwol-client'
 import { WsRouter } from '@youwol/local-youwol-client'
@@ -53,7 +55,17 @@ export class AppState {
     /**
      * @group State
      */
+    public readonly backendsState = new Backends.State()
+
+    /**
+     * @group State
+     */
     public readonly environmentState: Environment.State
+
+    /**
+     * @group State
+     */
+    public readonly notificationsState = new Notification.State()
 
     /**
      * @group Observables
@@ -70,7 +82,6 @@ export class AppState {
             })
         this.environment$ = this.environmentClient.webSocket.status$().pipe(
             map(({ data }) => data),
-            tap((env) => console.log('Got environment from WS', env)),
             shareReplay(1),
         )
         this.connectedLocal$ = pyYw.PyYouwolClient.ws.connected$

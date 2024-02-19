@@ -1,23 +1,36 @@
-import { State } from '../state'
-
 import { parseMd, Router } from '@youwol/mkdocs-ts'
 import { PackageView } from '../js-wasm/package.views'
-import { ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
+import {
+    AnyVirtualDOM,
+    ChildrenLike,
+    RxHTMLElement,
+    VirtualDOM,
+} from '@youwol/rx-vdom'
 import { AssetsGateway } from '@youwol/http-clients'
 import { onHTTPErrors } from '@youwol/http-primitives'
-import { of } from 'rxjs'
-import { mergeMap } from 'rxjs/operators'
+import {
+    BehaviorSubject,
+    combineLatest,
+    distinctUntilChanged,
+    Observable,
+    Subject,
+    switchMap,
+} from 'rxjs'
+import { filter, map, shareReplay, take, tap } from 'rxjs/operators'
+import { AppState } from '../../app-state'
+import { styleShellStdOut } from '../../common'
+import { ContextMessage, PyYouwolClient } from '@youwol/local-youwol-client'
 
 /**
  * @category View
  */
 export class BackendView extends PackageView {
     constructor(params: {
-        cdnState: State
+        appState: AppState
         router: Router
         packageId: string
     }) {
-        super(params)
+        super({ ...params, cdnState: params.appState.cdnState })
         this.children.push(
             parseMd({
                 src: `
@@ -30,6 +43,8 @@ export class BackendView extends PackageView {
                     installManifest: () => {
                         return new InstallManifestView({
                             packageId: this.packageId,
+                            appState: params.appState,
+                            selectedVersion$: this.selectedVersion$,
                         })
                     },
                 },
@@ -41,34 +56,189 @@ export class BackendView extends PackageView {
 class InstallManifestView implements VirtualDOM<'div'> {
     public readonly tag = 'div'
     public readonly children: ChildrenLike
+    public readonly connectedCallback: (elem: RxHTMLElement<'div'>) => void
 
-    constructor({ packageId }: { packageId: string }) {
+    constructor({
+        packageId,
+        selectedVersion$,
+        appState,
+    }: {
+        packageId: string
+        appState: AppState
+        selectedVersion$: Observable<string>
+    }) {
+        const name = window.atob(packageId)
+        const savedManifest$ = new Subject<string | undefined>()
+        const displayCurrentInstall$ = new BehaviorSubject(true)
+        const getSavedManifest = () =>
+            selectedVersion$
+                .pipe(
+                    switchMap((version) =>
+                        new AssetsGateway.Client().cdn.getResource$({
+                            libraryId: packageId,
+                            version,
+                            restOfPath: '/install.manifest.txt',
+                        }),
+                    ),
+                    take(1),
+                    onHTTPErrors(() => undefined),
+                )
+                .subscribe((manifest) => {
+                    savedManifest$.next(manifest)
+                })
+        getSavedManifest()
+        const startInstall$ = selectedVersion$.pipe(
+            switchMap((version) =>
+                appState.notificationsState.backendEvents.installing$.pipe(
+                    map((backends) =>
+                        backends.find(
+                            (m) => m.name == name && m.version == version,
+                        ),
+                    ),
+                    filter((backend) => backend !== undefined),
+                    distinctUntilChanged(
+                        (prev, curr) => prev.installId === curr.installId,
+                    ),
+                    tap(() => displayCurrentInstall$.next(true)),
+                ),
+            ),
+            shareReplay({ bufferSize: 1, refCount: true }),
+        )
+        const endInstall$ = combineLatest([
+            selectedVersion$,
+            startInstall$,
+        ]).pipe(
+            switchMap(([version, { installId }]) =>
+                appState.notificationsState.backendEvents.endInstall$.pipe(
+                    filter(
+                        (m) =>
+                            m.name === name &&
+                            m.version === version &&
+                            m.installId === installId,
+                    ),
+                    //take(1),
+                ),
+            ),
+            shareReplay({ bufferSize: 1, refCount: true }),
+        )
+
+        const stdOutput$ = combineLatest([
+            selectedVersion$,
+            startInstall$,
+        ]).pipe(
+            switchMap(([version, { installId }]) => {
+                return appState.notificationsState.backendEvents.installStdOut$.pipe(
+                    filter(
+                        (m) =>
+                            m.name === name &&
+                            m.version === version &&
+                            m.installId === installId,
+                    ),
+                    map((m) => [m]),
+                )
+            }),
+        )
+        this.connectedCallback = (elem: RxHTMLElement<'div'>) => {
+            elem.ownSubscriptions(
+                endInstall$.subscribe(() => {
+                    getSavedManifest()
+                }),
+            )
+        }
+        const stdOutVDom: AnyVirtualDOM = {
+            ...styleShellStdOut,
+            children: {
+                policy: 'append',
+                source$: stdOutput$,
+                vdomMap: (m: ContextMessage<unknown>) => ({
+                    tag: 'span',
+                    innerText: m.text,
+                }),
+            },
+        }
+        const manifestVDOM = (manifest: string): AnyVirtualDOM => ({
+            tag: 'div',
+            children: [
+                new UninstallButton({
+                    selectedVersion$,
+                    backend: name,
+                    savedManifest$,
+                    displayCurrentInstall$,
+                }),
+                {
+                    ...styleShellStdOut,
+                    innerText: manifest,
+                },
+            ],
+        })
         this.children = [
             {
-                tag: 'pre',
-                class: 'overflow-auto',
-                style: {
-                    maxHeight: '50vh',
+                source$: savedManifest$,
+                vdomMap: (manifest: string) => {
+                    return manifest
+                        ? manifestVDOM(manifest)
+                        : {
+                              tag: 'div',
+                              class: {
+                                  source$: displayCurrentInstall$,
+                                  vdomMap: (d) => (d ? '' : 'd-none'),
+                              },
+                              children: [
+                                  {
+                                      source$: startInstall$,
+                                      vdomMap: () => stdOutVDom,
+                                  },
+                              ],
+                          }
                 },
-                innerText: {
-                    source$: new AssetsGateway.Client().cdn
-                        .getResource$({
-                            libraryId: packageId,
-                            version: '0.1.0',
-                            restOfPath: '/install.manifest.txt',
-                        })
+            },
+        ]
+    }
+}
+
+class UninstallButton implements VirtualDOM<'div'> {
+    public readonly tag = 'div'
+    public readonly class =
+        'd-flex align-items-center justify-content-center border rounded p-1 fv-pointer my-1 text-danger'
+
+    public readonly style = {
+        width: 'fit-content',
+        fontWeight: 'bolder' as const,
+    }
+    public readonly children: ChildrenLike
+    constructor({
+        selectedVersion$,
+        backend,
+        savedManifest$,
+        displayCurrentInstall$,
+    }: {
+        selectedVersion$: Observable<string>
+        backend: string
+        savedManifest$: Subject<string | undefined>
+        displayCurrentInstall$: Subject<boolean>
+    }) {
+        this.children = [
+            {
+                tag: 'i',
+                class: 'fas fa-ban mr-1',
+            },
+            {
+                tag: 'div',
+                innerText: 'Uninstall',
+                onclick: () => {
+                    selectedVersion$
                         .pipe(
-                            onHTTPErrors(() => undefined),
-                            mergeMap((content?: string) => {
-                                if (content) {
-                                    return of(content)
-                                }
-                                return of(undefined)
-                            }),
-                        ),
-                    vdomMap: (text?: string) => {
-                        return text || 'No manifest available'
-                    },
+                            take(1),
+                            switchMap((version) =>
+                                new PyYouwolClient().admin.system.uninstallBackend$(
+                                    { name: backend, version },
+                                ),
+                            ),
+                        )
+                        .subscribe(() => {
+                            savedManifest$.next(undefined)
+                            displayCurrentInstall$.next(false)
+                        })
                 },
             },
         ]

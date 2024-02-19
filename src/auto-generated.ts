@@ -1,12 +1,13 @@
 
 const runTimeDependencies = {
     "externals": {
-        "@youwol/mkdocs-ts": "^0.2.0",
+        "@youwol/mkdocs-ts": "^0.2.1",
         "@youwol/rx-vdom": "^1.0.1",
+        "bootstrap": "^4.4.1",
         "@youwol/webpm-client": "^3.0.0",
         "@youwol/http-clients": "^3.0.0",
-        "@youwol/http-primitives": "^0.2.2",
-        "@youwol/local-youwol-client": "^0.2.4",
+        "@youwol/http-primitives": "^0.2.3",
+        "@youwol/local-youwol-client": "^0.2.5",
         "@youwol/os-core": "^0.2.0",
         "@youwol/os-widgets": "^0.2.2",
         "@youwol/rx-tree-views": "0.3.1",
@@ -21,6 +22,7 @@ const runTimeDependencies = {
 const externals = {
     "@youwol/mkdocs-ts": "window['@youwol/mkdocs-ts_APIv02']",
     "@youwol/rx-vdom": "window['@youwol/rx-vdom_APIv1']",
+    "bootstrap": "window['bootstrap_APIv4']",
     "@youwol/webpm-client": "window['@youwol/webpm-client_APIv3']",
     "@youwol/http-clients": "window['@youwol/http-clients_APIv3']",
     "@youwol/http-primitives": "window['@youwol/http-primitives_APIv02']",
@@ -41,6 +43,10 @@ const exportedSymbols = {
     "@youwol/rx-vdom": {
         "apiKey": "1",
         "exportedSymbol": "@youwol/rx-vdom"
+    },
+    "bootstrap": {
+        "apiKey": "4",
+        "exportedSymbol": "bootstrap"
     },
     "@youwol/webpm-client": {
         "apiKey": "3",
@@ -89,6 +95,7 @@ const mainEntry : {entryFile: string,loadDependencies:string[]} = {
     "loadDependencies": [
         "@youwol/mkdocs-ts",
         "@youwol/rx-vdom",
+        "bootstrap",
         "@youwol/webpm-client",
         "@youwol/http-clients",
         "@youwol/http-primitives",

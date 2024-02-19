@@ -1,20 +1,16 @@
 import { AnyVirtualDOM, ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
-import { PyYouwolClient, Routers } from '@youwol/local-youwol-client'
+import { Routers } from '@youwol/local-youwol-client'
 import { parseMd, Router } from '@youwol/mkdocs-ts'
 import { DagFlowView } from './dag-flow.view'
 import { State } from './state'
-import {
-    filterCtxMessage,
-    onHTTPErrors,
-    raiseHTTPErrors,
-} from '@youwol/http-primitives'
+import { filterCtxMessage, raiseHTTPErrors } from '@youwol/http-primitives'
 import { FilesBrowserView, HdPathBookView, InfoSectionView } from '../common'
 import { ExpandableGroupView } from '../common/expandable-group.view'
 import { NewProjectFromTemplateView } from './new-project.view'
 import { debounceTime, merge, mergeMap, of } from 'rxjs'
 import { AppState } from '../app-state'
 import { SelectedStepView } from './project/selected-step.view'
-import { AssetsGateway, ExplorerBackend } from '@youwol/http-clients'
+import { CdnLinkView, ExplorerLinkView } from '../common/links.view'
 
 export class ProjectView implements VirtualDOM<'div'> {
     public readonly tag = 'div'
@@ -82,10 +78,13 @@ Publishing a components means to publish all or a part of those artifacts.
                         })
                     },
                     cdnLink: () => {
-                        return new CdnLinkView({ project, router })
+                        return new CdnLinkView({ name: project.name, router })
                     },
                     explorerLink: () => {
-                        return new ExplorerLinkView({ project, router })
+                        return new ExplorerLinkView({
+                            name: project.name,
+                            router,
+                        })
                     },
                     flow: () =>
                         new FlowView({
@@ -298,111 +297,5 @@ export class FailuresView implements VirtualDOM<'div'> {
                 }))
             },
         }
-    }
-}
-
-export class CdnLinkView implements VirtualDOM<'div'> {
-    public readonly tag = 'div'
-    public readonly children: ChildrenLike
-
-    constructor({
-        project,
-        router,
-    }: {
-        project: Routers.Projects.Project
-        router: Router
-    }) {
-        const client = new PyYouwolClient().admin.localCdn
-
-        this.children = [
-            {
-                source$: client
-                    .getPackage$({
-                        packageId: window.btoa(project.name),
-                    })
-                    .pipe(
-                        onHTTPErrors(() => undefined),
-                        mergeMap(
-                            (resp?: Routers.LocalCdn.GetPackageResponse) => {
-                                if (resp === undefined) {
-                                    return of(undefined)
-                                }
-                                return of(resp)
-                            },
-                        ),
-                    ),
-                vdomMap: (resp?: Routers.LocalCdn.GetPackageResponse) => {
-                    if (resp == undefined) {
-                        return parseMd({
-                            src: 'The project has not been published in your components yet.',
-                            router,
-                        })
-                    }
-                    const type = resp.versions.slice(-1)[0]['type']
-                    const topics = {
-                        'js/wasm': 'js-wasm',
-                        backend: 'backend',
-                        pyodide: 'pyodide',
-                    }
-                    console.log('Resp', resp)
-                    return parseMd({
-                        src: `The project is published in components 
-                        [here](@nav/components/${topics[type]}/${resp.id}).`,
-                        router,
-                    })
-                },
-            },
-        ]
-    }
-}
-
-export class ExplorerLinkView implements VirtualDOM<'div'> {
-    public readonly tag = 'div'
-    public readonly children: ChildrenLike
-
-    constructor({
-        project,
-        router,
-    }: {
-        project: Routers.Projects.Project
-        router: Router
-    }) {
-        const client = new AssetsGateway.Client().explorer
-        const itemId = window.btoa(window.btoa(project.name))
-        this.children = [
-            {
-                source$: client
-                    .getItem$({
-                        itemId,
-                    })
-                    .pipe(
-                        onHTTPErrors(() => undefined),
-                        mergeMap((resp?: ExplorerBackend.ItemBase) => {
-                            if (resp === undefined) {
-                                return of(undefined)
-                            }
-                            return client.getPath$({ itemId })
-                        }),
-                    ),
-                vdomMap: (resp?: ExplorerBackend.PathBase) => {
-                    if (resp == undefined) {
-                        return parseMd({
-                            src: 'The project has not been published in your explorer yet.',
-                            router,
-                        })
-                    }
-                    const folders = resp.folders.reduce(
-                        (acc, e) => `${acc}/folder_${e.folderId}`,
-                        `${resp.drive.groupId}/folder_${resp.drive.driveId}`,
-                    )
-                    const url = `${folders}/asset_${resp.item.assetId}`
-                    return parseMd({
-                        src: `The project is published in your explorer
-                        [here](@nav/explorer/${url}).`,
-                        router,
-                    })
-                },
-            },
-        ]
     }
 }

@@ -17,11 +17,13 @@ import { mountFolder } from './mounted'
 import { Subject } from 'rxjs'
 import { Routers } from '@youwol/local-youwol-client'
 import { mountBackends } from './environment/backends'
+import { DisconnectedView } from './disconnected.view'
 
 const appState = new AppState()
 
 export const navigation = {
     name: '',
+    tableOfContent: Views.tocView,
     html: ({ router }) => new PageView({ router }),
     '/dashboard': Dashboard.navigation(appState),
     '/environment': Environment.navigation(appState),
@@ -82,7 +84,7 @@ class PageView implements VirtualDOM<'div'> {
                 vdomMap: () =>
                     parseMd({
                         src: `
-
+# Welcome
 
 Welcome to the YouWol collaborative lab for consuming or producing web applications. 
 This space (the \`@youwol/co-lab\` application) lets you explore your lab's content.
@@ -126,15 +128,20 @@ ${pyYwDocLink('documentation', '/')}.
                         views: {
                             logo: () => new CoLabLogo({ router }),
                         },
+                        emitHtmlUpdated: true,
                     }),
             },
         ]
     }
 }
+
 document.getElementById('content').appendChild(
     render({
         tag: 'div',
         class: 'h-100 w-100',
+        style: {
+            position: 'relative',
+        },
         children: [
             new Views.DefaultLayoutView({
                 router,
@@ -146,6 +153,7 @@ document.getElementById('content').appendChild(
                         displayMode$,
                     }),
             }),
+            new DisconnectedView({ appState }),
         ],
     }),
 )
