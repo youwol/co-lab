@@ -17,6 +17,7 @@ import { mountFolder } from './mounted'
 import { Subject } from 'rxjs'
 import { Routers } from '@youwol/local-youwol-client'
 import { mountBackends } from './environment/backends'
+import { DisconnectedView } from './disconnected.view'
 
 const appState = new AppState()
 
@@ -135,6 +136,9 @@ document.getElementById('content').appendChild(
     render({
         tag: 'div',
         class: 'h-100 w-100',
+        style: {
+            position: 'relative',
+        },
         children: [
             new Views.DefaultLayoutView({
                 router,
@@ -146,6 +150,7 @@ document.getElementById('content').appendChild(
                         displayMode$,
                     }),
             }),
+            new DisconnectedView({ appState }),
         ],
     }),
 )
