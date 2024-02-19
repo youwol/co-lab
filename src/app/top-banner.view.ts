@@ -106,6 +106,11 @@ export class TopBannerView extends TopBannerBase {
                                         router,
                                     }),
                                     { tag: 'i', class: 'mx-1' },
+                                    new BackendServingView({
+                                        state: appState,
+                                        router,
+                                    }),
+                                    { tag: 'i', class: 'mx-1' },
                                     new UserBadgeDropdownView({
                                         state: appState,
                                     }),
@@ -322,6 +327,50 @@ export class RegisteredBadgeView implements VirtualDOM<'div'> {
                     .split(' ')
                     .map((name) => name.charAt(0))
                     .join(''),
+            },
+        ]
+    }
+}
+
+class BackendServingView implements VirtualDOM<'a'> {
+    /**
+     * @group Immutable DOM Constants
+     */
+    public readonly tag = 'a'
+
+    /**
+     * @group Immutable DOM Constants
+     */
+    public readonly class = ''
+
+    /**
+     * @group Immutable DOM Constants
+     */
+    public readonly customAttributes = {
+        dataToggle: 'tooltip',
+        title: 'Backend(s) serving',
+    }
+
+    /**
+     * @group Immutable DOM Constants
+     */
+    public readonly children: ChildrenLike
+
+    constructor({ state, router }: { state: AppState; router: Router }) {
+        Object.assign(
+            this,
+            internalAnchor({ path: '/environment/backends', router }),
+        )
+        this.children = [
+            {
+                source$: state.environment$.pipe(
+                    map((env) => env.configuration.proxiedBackends),
+                ),
+                vdomMap: (proxieds: Routers.Environment.ProxiedBackend[]) => {
+                    return proxieds.length == 0
+                        ? { tag: 'i' }
+                        : { tag: 'i', class: 'fas fa-network-wired' }
+                },
             },
         ]
     }
