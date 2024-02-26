@@ -1,6 +1,11 @@
 import { ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
-import { ExplorerBackend, AssetsBackend } from '@youwol/http-clients'
+import { AssetsBackend, ExplorerBackend } from '@youwol/http-clients'
 import { parseMd, Router } from '@youwol/mkdocs-ts'
+import { PermissionsViews } from './permissions.views'
+import { TagsViews } from './tags.views'
+import { DescriptionsViews } from './descriptions.views'
+import { ExpandableGroupView } from '../common/expandable-group.view'
+import { BreadcrumbViews } from './breadcrumb.views'
 
 export class ExplorerView implements VirtualDOM<'div'> {
     public readonly tag = 'div'
@@ -60,33 +65,53 @@ export class AssetView implements VirtualDOM<'div'> {
     public readonly children: ChildrenLike
 
     constructor({
-        response,
+        assetResponse,
+        itemsResponse,
         router,
+        path,
     }: {
-        response: AssetsBackend.GetAssetResponse
+        assetResponse: AssetsBackend.GetAssetResponse
+        itemsResponse: ExplorerBackend.QueryChildrenResponse
         router: Router
+        path?: string
     }) {
         this.children = [
             parseMd({
                 src: `
-*TO BE IMPLEMENTED: path of the asset (interactive)*
+<path></path>
 
-# ${response.name}         
+# ${assetResponse.name}         
 
-<i class='fas fa-tag mx-2'></i>Tags:
-${response.tags.reduce((acc, e) => acc + '\n*  ' + e, '')}
 
-${response.description}      
+<tags></tags>
 
-## Screenshots
+<description></description>
 
-*TO BE IMPLEMENTED*
-
-## Permissions 
-
-*TO BE IMPLEMENTED*
+<permissions></permissions>
                 `,
                 router,
+                views: {
+                    path: () =>
+                        new BreadcrumbViews({
+                            response: assetResponse,
+                            path: path,
+                            router: router,
+                        }),
+                    permissions: () =>
+                        new PermissionsViews({ assetResponse, itemsResponse }),
+                    tags: () => new TagsViews({ assetResponse, itemsResponse }),
+                    description: () =>
+                        new ExpandableGroupView({
+                            title: 'Description',
+                            icon: 'fas fa-info',
+                            content: () =>
+                                new DescriptionsViews({
+                                    assetResponse,
+                                    itemsResponse,
+                                }),
+                            expanded: true,
+                        }),
+                },
             }),
         ]
     }

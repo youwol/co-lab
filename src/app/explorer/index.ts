@@ -128,22 +128,31 @@ function explorerNavigation({
             )
     }
     if (parts.length >= 2 && parts.slice(-1)[0].startsWith('asset_')) {
-        return client.assets
-            .getAsset$({
-                assetId: parts.slice(-1)[0].replace('asset_', ''),
-            })
-            .pipe(
-                raiseHTTPErrors(),
-                take(1),
-                map((response) => {
-                    return {
-                        leaf: true,
-                        children: [],
-                        tableOfContent,
-                        html: async () => new AssetView({ response, router }),
-                    }
-                }),
-            )
+        return combineLatest([
+            client.assets
+                .getAsset$({
+                    assetId: parts.slice(-1)[0].replace('asset_', ''),
+                })
+                .pipe(raiseHTTPErrors(), take(1)),
+            client.explorer
+                .queryChildren$({
+                    parentId: parts.slice(-2)[0].replace('folder_', ''),
+                })
+                .pipe(raiseHTTPErrors(), take(1)),
+        ]).pipe(
+            map(([assetResponse, itemsResponse]) => ({
+                leaf: true,
+                children: [],
+                tableOfContent,
+                html: async () =>
+                    new AssetView({
+                        assetResponse,
+                        itemsResponse,
+                        router,
+                        path,
+                    }),
+            })),
+        )
     }
     return of({ children: [] })
 }
