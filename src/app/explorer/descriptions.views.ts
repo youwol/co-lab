@@ -106,7 +106,9 @@ class DescriptionActions implements VirtualDOM<'div'> {
                     wrapper: (d) => ` fas fa-save ${d} m-1`,
                 },
                 onclick: (ev) => {
-                    if (params.editionMode$.getValue()) params.click$.next(ev)
+                    if (params.editionMode$.getValue()) {
+                        params.click$.next(ev)
+                    }
                 },
                 tag: 'div',
             },
@@ -121,8 +123,9 @@ class DescriptionActions implements VirtualDOM<'div'> {
                     wrapper: (d) => `fas fa-pen ${d} m-1`,
                 },
                 onclick: () => {
-                    if (!params.editionMode$.getValue())
+                    if (!params.editionMode$.getValue()) {
                         params.editionMode$.next(true)
+                    }
                 },
             },
         ]
