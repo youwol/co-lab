@@ -5,6 +5,7 @@ import { PermissionsViews } from './permissions.views'
 import { TagsViews } from './tags.views'
 import { DescriptionsViews } from './descriptions.views'
 import { ExpandableGroupView } from '../common/expandable-group.view'
+import { BreadcrumbViews } from './breadcrumb.views'
 
 export class ExplorerView implements VirtualDOM<'div'> {
     public readonly tag = 'div'
@@ -77,14 +78,10 @@ export class AssetView implements VirtualDOM<'div'> {
         this.children = [
             parseMd({
                 src: `
-*TO BE IMPLEMENTED: path of the asset (interactive)*
+<path></path>
 
-# ${response.name}         
+# ${assetResponse.name}         
 
-<i class='fas fa-tag mx-2'></i>Tags:
-${response.tags.reduce((acc, e) => acc + '\n*  ' + e, '')}
-
-${response.description}      
 
 <tags></tags>
 
@@ -94,6 +91,12 @@ ${response.description}
                 `,
                 router,
                 views: {
+                    path: () =>
+                        new BreadcrumbViews({
+                            response: assetResponse,
+                            path: path,
+                            router: router,
+                        }),
                     permissions: () =>
                         new PermissionsViews({ assetResponse, itemsResponse }),
                     tags: () => new TagsViews({ assetResponse, itemsResponse }),
