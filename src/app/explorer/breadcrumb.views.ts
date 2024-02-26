@@ -1,6 +1,9 @@
-import { GetPathResponse } from '@youwol/http-clients/dist/src/lib/explorer-backend'
 import { ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
-import { AssetsBackend, AssetsGateway } from '@youwol/http-clients'
+import {
+    ExplorerBackend,
+    AssetsBackend,
+    AssetsGateway,
+} from '@youwol/http-clients'
 import { Router } from '@youwol/mkdocs-ts'
 
 export class BreadcrumbViews implements VirtualDOM<'div'> {
@@ -23,7 +26,7 @@ export class BreadcrumbViews implements VirtualDOM<'div'> {
             source$: this.client.explorer.getPath$({
                 itemId: response.assetId,
             }),
-            vdomMap: (paths: GetPathResponse) => {
+            vdomMap: (paths: ExplorerBackend.GetPathResponse) => {
                 const folderNames = getNestedFolderNames(paths)
                 const folderPath = getNestedFoldersPath(path)
 
@@ -67,7 +70,7 @@ class BreadcrumbWidgetViews implements VirtualDOM<'div'> {
     }
 }
 
-function getNestedFolderNames(data: GetPathResponse): string[] {
+function getNestedFolderNames(data: ExplorerBackend.GetPathResponse): string[] {
     const { drive, folders } = data
     const folderNames: string[] = []
 
