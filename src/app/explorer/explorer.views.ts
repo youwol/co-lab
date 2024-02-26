@@ -1,6 +1,7 @@
 import { ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
 import { AssetsBackend, ExplorerBackend } from '@youwol/http-clients'
 import { parseMd, Router } from '@youwol/mkdocs-ts'
+import { TagsViews } from './tags.views'
 
 export class ExplorerView implements VirtualDOM<'div'> {
     public readonly tag = 'div'
@@ -82,7 +83,7 @@ ${response.tags.reduce((acc, e) => acc + '\n*  ' + e, '')}
 
 ${response.description}      
 
-## Screenshots
+<tags></tags>
 
 *TO BE IMPLEMENTED*
 
@@ -91,6 +92,7 @@ ${response.description}
 *TO BE IMPLEMENTED*
                 `,
                 router,
+                    tags: () => new TagsViews({ assetResponse, itemsResponse }),
             }),
         ]
     }
