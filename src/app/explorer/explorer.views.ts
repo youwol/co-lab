@@ -3,6 +3,8 @@ import { AssetsBackend, ExplorerBackend } from '@youwol/http-clients'
 import { parseMd, Router } from '@youwol/mkdocs-ts'
 import { PermissionsViews } from './permissions.views'
 import { TagsViews } from './tags.views'
+import { DescriptionsViews } from './descriptions.views'
+import { ExpandableGroupView } from '../common/expandable-group.view'
 
 export class ExplorerView implements VirtualDOM<'div'> {
     public readonly tag = 'div'
@@ -86,7 +88,7 @@ ${response.description}
 
 <tags></tags>
 
-*TO BE IMPLEMENTED*
+<description></description>
 
 <permissions></permissions>
                 `,
@@ -95,6 +97,17 @@ ${response.description}
                     permissions: () =>
                         new PermissionsViews({ assetResponse, itemsResponse }),
                     tags: () => new TagsViews({ assetResponse, itemsResponse }),
+                    description: () =>
+                        new ExpandableGroupView({
+                            title: 'Description',
+                            icon: 'fas fa-info',
+                            content: () =>
+                                new DescriptionsViews({
+                                    assetResponse,
+                                    itemsResponse,
+                                }),
+                            expanded: true,
+                        }),
                 },
             }),
         ]
