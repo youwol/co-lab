@@ -1,6 +1,7 @@
 import { ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
 import { AssetsBackend, ExplorerBackend } from '@youwol/http-clients'
 import { parseMd, Router } from '@youwol/mkdocs-ts'
+import { PermissionsViews } from './permissions.views'
 import { TagsViews } from './tags.views'
 
 export class ExplorerView implements VirtualDOM<'div'> {
@@ -87,12 +88,14 @@ ${response.description}
 
 *TO BE IMPLEMENTED*
 
-## Permissions 
-
-*TO BE IMPLEMENTED*
+<permissions></permissions>
                 `,
                 router,
+                views: {
+                    permissions: () =>
+                        new PermissionsViews({ assetResponse, itemsResponse }),
                     tags: () => new TagsViews({ assetResponse, itemsResponse }),
+                },
             }),
         ]
     }
