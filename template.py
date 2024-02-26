@@ -19,7 +19,7 @@ externals_deps = {
     '@youwol/http-primitives': '^0.2.3',
     '@youwol/local-youwol-client': '^0.2.5',
     '@youwol/os-core': '^0.2.0',
-    '@youwol/os-widgets': '^0.2.2',
+    '@youwol/os-widgets': '^0.2.3',
     "@youwol/rx-tree-views": "0.3.1",
     "@youwol/rx-code-mirror-editors": "0.5.0",
     "rxjs": "^7.5.6",
