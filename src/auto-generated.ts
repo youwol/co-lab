@@ -33,8 +33,7 @@ const externals = {
     "@youwol/rx-code-mirror-editors": "window['@youwol/rx-code-mirror-editors_APIv05']",
     "rxjs": "window['rxjs_APIv7']",
     "d3": "window['d3_APIv7']",
-    "rxjs/operators": "window['rxjs_APIv7']['operators']",
-    "@youwol/http-clients/dist/src/lib/explorer-backend": "window['@youwol/http-clients_APIv3']['dist']['src']['lib']['explorer-backend']"
+    "rxjs/operators": "window['rxjs_APIv7']['operators']"
 }
 const exportedSymbols = {
     "@youwol/mkdocs-ts": {
