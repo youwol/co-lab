@@ -1,5 +1,5 @@
 import { ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
-import { ExplorerBackend, AssetsBackend } from '@youwol/http-clients'
+import { AssetsBackend, ExplorerBackend } from '@youwol/http-clients'
 import { parseMd, Router } from '@youwol/mkdocs-ts'
 
 export class ExplorerView implements VirtualDOM<'div'> {
@@ -60,11 +60,15 @@ export class AssetView implements VirtualDOM<'div'> {
     public readonly children: ChildrenLike
 
     constructor({
-        response,
+        assetResponse,
+        itemsResponse,
         router,
+        path,
     }: {
-        response: AssetsBackend.GetAssetResponse
+        assetResponse: AssetsBackend.GetAssetResponse
+        itemsResponse: ExplorerBackend.QueryChildrenResponse
         router: Router
+        path?: string
     }) {
         this.children = [
             parseMd({
