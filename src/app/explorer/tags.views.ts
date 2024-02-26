@@ -56,7 +56,7 @@ export class TagsViews implements VirtualDOM<'div'> {
                                 (v) =>
                                     new v.AssetTagsView({
                                         tags$: this.tags$,
-                                        asset: assetResponse,
+                                        asset: asset,
                                         permissions: permissions,
                                     }),
                             ),
