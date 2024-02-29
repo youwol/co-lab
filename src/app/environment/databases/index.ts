@@ -26,7 +26,7 @@ This page gathers information related to the databases persisting data on your P
 
 </info>
 
-## Paths
+## Components (CDN)
 
 <paths type="databases"></paths>
 
