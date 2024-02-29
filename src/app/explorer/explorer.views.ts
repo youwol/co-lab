@@ -6,12 +6,12 @@ import { TagsViews } from './tags.views'
 import { DescriptionsViews } from './descriptions.views'
 import { ExpandableGroupView } from '../common/expandable-group.view'
 import { BreadcrumbViews } from './breadcrumb.views'
+import { ItemView } from './item.view'
 
 export class ExplorerView implements VirtualDOM<'div'> {
     public readonly tag = 'div'
     public readonly class = ''
     public readonly children: ChildrenLike
-
     constructor({
         response,
         path,
@@ -22,40 +22,6 @@ export class ExplorerView implements VirtualDOM<'div'> {
         this.children = response.items.map(
             (item) => new ItemView({ item, path }),
         )
-    }
-}
-export class ItemView implements VirtualDOM<'div'> {
-    public readonly tag = 'div'
-    public readonly class =
-        'd-flex align-items-center fv-pointer fv-hover-text-focus'
-    public readonly children: ChildrenLike
-
-    constructor({
-        item,
-        path,
-    }: {
-        item: ExplorerBackend.GetItemResponse
-        path: string
-    }) {
-        this.children = [
-            { tag: 'i', class: 'fas fa-file' },
-            { tag: 'span', class: 'mx-3' },
-            {
-                tag: 'a',
-                innerText: item.name,
-                href: '@nav/explorer' + path + '/asset_' + item.assetId,
-            },
-            {
-                tag: 'div',
-                class: 'flex-grow-1',
-            },
-            item['origin']?.local
-                ? { tag: 'div', class: 'fas fa-laptop' }
-                : undefined,
-            item['origin']?.remote
-                ? { tag: 'div', class: 'fas fa-cloud' }
-                : undefined,
-        ]
     }
 }
 
