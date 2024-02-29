@@ -17,7 +17,7 @@ import { ImmutableTree } from '@youwol/rx-tree-views'
 import { mountFolder } from './mounted'
 import { Routers } from '@youwol/local-youwol-client'
 import { mountBackends } from './environment/backends'
-import { debounceTime, Subject } from 'rxjs'
+import { debounceTime, Observable, Subject } from 'rxjs'
 import { mountComponents } from './components'
 import { DisconnectedView } from './disconnected.view'
 
@@ -108,6 +108,18 @@ const router = new Router({
         },
     ],
 })
+
+export interface ColabController {
+    navigation$: Observable<string>
+}
+
+if (parent['@youwol/co-lab-controller']) {
+    console.log('Plug Colab Controller')
+    const controller: ColabController = parent['@youwol/co-lab-controller']
+    controller.navigation$?.subscribe((path) => {
+        router.navigateTo({ path })
+    })
+}
 
 class PageView implements VirtualDOM<'div'> {
     public readonly tag = 'div'
