@@ -12,6 +12,7 @@ import * as Dashboard from './dashboard'
 import * as Mounted from './mounted'
 import { CoLabBanner, CoLabLogo } from './common'
 import { pyYwDocLink } from './common/py-yw-references.view'
+import { mountProjects } from './projects'
 import { ImmutableTree } from '@youwol/rx-tree-views'
 import { mountFolder } from './mounted'
 import { Subject } from 'rxjs'
@@ -48,6 +49,24 @@ const router = new Router({
                 data: string
             }) => {
                 mountFolder({ folder: data, router, treeState })
+            },
+        },
+        {
+            from$: appState.projectsState.projects$,
+            then: ({
+                data,
+                router,
+                treeState,
+            }: {
+                router: Router
+                treeState: ImmutableTree.State<ExplicitNode>
+                data
+            }) => {
+                mountProjects({
+                    projects: data,
+                    router,
+                    treeState,
+                })
             },
         },
         {
