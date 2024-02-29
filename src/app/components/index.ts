@@ -4,12 +4,10 @@ import * as JsWasm from './js-wasm'
 import * as Pyodide from './pyodide'
 import { ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
 
-import { parseMd, Router, Views } from '@youwol/mkdocs-ts'
-import { PackageView } from './js-wasm/package.views'
-import { lastValueFrom } from 'rxjs'
-import * as pyYw from '@youwol/local-youwol-client'
-import { raiseHTTPErrors } from '@youwol/http-primitives'
-import { BackendView } from './backends/package.views'
+import { ExplicitNode, parseMd, Router } from '@youwol/mkdocs-ts'
+import { Routers } from '@youwol/local-youwol-client'
+import { ImmutableTree } from '@youwol/rx-tree-views'
+import { mountReactiveNav } from '../common/mount-reactive-nav'
 export * from './state'
 
 export const navigation = (appState: AppState) => ({
@@ -20,6 +18,43 @@ export const navigation = (appState: AppState) => ({
     '/pyodide': Pyodide.navigation(appState),
     '/backends': Backends.navigation(appState),
 })
+
+export function mountComponents({
+    packages,
+    router,
+    treeState,
+}: {
+    packages: Routers.LocalCdn.CdnPackageLight[]
+    treeState: ImmutableTree.State<ExplicitNode>
+    router: Router
+}) {
+    const jsWasm = packages.filter((elem) => {
+        return !elem.name.includes('backend')
+    })
+    const backends = packages.filter((elem) => {
+        return elem.name.includes('backend')
+    })
+    mountReactiveNav<Routers.LocalCdn.CdnPackageLight>({
+        basePath: '/components/js-wasm',
+        entities: jsWasm,
+        router,
+        treeState,
+        icon: () => ({
+            tag: 'div',
+            class: 'mx-2',
+        }),
+    })
+    mountReactiveNav<Routers.LocalCdn.CdnPackageLight>({
+        basePath: '/components/backends',
+        entities: backends,
+        router,
+        treeState,
+        icon: () => ({
+            tag: 'div',
+            class: 'mx-2',
+        }),
+    })
+}
 
 class PageView implements VirtualDOM<'div'> {
     public readonly tag = 'div'
@@ -45,47 +80,4 @@ Executables can be:
             }),
         ]
     }
-}
-
-const cdnStatus = await lastValueFrom(
-    new pyYw.PyYouwolClient().admin.localCdn
-        .getStatus$()
-        .pipe(raiseHTTPErrors()),
-)
-export function subRoutes({
-    appState,
-    type,
-}: {
-    appState: AppState
-    type: 'js/wasm' | 'backend'
-}) {
-    return cdnStatus.packages
-        .filter((elem) => {
-            return elem.versions[0].type === type
-        })
-        .reduce((acc, e) => {
-            return {
-                ...acc,
-                ['/' + e.id]: {
-                    name: e.name,
-                    tableOfContent: Views.tocView,
-                    icon: {
-                        tag: 'div',
-                        class: 'mx-2',
-                    },
-                    html: ({ router }) =>
-                        type == 'js/wasm'
-                            ? new PackageView({
-                                  router,
-                                  cdnState: appState.cdnState,
-                                  packageId: e.id,
-                              })
-                            : new BackendView({
-                                  router,
-                                  appState: appState,
-                                  packageId: e.id,
-                              }),
-                },
-            }
-        }, {})
 }

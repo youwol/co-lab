@@ -1,5 +1,5 @@
-import { Observable, Subject } from 'rxjs'
-import { filter, map, shareReplay, take } from 'rxjs/operators'
+import { distinctUntilChanged, Observable, Subject } from 'rxjs'
+import { filter, map, shareReplay, take, tap } from 'rxjs/operators'
 import * as Projects from './projects'
 import * as Components from './components'
 import * as Backends from './environment/backends'
@@ -31,6 +31,10 @@ pyYw.PyYouwolClient.ws = new WsRouter({
  * @category State
  */
 export class AppState {
+    /**
+     * @group Observables
+     */
+    public readonly confChanged$: Observable<string>
     /**
      * @group Immutable Constants
      */
@@ -94,5 +98,13 @@ export class AppState {
 
         this.environmentClient.getStatus$().subscribe()
         this.projectsState.projects$.subscribe(() => {})
+        this.confChanged$ = this.environment$.pipe(
+            map((env) => env.configuration.pathsBook.config),
+            distinctUntilChanged(),
+            tap((path) => console.log('Configuration changed', path)),
+        )
+        this.confChanged$.subscribe(() => {
+            this.cdnState.refreshPackages()
+        })
     }
 }

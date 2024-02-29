@@ -12,11 +12,13 @@ import * as Dashboard from './dashboard'
 import * as Mounted from './mounted'
 import { CoLabBanner, CoLabLogo } from './common'
 import { pyYwDocLink } from './common/py-yw-references.view'
+import { mountProjects } from './projects'
 import { ImmutableTree } from '@youwol/rx-tree-views'
 import { mountFolder } from './mounted'
-import { Subject } from 'rxjs'
 import { Routers } from '@youwol/local-youwol-client'
 import { mountBackends } from './environment/backends'
+import { debounceTime, Observable, Subject } from 'rxjs'
+import { mountComponents } from './components'
 import { DisconnectedView } from './disconnected.view'
 
 const appState = new AppState()
@@ -51,6 +53,24 @@ const router = new Router({
             },
         },
         {
+            from$: appState.projectsState.projects$,
+            then: ({
+                data,
+                router,
+                treeState,
+            }: {
+                router: Router
+                treeState: ImmutableTree.State<ExplicitNode>
+                data
+            }) => {
+                mountProjects({
+                    projects: data,
+                    router,
+                    treeState,
+                })
+            },
+        },
+        {
             from$: appState.environment$,
             then: ({
                 data,
@@ -68,8 +88,38 @@ const router = new Router({
                 })
             },
         },
+        {
+            from$: appState.cdnState.packages$.pipe(debounceTime(500)),
+            then: ({
+                data,
+                router,
+                treeState,
+            }: {
+                router: Router
+                treeState: ImmutableTree.State<ExplicitNode>
+                data
+            }) => {
+                mountComponents({
+                    packages: data,
+                    router,
+                    treeState,
+                })
+            },
+        },
     ],
 })
+
+export interface ColabController {
+    navigation$: Observable<string>
+}
+
+if (parent['@youwol/co-lab-controller']) {
+    console.log('Plug Colab Controller')
+    const controller: ColabController = parent['@youwol/co-lab-controller']
+    controller.navigation$?.subscribe((path) => {
+        router.navigateTo({ path })
+    })
+}
 
 class PageView implements VirtualDOM<'div'> {
     public readonly tag = 'div'

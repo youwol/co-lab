@@ -25,7 +25,7 @@ export class NavIconSvg implements VirtualDOM<'div'> {
     public readonly class = 'mr-2'
     public readonly style: CSSAttribute
     constructor({ filename }: { filename: string }) {
-        const basePath = `/applications/${setup.name}/${setup.version}`
+        const basePath = `/api/assets-gateway/cdn-backend/resources/${setup.assetId}/${setup.version}`
         this.style = {
             width: '20px',
             backgroundSize: 'cover',

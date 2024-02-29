@@ -1,23 +1,27 @@
 import { AppState } from '../../app-state'
-import { parseMd, Router } from '@youwol/mkdocs-ts'
+import { parseMd, Router, Views } from '@youwol/mkdocs-ts'
 import { ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
 import { NavIconSvg } from '../../common'
-import { lastValueFrom } from 'rxjs'
-import * as pyYw from '@youwol/local-youwol-client'
-import { raiseHTTPErrors } from '@youwol/http-primitives'
-import { subRoutes } from '../index'
-
-export const cdnStatus = await lastValueFrom(
-    new pyYw.PyYouwolClient().admin.localCdn
-        .getStatus$()
-        .pipe(raiseHTTPErrors()),
-)
+import { PackageView } from './package.views'
 
 export const navigation = (appState: AppState) => ({
     name: 'Js/WASM',
     icon: new NavIconSvg({ filename: 'icon-js.svg' }),
     html: ({ router }) => new PageView({ router, appState }),
-    ...subRoutes({ type: 'js/wasm', appState }),
+    '/**': async ({ path }: { path: string }) => {
+        const parts = path.split('/').filter((d) => d != '')
+        return {
+            tableOfContent: Views.tocView,
+            children: [],
+            html: ({ router }) => {
+                return new PackageView({
+                    router,
+                    cdnState: appState.cdnState,
+                    packageId: parts.slice(-1)[0],
+                })
+            },
+        }
+    },
 })
 
 class PageView implements VirtualDOM<'div'> {

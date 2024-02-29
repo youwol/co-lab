@@ -8,6 +8,7 @@ import { PyYouwolClient, Routers } from '@youwol/local-youwol-client'
 import { LogsExplorerView } from '../../common/logs-explorer.view'
 import { filter, mergeMap, shareReplay } from 'rxjs/operators'
 import { ImmutableTree } from '@youwol/rx-tree-views'
+import { mountReactiveNav } from '../../common/mount-reactive-nav'
 
 export * from './state'
 
@@ -45,41 +46,24 @@ export const navigation = (appState: AppState) => ({
 export function mountBackends({
     backends,
     treeState,
+    router,
 }: {
     backends: Routers.Environment.ProxiedBackend[]
     treeState: ImmutableTree.State<ExplicitNode>
     router: Router
 }) {
-    const basePath = `/environment/backends`
-    const parentNode = treeState.getNode(`/environment/backends`)
-    parentNode.resolveChildren().subscribe()
-    // Remove
-    parentNode.children.forEach((node) => {
-        const backend = window.atob(node.id.split('/').slice(-1)[0])
-        const name = backend.split('#')[0]
-        const version = backend.split('#')[1]
-        const found = backends.find(
-            (backend) => backend.name === name && backend.version === version,
-        )
-        if (!found) {
-            treeState.removeNode(node.id)
+    const entities = backends.map((backend) => {
+        return {
+            name: backendName(backend),
+            id: backendId(backend),
         }
     })
-    // Add new children
-    backends.forEach((backend) => {
-        const name = backendName(backend)
-        const id = backendId(backend)
-        const href = `${basePath}/${id}`
-        const node = new ExplicitNode({
-            id: `/${basePath}/${id}`,
-            name,
-            children: undefined,
-            href,
-            icon: { tag: 'i', class: 'fas fa-running mr-2' },
-        })
-        if (!treeState.getNode(node.id)) {
-            treeState.addChild(basePath, node)
-        }
+    mountReactiveNav({
+        basePath: `/environment/backends`,
+        entities,
+        router,
+        treeState,
+        icon: () => ({ tag: 'i', class: 'fas fa-running mr-2' }),
     })
 }
 

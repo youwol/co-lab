@@ -1,4 +1,9 @@
-import { AnyVirtualDOM, ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
+import {
+    AnyVirtualDOM,
+    ChildLike,
+    ChildrenLike,
+    VirtualDOM,
+} from '@youwol/rx-vdom'
 import { BehaviorSubject } from 'rxjs'
 
 /**
@@ -25,7 +30,7 @@ export class ExpandableGroupView implements VirtualDOM<'div'> {
         content,
         expanded,
     }: {
-        title: string | AnyVirtualDOM
+        title: string | ChildLike
         icon: string | AnyVirtualDOM
         content: () => AnyVirtualDOM
         expanded?: boolean

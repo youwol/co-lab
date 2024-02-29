@@ -269,4 +269,8 @@ export class State {
             this.openPackages$.next([...openPackages, packageId])
         }
     }
+
+    refreshPackages() {
+        this.cdnClient.getStatus$().subscribe()
+    }
 }

@@ -1,21 +1,18 @@
 import { FailuresView, NewProjectsCard, ProjectView } from './project.view'
 import { AppState } from '../app-state'
-import { parseMd, Router, Views } from '@youwol/mkdocs-ts'
-import { lastValueFrom } from 'rxjs'
-import * as pyYw from '@youwol/local-youwol-client'
-import { raiseHTTPErrors } from '@youwol/http-primitives'
+import { ExplicitNode, parseMd, Router, Views } from '@youwol/mkdocs-ts'
 import { ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
 import { SearchView } from './search.view'
 import { InfoSectionView } from '../common'
 import { pyYwDocLink } from '../common/py-yw-references.view'
 import { Routers } from '@youwol/local-youwol-client'
 import { icon } from './icons'
+import { ImmutableTree } from '@youwol/rx-tree-views'
+import { firstValueFrom, of } from 'rxjs'
+import { map } from 'rxjs/operators'
+import { mountReactiveNav } from '../common/mount-reactive-nav'
 
 export * from './state'
-
-const projects = await lastValueFrom(
-    new pyYw.PyYouwolClient().admin.projects.status$().pipe(raiseHTTPErrors()),
-)
 
 const skipNamespace = (name: string) => {
     return name.split('/').slice(-1)[0]
@@ -30,25 +27,50 @@ export const navigation = (appState: AppState) => ({
             router,
             appState,
         }),
-    ...projects.results['toSorted']((a, b) =>
-        skipNamespace(a.name).localeCompare(skipNamespace(b.name)),
-    ).reduce((acc, project) => {
-        return {
-            ...acc,
-            ['/' + project.id]: {
-                name: skipNamespace(project.name),
-                tableOfContent: Views.tocView,
-                icon: icon(project),
-                html: ({ router }) =>
-                    new ProjectView({
+    '/**': ({ path }: { path: string; router: Router }) => {
+        const parts = path.split('/').filter((d) => d != '')
+        return of({
+            tableOfContent: Views.tocView,
+            children: [],
+            html: async ({ router }) => {
+                const project$ = appState.projectsState.projects$.pipe(
+                    map((projects) => {
+                        return projects.find((p) => p.id === parts.slice(-1)[0])
+                    }),
+                )
+                return firstValueFrom(project$).then((project) => {
+                    return new ProjectView({
                         router,
                         project,
                         appState,
-                    }),
+                    })
+                })
             },
-        }
-    }, {}),
+        })
+    },
 })
+
+export function mountProjects({
+    projects,
+    router,
+    treeState,
+}: {
+    projects: Routers.Projects.Project[]
+    treeState: ImmutableTree.State<ExplicitNode>
+    router: Router
+}) {
+    const entities = projects.map((project) => ({
+        ...project,
+        name: skipNamespace(project.name),
+    }))
+    mountReactiveNav<Routers.Projects.Project>({
+        basePath: '/projects',
+        entities,
+        router,
+        treeState,
+        icon: (entity) => icon(entity),
+    })
+}
 
 export class PageView implements VirtualDOM<'div'> {
     public readonly tag = 'div'

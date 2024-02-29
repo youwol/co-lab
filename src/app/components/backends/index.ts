@@ -1,7 +1,7 @@
 import { AppState } from '../../app-state'
-import { subRoutes } from '../index'
 import { ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
-import { parseMd, Router } from '@youwol/mkdocs-ts'
+import { parseMd, Router, Views } from '@youwol/mkdocs-ts'
+import { BackendView } from './package.views'
 
 export const navigation = (appState: AppState) => ({
     name: 'Backends',
@@ -10,7 +10,20 @@ export const navigation = (appState: AppState) => ({
         class: 'fas fa-server mr-2',
     },
     html: ({ router }) => new PageView({ router, appState }),
-    ...subRoutes({ type: 'backend', appState }),
+    '/**': async ({ path }: { path: string }) => {
+        const parts = path.split('/').filter((d) => d != '')
+        return {
+            tableOfContent: Views.tocView,
+            children: [],
+            html: ({ router }) => {
+                return new BackendView({
+                    router,
+                    appState: appState,
+                    packageId: parts.slice(-1)[0],
+                })
+            },
+        }
+    },
 })
 
 class PageView implements VirtualDOM<'div'> {

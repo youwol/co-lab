@@ -194,7 +194,7 @@ export class ArtifactView implements VirtualDOM<'div'> {
                     return parseMd({
                         src: `
 Links:
-${artifact.links.map((l) => `*  [${l.name}](${l.url})\n`)}
+${artifact.links.map((l) => `*  <a href="${l.url}" target="_blank">${l.name}</a>\n`)}
 
 **Files included**:
 

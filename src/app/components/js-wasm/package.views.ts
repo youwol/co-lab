@@ -9,7 +9,14 @@ import { State } from '../state'
 import { AssetsBackend, CdnBackend } from '@youwol/http-clients'
 import { raiseHTTPErrors } from '@youwol/http-primitives'
 import * as pyYw from '@youwol/local-youwol-client'
-import { combineLatest, Observable, ReplaySubject, Subject } from 'rxjs'
+import {
+    combineLatest,
+    from,
+    Observable,
+    ReplaySubject,
+    Subject,
+    switchMap,
+} from 'rxjs'
 import { AssetLightDescription } from '@youwol/os-core'
 import { parseMd, Router } from '@youwol/mkdocs-ts'
 import { ExplorerView } from '../package-explorer.view'
@@ -61,18 +68,12 @@ export class PackageView implements VirtualDOM<'div'> {
 
 ## Versions      
 
+**Select the version** from the table below:
+
 <versions></versions>
 
-## Explorer
+<details></details>
 
-*TODO: NEXT EXPLORER NEEDS TO BE REACTIVE*
-
-<explorer></explorer>
-
-## Links      
-
-
-<links></links>
 
                 `,
                 router: params.router,
@@ -94,7 +95,8 @@ export class PackageView implements VirtualDOM<'div'> {
                                     packageInfo: pyYw.Routers.LocalCdn.CdnPackage,
                                 ) => {
                                     this.selectedVersion$.next(
-                                        packageInfo.versions[0].version,
+                                        packageInfo.versions.slice(-1)[0]
+                                            .version,
                                     )
                                     return new VersionsView({
                                         cdnState: this.cdnState,
@@ -105,15 +107,78 @@ export class PackageView implements VirtualDOM<'div'> {
                             },
                         ],
                     }),
-                    explorer: () =>
-                        new FilesView({
+                    details: () => {
+                        return new PackageDetailsView({
+                            router: params.router,
                             selectedVersion$: this.selectedVersion$,
                             packageId: this.packageId,
+                        })
+                    },
+                },
+            }),
+        ]
+    }
+}
+
+export class PackageDetailsView implements VirtualDOM<'div'> {
+    /**
+     * @group Immutable DOM Constants
+     */
+    public readonly tag = 'div'
+    /**
+     * @group Immutable Constants
+     */
+    public readonly package: pyYw.Routers.LocalCdn.CdnPackage
+
+    /**
+     * @group Immutable DOM Constants
+     */
+    public readonly children: ChildrenLike
+
+    constructor({
+        packageId,
+        router,
+        selectedVersion$,
+    }: {
+        packageId: string
+        router: Router
+        selectedVersion$: Subject<string>
+    }) {
+        this.children = [
+            parseMd({
+                emitHtmlUpdated: true,
+                src: `
+## Type
+
+<launch></launch>
+
+## Explorer
+
+<explorer></explorer>
+
+## Links      
+
+<links></links>
+                    
+                    `,
+                router,
+                views: {
+                    launch: () => {
+                        return new LinkLaunchAppLib({
+                            selectedVersion$,
+                            packageId,
+                            router,
+                        })
+                    },
+                    explorer: () =>
+                        new FilesView({
+                            selectedVersion$: selectedVersion$,
+                            packageId: packageId,
                         }),
                     links: () =>
                         new LinksView({
-                            selectedVersion$: this.selectedVersion$,
-                            packageId: this.packageId,
+                            selectedVersion$: selectedVersion$,
+                            packageId: packageId,
                         }),
                 },
             }),
@@ -367,6 +432,154 @@ export class LinksView implements VirtualDOM<'div'> {
                     }
                 },
             },
+        ]
+    }
+}
+
+export class LinkLaunchAppLib implements VirtualDOM<'div'> {
+    public readonly tag = 'div'
+    public readonly children: ChildrenLike
+    constructor({
+        selectedVersion$,
+        packageId,
+        router,
+    }: {
+        packageId: string
+        selectedVersion$: Observable<string>
+        router: Router
+    }) {
+        const packageName = window.atob(packageId)
+        this.children = [
+            {
+                source$: selectedVersion$.pipe(
+                    switchMap((version) => {
+                        return from(
+                            fetch(
+                                `/api/assets-gateway/raw/package/${packageId}/${version}/.yw_metadata.json`,
+                            )
+                                .then((resp) => resp.json())
+                                .then((resp) => ({
+                                    ...resp,
+                                    version,
+                                })),
+                        )
+                    }),
+                ),
+                vdomMap: (resp: {
+                    family?: string
+                    version: string
+                    execution?: { standalone: boolean }
+                }) => {
+                    if (resp.family === 'application') {
+                        return new LinkLaunchAppView({
+                            version: resp.version,
+                            packageName,
+                            execution: resp.execution,
+                            router,
+                        })
+                    }
+                    if (resp.family === 'library') {
+                        return new LinkTryLibView({
+                            version: resp.version,
+                            packageName,
+                            router,
+                        })
+                    }
+                    return { tag: 'div' }
+                },
+            },
+        ]
+    }
+}
+
+export class LinkLaunchAppView implements VirtualDOM<'div'> {
+    public readonly tag = 'div'
+    public readonly children: ChildrenLike
+
+    constructor({
+        version,
+        packageName,
+        execution,
+        router,
+    }: {
+        version: string
+        packageName: string
+        execution: { standalone?: boolean; parametrized?: unknown[] }
+        router: Router
+    }) {
+        this.children = [
+            execution.standalone &&
+                parseMd({
+                    src: 'The package is a standalone application, you can launch it from <linkApp></linkApp>.',
+                    router,
+                    views: {
+                        linkApp: () => {
+                            return {
+                                tag: 'a',
+                                target: '_blank',
+                                class: 'link-success',
+                                href: `/applications/${packageName}/${version}`,
+                                innerText: 'here',
+                            }
+                        },
+                    },
+                }),
+            execution.parametrized.length > 0 &&
+                parseMd({
+                    src: `
+The package is an application that can be launched from an asset.      
+Refer to the file \`.yw_metadata.json\` for derails. `,
+                    router,
+                }),
+        ]
+    }
+}
+
+export class LinkTryLibView implements VirtualDOM<'div'> {
+    public readonly tag = 'div'
+    public readonly children: ChildrenLike
+
+    constructor({
+        version,
+        packageName,
+        router,
+    }: {
+        version: string
+        packageName: string
+        router: Router
+    }) {
+        const urlWebpm =
+            '/api/assets-gateway/cdn-backend/resources/QHlvdXdvbC93ZWJwbS1jbGllbnQ=/^3.0.0/dist/@youwol/webpm-client.js'
+
+        const tryLibScript = `
+<!DOCTYPE html>
+<html lang="en">
+    <head><script src="${urlWebpm}"></script></head>
+    <body id="content"></body>    
+    <script type="module">
+        const {lib} = await webpm.install({
+            modules:['${packageName}#${version} as lib'],
+            displayLoadingScreen: true,
+        })
+        console.log(lib)
+    </script>
+</html>        
+        `
+
+        this.children = [
+            parseMd({
+                src: `
+The package is a library, you can try it from <linkLib></linkLib>.`,
+                router,
+                views: {
+                    linkLib: () => ({
+                        tag: 'a',
+                        target: '_blank',
+                        href: `/applications/@youwol/js-playground/latest?content=${encodeURIComponent(tryLibScript)}`,
+                        innerText: 'here',
+                    }),
+                },
+            }),
         ]
     }
 }
