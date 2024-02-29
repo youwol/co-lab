@@ -15,9 +15,10 @@ import { pyYwDocLink } from './common/py-yw-references.view'
 import { mountProjects } from './projects'
 import { ImmutableTree } from '@youwol/rx-tree-views'
 import { mountFolder } from './mounted'
-import { Subject } from 'rxjs'
 import { Routers } from '@youwol/local-youwol-client'
 import { mountBackends } from './environment/backends'
+import { debounceTime, Subject } from 'rxjs'
+import { mountComponents } from './components'
 import { DisconnectedView } from './disconnected.view'
 
 const appState = new AppState()
@@ -82,6 +83,24 @@ const router = new Router({
             }) => {
                 mountBackends({
                     backends: data.configuration.proxiedBackends,
+                    router,
+                    treeState,
+                })
+            },
+        },
+        {
+            from$: appState.cdnState.packages$.pipe(debounceTime(500)),
+            then: ({
+                data,
+                router,
+                treeState,
+            }: {
+                router: Router
+                treeState: ImmutableTree.State<ExplicitNode>
+                data
+            }) => {
+                mountComponents({
+                    packages: data,
                     router,
                     treeState,
                 })
