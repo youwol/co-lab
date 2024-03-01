@@ -78,7 +78,19 @@ Publishing a components means to publish all or a part of those artifacts.
                         })
                     },
                     cdnLink: () => {
-                        return new CdnLinkView({ name: project.name, router })
+                        return {
+                            tag: 'div',
+                            children: [
+                                {
+                                    source$: appState.cdnState.status$,
+                                    vdomMap: () =>
+                                        new CdnLinkView({
+                                            name: project.name,
+                                            router,
+                                        }),
+                                },
+                            ],
+                        }
                     },
                     explorerLink: () => {
                         return new ExplorerLinkView({
