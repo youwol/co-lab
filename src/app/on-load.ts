@@ -61,7 +61,7 @@ const router = new Router({
             }: {
                 router: Router
                 treeState: ImmutableTree.State<ExplicitNode>
-                data
+                data: Routers.Projects.Project[]
             }) => {
                 mountProjects({
                     projects: data,
