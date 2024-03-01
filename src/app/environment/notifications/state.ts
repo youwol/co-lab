@@ -1,11 +1,12 @@
 import { BehaviorSubject, merge, ReplaySubject } from 'rxjs'
 import { PyYouwolClient, Routers } from '@youwol/local-youwol-client'
 import { filter } from 'rxjs/operators'
+import * as pyYw from '@youwol/local-youwol-client'
 
-type InstallBackendEvent = Routers.System.InstallBackendEvent
+export type BackendInstallEvent = Routers.System.InstallBackendEvent
 
 export type Error = {
-    kind: 'BackendInstall'
+    kind: 'BackendInstall' | 'AssetDownload'
     message: string
 }
 
@@ -20,7 +21,7 @@ export class BackendEvents {
     /**
      * All install events.
      */
-    public readonly install$ = new ReplaySubject<InstallBackendEvent>(100)
+    public readonly install$ = new ReplaySubject<BackendInstallEvent>(100)
 
     /**
      * Start install events for all backends.
@@ -102,7 +103,85 @@ export class BackendEvents {
     }
 }
 
+export type AssetDownloadEvent = Routers.System.DownloadEvent & {
+    contextId: string
+}
+
+export class AssetEvents {
+    /**
+     * All download events.
+     */
+    public readonly download$ = new ReplaySubject<AssetDownloadEvent>(100)
+
+    /**
+     * Start download events for all assets.
+     */
+    public readonly enqueuedDownload$ = this.download$.pipe(
+        filter(({ type }) => type === 'enqueued'),
+    )
+    /**
+     * End download events for all assets.
+     */
+    public readonly endDownload$ = this.download$.pipe(
+        filter(({ type }) => type === 'succeeded' || type === 'failed'),
+    )
+
+    /**
+     * The assets currently downloading (started but not yet done).
+     */
+    public readonly downloading$ = new BehaviorSubject<
+        Routers.System.DownloadEvent[]
+    >([])
+
+    /**
+     * Emit each time an asset failed to download.
+     */
+    public readonly failedDownload$ =
+        new ReplaySubject<Routers.System.DownloadEvent>()
+
+    private enqueuedRawIds: string[] = []
+
+    constructor() {
+        new pyYw.PyYouwolClient().admin.system.webSocket
+            .downloadEvent$()
+            .subscribe(({ data, contextId }) => {
+                if (
+                    data.type === 'enqueued' &&
+                    this.enqueuedRawIds.includes(data.rawId)
+                ) {
+                    return
+                }
+                if (data.type === 'enqueued') {
+                    this.enqueuedRawIds.push(data.rawId)
+                }
+                this.download$.next({ ...data, contextId: contextId })
+            })
+
+        this.download$.subscribe(({ type, rawId, kind }) => {
+            const currents = this.downloading$.value
+            if (
+                type === 'started' &&
+                this.downloading$.value.find((d) => d.rawId == rawId) ==
+                    undefined
+            ) {
+                this.downloading$.next([...currents, { rawId, type, kind }])
+                return
+            }
+            if (type === 'succeeded' || type === 'failed') {
+                const remaining = currents.filter((d) => d.rawId !== rawId)
+                if (remaining.length !== this.downloading$.value.length) {
+                    this.downloading$.next(remaining)
+                }
+            }
+        })
+        this.endDownload$
+            .pipe(filter(({ type }) => type === 'failed'))
+            .subscribe((failed) => this.failedDownload$.next(failed))
+    }
+}
+
 export class State {
+    public readonly assetEvents = new AssetEvents()
     public readonly backendEvents = new BackendEvents()
 
     public readonly errors = new BehaviorSubject<Error[]>([])
@@ -111,6 +190,13 @@ export class State {
             const newError = {
                 kind: 'BackendInstall' as const,
                 message: `${name}#${version} failed to install.`,
+            }
+            this.errors.next([...this.errors.value, newError])
+        })
+        this.assetEvents.failedDownload$.subscribe(({ rawId, kind }) => {
+            const newError = {
+                kind: 'AssetDownload' as const,
+                message: `${kind}#${rawId} failed to install.`,
             }
             this.errors.next([...this.errors.value, newError])
         })

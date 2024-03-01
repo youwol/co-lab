@@ -173,7 +173,7 @@ export class LogsExplorerView implements VirtualDOM<'div'> {
     refresh() {
         this.fetchingLogs$.next(true)
         this.rootLogs$.subscribe((response) => {
-            this.logs$.next({ logs: response.logs.reverse() })
+            this.logs$.next({ logs: response.logs })
             this.fetchingLogs$.next(false)
         })
     }
@@ -226,7 +226,9 @@ export class TreeView implements VirtualDOM<'div'> {
     }) {
         Object.assign(this, params)
         const treeState = new ImmutableTree.State({
-            rootNode: new LogNode(this.log, getChildren(this.log.contextId)),
+            rootNode: this.log.labels.includes('Label.STARTED')
+                ? new LogNode(this.log, getChildren(this.log.contextId))
+                : new LogNode(this.log),
         })
         const treeView = new ImmutableTree.View({
             state: treeState,

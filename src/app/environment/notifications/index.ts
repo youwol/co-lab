@@ -2,10 +2,16 @@ import { AppState } from '../../app-state'
 import { parseMd, Router, Views } from '@youwol/mkdocs-ts'
 import { ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
 import { InfoSectionView } from '../../common'
-import { State } from './state'
+import {
+    AssetDownloadEvent,
+    BackendInstallFlow,
+    BackendInstallEvent,
+    State,
+} from './state'
 import { map } from 'rxjs/operators'
-import { Routers } from '@youwol/local-youwol-client'
 import { BackendInstallNotificationView } from './backend/views'
+import { merge } from 'rxjs'
+import { AssetDownloadNotificationView } from './asset/views'
 
 export * from './state'
 
@@ -52,28 +58,39 @@ This page gathers notifications about ongoing installations.
     }
 }
 
+function isBackendInstallEvent(data: unknown): data is BackendInstallFlow {
+    return (data as BackendInstallFlow).installId !== undefined
+}
+
+function isAssetDownloadEvent(data: unknown): data is AssetDownloadEvent {
+    return (data as AssetDownloadEvent).rawId !== undefined
+}
+
 export class NotificationsView implements VirtualDOM<'div'> {
     public readonly tag = 'div'
     public readonly children: ChildrenLike
 
     constructor({ state, router }: { state: State; router: Router }) {
         const backend$ = state.backendEvents.startInstall$
-
+        const asset$ = state.assetEvents.enqueuedDownload$
         this.children = {
             policy: 'append',
-            source$: backend$.pipe(map((b) => [b])),
-            vdomMap: ({
-                name,
-                version,
-                installId,
-            }: Routers.System.InstallBackendEvent) => {
-                return new BackendInstallNotificationView({
-                    router,
-                    backend: name,
-                    version,
-                    installId,
-                    state,
-                })
+            source$: merge(backend$, asset$).pipe(map((b) => [b])),
+            vdomMap: (event: BackendInstallEvent | AssetDownloadEvent) => {
+                if (isBackendInstallEvent(event)) {
+                    return new BackendInstallNotificationView({
+                        router,
+                        event,
+                        state,
+                    })
+                }
+                if (isAssetDownloadEvent(event)) {
+                    return new AssetDownloadNotificationView({
+                        event,
+                        router,
+                        state,
+                    })
+                }
             },
         }
     }

@@ -198,6 +198,18 @@ class NotificationsView implements VirtualDOM<'div'> {
                             },
                         },
                     },
+                    { tag: 'i', class: 'mx-1' },
+                    {
+                        tag: 'i',
+                        class: {
+                            source$: notifState.assetEvents.downloading$,
+                            vdomMap: (installing: unknown[]) => {
+                                return installing.length > 0
+                                    ? 'fas fa-download text-success fv-blink'
+                                    : 'd-none'
+                            },
+                        },
+                    },
                 ],
             },
         ]
