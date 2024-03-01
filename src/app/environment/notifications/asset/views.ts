@@ -1,6 +1,5 @@
 import { ExpandableGroupView } from '../../../common/expandable-group.view'
-import { Router } from '@youwol/mkdocs-ts'
-import { AssetDownloadNotification, State } from '../state'
+import { AssetDownloadEvent, State } from '../state'
 import { filter } from 'rxjs/operators'
 import { AnyVirtualDOM, ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
 import { PyYouwolClient, Routers } from '@youwol/local-youwol-client'
@@ -8,20 +7,19 @@ import { downloadIcon } from '../views'
 import { Observable } from 'rxjs'
 import { LogsExplorerView } from '../../../common/logs-explorer.view'
 import { raiseHTTPErrors } from '@youwol/http-primitives'
+import { Router } from '@youwol/mkdocs-ts'
 
 export class AssetDownloadNotificationView extends ExpandableGroupView {
     constructor({
-        rawId,
-        kind,
+        event,
         state,
     }: {
-        rawId: string
-        kind: string
-        router: Router
+        event: AssetDownloadEvent
         state: State
+        router: Router
     }) {
         const message$ = state.assetEvents.download$.pipe(
-            filter((d) => d.rawId === rawId),
+            filter((d) => d.rawId === event.rawId),
         )
         const statusIcon: AnyVirtualDOM = {
             tag: 'div',
@@ -42,10 +40,7 @@ export class AssetDownloadNotificationView extends ExpandableGroupView {
         super({
             expanded: false,
             icon: downloadIcon(statusIcon),
-            title: new HeaderAssetInstallView({
-                rawId,
-                kind,
-            }),
+            title: new HeaderAssetInstallView(event),
             content: () =>
                 new ContentAssetInstallView({ notification$: message$ }),
         })
@@ -60,7 +55,7 @@ export class ContentAssetInstallView implements VirtualDOM<'div'> {
     constructor({
         notification$,
     }: {
-        notification$: Observable<AssetDownloadNotification>
+        notification$: Observable<AssetDownloadEvent>
     }) {
         this.children = [
             {
@@ -70,7 +65,7 @@ export class ContentAssetInstallView implements VirtualDOM<'div'> {
                 },
                 innerText: {
                     source$: notification$,
-                    vdomMap: (m: AssetDownloadNotification) => {
+                    vdomMap: (m: AssetDownloadEvent) => {
                         const factory = {
                             succeeded:
                                 'The asset has been installed successfully.',
@@ -85,7 +80,7 @@ export class ContentAssetInstallView implements VirtualDOM<'div'> {
             },
             {
                 source$: notification$,
-                vdomMap: (notif: AssetDownloadNotification) => {
+                vdomMap: (notif: AssetDownloadEvent) => {
                     return new LogsExplorerView({
                         rootLogs$: new PyYouwolClient().admin.system
                             .queryLogs$({

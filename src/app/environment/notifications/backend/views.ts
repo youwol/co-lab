@@ -1,5 +1,5 @@
 import { ExpandableGroupView } from '../../../common/expandable-group.view'
-import { State } from '../state'
+import { BackendInstallEvent, State } from '../state'
 import { filter, map, takeUntil } from 'rxjs/operators'
 import { styleShellStdOut } from '../../../common'
 import { ContextMessage, Routers } from '@youwol/local-youwol-client'
@@ -11,22 +11,19 @@ import { Router } from '@youwol/mkdocs-ts'
 
 export class BackendInstallNotificationView extends ExpandableGroupView {
     constructor({
-        backend,
-        version,
-        installId,
+        event,
         router,
         state,
     }: {
-        backend: string
-        version: string
-        installId: string
+        event: BackendInstallEvent
         router: Router
         state: State
     }) {
+        const { name, version, installId } = event
         const done$ = state.backendEvents.endInstall$.pipe(
             filter(
                 (d) =>
-                    d.name === backend &&
+                    d.name === name &&
                     d.version === version &&
                     d.installId === installId,
             ),
@@ -47,7 +44,7 @@ export class BackendInstallNotificationView extends ExpandableGroupView {
             expanded: false,
             icon: installIcon(statusIcon),
             title: new HeaderBackendInstallView({
-                backend,
+                backend: name,
                 version,
             }),
             content: () =>
@@ -56,7 +53,7 @@ export class BackendInstallNotificationView extends ExpandableGroupView {
                     installId,
                     done$,
                     state,
-                    backend,
+                    backend: name,
                     version,
                 }),
         })

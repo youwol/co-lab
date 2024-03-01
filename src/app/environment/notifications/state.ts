@@ -3,7 +3,7 @@ import { PyYouwolClient, Routers } from '@youwol/local-youwol-client'
 import { filter } from 'rxjs/operators'
 import * as pyYw from '@youwol/local-youwol-client'
 
-export type InstallBackendEvent = Routers.System.InstallBackendEvent
+export type BackendInstallEvent = Routers.System.InstallBackendEvent
 
 export type Error = {
     kind: 'BackendInstall' | 'AssetDownload'
@@ -21,7 +21,7 @@ export class BackendEvents {
     /**
      * All install events.
      */
-    public readonly install$ = new ReplaySubject<InstallBackendEvent>(100)
+    public readonly install$ = new ReplaySubject<BackendInstallEvent>(100)
 
     /**
      * Start install events for all backends.
@@ -103,7 +103,7 @@ export class BackendEvents {
     }
 }
 
-export type AssetDownloadNotification = Routers.System.DownloadEvent & {
+export type AssetDownloadEvent = Routers.System.DownloadEvent & {
     contextId: string
 }
 
@@ -111,9 +111,7 @@ export class AssetEvents {
     /**
      * All download events.
      */
-    public readonly download$ = new ReplaySubject<AssetDownloadNotification>(
-        100,
-    )
+    public readonly download$ = new ReplaySubject<AssetDownloadEvent>(100)
 
     /**
      * Start download events for all assets.
