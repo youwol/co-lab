@@ -89,7 +89,7 @@ const router = new Router({
             },
         },
         {
-            from$: appState.cdnState.packages$.pipe(debounceTime(500)),
+            from$: appState.cdnState.status$.pipe(debounceTime(500)),
             then: ({
                 data,
                 router,
@@ -97,10 +97,10 @@ const router = new Router({
             }: {
                 router: Router
                 treeState: ImmutableTree.State<ExplicitNode>
-                data
+                data: Routers.LocalCdn.CdnStatusResponse
             }) => {
                 mountComponents({
-                    packages: data,
+                    packages: data.packages,
                     router,
                     treeState,
                 })
