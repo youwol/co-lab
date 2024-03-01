@@ -173,7 +173,7 @@ export class LogsExplorerView implements VirtualDOM<'div'> {
     refresh() {
         this.fetchingLogs$.next(true)
         this.rootLogs$.subscribe((response) => {
-            this.logs$.next({ logs: response.logs.reverse() })
+            this.logs$.next({ logs: response.logs })
             this.fetchingLogs$.next(false)
         })
     }
