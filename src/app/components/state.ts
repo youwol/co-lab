@@ -1,8 +1,8 @@
 import { AppState } from '../app-state'
-import { BehaviorSubject, Observable } from 'rxjs'
+import { BehaviorSubject, debounceTime, Observable } from 'rxjs'
 
 import * as pyYw from '@youwol/local-youwol-client'
-import { map, shareReplay } from 'rxjs/operators'
+import { filter, map, shareReplay } from 'rxjs/operators'
 
 type LocalCdnRouter = pyYw.Routers.LocalCdn.LocalCdnRouter
 
@@ -77,7 +77,19 @@ export class State {
             shareReplay(1),
         )
 
-        this.cdnClient.getStatus$().subscribe()
+        this.refreshPackages()
+        // Following subscription is until py-youwol properly emit new components status when packages
+        // have been downloaded. TG-2187
+        new pyYw.PyYouwolClient().admin.system.webSocket
+            .downloadEvent$()
+            .pipe(
+                filter(
+                    ({ data }) =>
+                        data.kind === 'package' && data.type === 'succeeded',
+                ),
+                debounceTime(500),
+            )
+            .subscribe(() => this.refreshPackages())
     }
 
     openPackage(packageId: string) {
