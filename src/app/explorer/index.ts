@@ -1,5 +1,5 @@
-import { parseMd, Router, Views } from '@youwol/mkdocs-ts'
-import { AssetsGateway } from '@youwol/http-clients'
+import { ExplicitNode, parseMd, Router, Views } from '@youwol/mkdocs-ts'
+import { Accounts, AssetsGateway } from '@youwol/http-clients'
 import { raiseHTTPErrors } from '@youwol/http-primitives'
 import { map, take } from 'rxjs/operators'
 import { AssetView, ExplorerView } from './explorer.views'
@@ -7,6 +7,8 @@ import { combineLatest, of } from 'rxjs'
 import { AppState } from '../app-state'
 import { ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
 import { Installer, PreferencesFacade } from '@youwol/os-core'
+import { ImmutableTree } from '@youwol/rx-tree-views'
+import { mountReactiveNav } from '../common/mount-reactive-nav'
 
 const tableOfContent = Views.tocView
 
@@ -18,6 +20,31 @@ export const navigation = (appState: AppState) => ({
     '/**': explorerNavigation,
 })
 
+export function mountExplorer({
+    groups,
+    router,
+    treeState,
+}: {
+    groups: Accounts.Groups[]
+    treeState: ImmutableTree.State<ExplicitNode>
+    router: Router
+}) {
+    mountReactiveNav<{ id: string; name: string }>({
+        basePath: '/explorer',
+        entities: groups.map((g) => ({
+            id: g.id,
+            name: g.path.split('/').slice(-1)[0],
+        })),
+        router,
+        treeState,
+        icon: (entity) => ({
+            tag: 'div',
+            class: entity.id.includes('private')
+                ? 'fas fa-user mx-2'
+                : 'fas fa-users mx-2',
+        }),
+    })
+}
 export class PageView implements VirtualDOM<'div'> {
     public readonly tag = 'div'
     public readonly children: ChildrenLike
