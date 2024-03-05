@@ -8,8 +8,7 @@ import { TsCodeEditorModule } from '@youwol/rx-code-mirror-editors'
 export class ProfilesListView implements VirtualDOM<'div'> {
     public readonly tag = 'div'
     public readonly children: ChildrenLike
-    constructor(params: { profilesState: ProfilesState }) {
-        const { profilesState } = params
+    constructor({ profilesState }: { profilesState: ProfilesState }) {
         this.children = [
             {
                 tag: 'select',
@@ -71,6 +70,7 @@ export class InstallersView implements VirtualDOM<'div'> {
 
     constructor(params: { profilesState: ProfilesState }) {
         const { profilesState } = params
+
         this.children = [
             {
                 source$: combineLatest([
