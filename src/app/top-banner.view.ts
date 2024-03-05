@@ -1,11 +1,5 @@
 import { TopBannerView as TopBannerBase } from '@youwol/os-top-banner'
-import {
-    BehaviorSubject,
-    combineLatest,
-    distinctUntilChanged,
-    Subject,
-    timer,
-} from 'rxjs'
+import { BehaviorSubject, distinctUntilChanged, Subject, timer } from 'rxjs'
 import { Views, Router } from '@youwol/mkdocs-ts'
 import {
     AnyVirtualDOM,
@@ -19,7 +13,7 @@ import { AppState } from './app-state'
 import { Accounts } from '@youwol/http-clients'
 import { CoLabLogo } from './common'
 import { internalAnchor } from './common/links.view'
-import { map } from 'rxjs/operators'
+import { map, mergeMap } from 'rxjs/operators'
 
 /**
  * Top banner of the application
@@ -236,10 +230,13 @@ export class UserBadgeDropdownView implements VirtualDOM<'div'> {
     constructor({ state }: { state: AppState }) {
         this.children = [
             {
-                source$: combineLatest([
-                    new Accounts.AccountsClient().getSessionDetails$(),
-                    state.environment$,
-                ]),
+                source$: state.environment$.pipe(
+                    mergeMap((env) => {
+                        return new Accounts.AccountsClient()
+                            .getSessionDetails$()
+                            .pipe(map((session) => [session, env]))
+                    }),
+                ),
                 vdomMap: ([sessionInfo, env]: [
                     Accounts.SessionDetails,
                     Routers.Environment.EnvironmentStatusResponse,
@@ -284,20 +281,139 @@ export class UserBadgeDropdownView implements VirtualDOM<'div'> {
     ): AnyVirtualDOM {
         return {
             tag: 'div',
-            class: 'dropdown-item d-flex align-items-center fv-pointer disabled',
+            class: 'px-4',
+            children: env.youwolEnvironment.remotes.map((remote) => {
+                const connection = env.youwolEnvironment.currentConnection
+                return new CloudEnvironmentView({ remote, connection })
+            }),
+        }
+    }
+}
+
+export class CloudEnvironmentView implements VirtualDOM<'div'> {
+    /**
+     * @group Immutable DOM Constants
+     */
+    public readonly tag = 'div'
+    /**
+     * @group Immutable DOM Constants
+     */
+    public readonly class = ''
+    /**
+     * @group Immutable DOM Constants
+     */
+    public readonly children: ChildrenLike
+
+    constructor({
+        remote,
+        connection,
+    }: {
+        remote: Routers.Environment.CloudEnvironment
+        connection: Routers.Environment.Connection
+    }) {
+        const browserAuths = remote.authentications.filter(
+            (auth) => auth.type === 'BrowserAuth',
+        )
+        const directAuths = remote.authentications.filter(
+            (auth) => auth.type === 'DirectAuth',
+        )
+        this.children = [
+            {
+                tag: 'div',
+                class: 'd-flex align-items-center',
+                children: [
+                    {
+                        tag: 'i',
+                        class: `fas fa-cloud ${
+                            remote.envId === connection.envId
+                                ? 'text-success'
+                                : 'text-muted'
+                        }`,
+                    },
+                    {
+                        tag: 'i',
+                        class: 'mx-2',
+                    },
+                    {
+                        tag: 'div',
+                        class: 'text-light',
+                        innerText: remote.host,
+                    },
+                ],
+            },
+            {
+                tag: 'div',
+                class: 'px-3',
+                children: [
+                    this.authsSection(
+                        'Browser',
+                        remote.envId,
+                        connection,
+                        browserAuths,
+                    ),
+                    this.authsSection(
+                        'Direct',
+                        remote.envId,
+                        connection,
+                        directAuths,
+                    ),
+                ],
+            },
+        ]
+    }
+
+    private authsSection(
+        type: 'Browser' | 'Direct',
+        envId: string,
+        connection: Routers.Environment.Connection,
+        auths: { authId: string }[],
+    ): AnyVirtualDOM {
+        return {
+            tag: 'div',
             children: [
                 {
-                    tag: 'i',
-                    class: 'fas fa-cloud text-success',
-                },
-                {
-                    tag: 'i',
-                    class: 'mx-2',
-                },
-                {
                     tag: 'div',
-                    class: 'text-light',
-                    innerText: env.remoteGatewayInfo.host,
+                    children: auths.map(({ authId }) => {
+                        const classes =
+                            'btn w-100 my-1 btn-sm d-flex align-items-center ' +
+                            (authId === connection.authId &&
+                            envId === connection.envId
+                                ? 'btn-info'
+                                : 'btn-outline-info')
+                        return {
+                            tag: 'button',
+                            class: classes,
+                            children: [
+                                {
+                                    tag: 'i',
+                                    class:
+                                        type === 'Browser'
+                                            ? 'fas fa-passport'
+                                            : 'fas fa-id-card-alt',
+                                },
+                                {
+                                    tag: 'i',
+                                    class: 'mx-2',
+                                },
+                                {
+                                    tag: 'div',
+                                    innerText: authId,
+                                },
+                            ],
+                            onclick: () => {
+                                new PyYouwolClient().admin.environment
+                                    .login$({
+                                        body: { authId, envId },
+                                    })
+                                    .pipe(
+                                        mergeMap(() => {
+                                            return new PyYouwolClient().admin.environment.getStatus$()
+                                        }),
+                                    )
+                                    .subscribe(() => {})
+                            },
+                        }
+                    }),
                 },
             ],
         }
