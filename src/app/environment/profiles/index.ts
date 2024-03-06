@@ -8,9 +8,9 @@ import { parseMd, Router, Views } from '@youwol/mkdocs-ts'
 import { ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
 import { ProfilesState } from './profiles.state'
 
-export const navigation = (_appState: AppState) => ({
+export const navigation = (appState: AppState) => ({
     name: 'Profiles',
-    html: ({ router }) => new PageView({ router }),
+    html: ({ router }) => new PageView({ router, appState }),
     tableOfContent: Views.tocView,
     icon: { tag: 'i', class: 'fas fa-user-friends mr-2' },
 })
@@ -18,9 +18,7 @@ export const navigation = (_appState: AppState) => ({
 export class PageView implements VirtualDOM<'div'> {
     public readonly tag = 'div'
     public readonly children: ChildrenLike
-    constructor(params: { router: Router }) {
-        const profilesState = new ProfilesState()
-
+    constructor(params: { router: Router; appState: AppState }) {
         this.children = [
             parseMd({
                 src: `
@@ -39,21 +37,51 @@ Here is the list of the available profiles, you can change the selection and eve
 
 <profiles></profiles>
 
-## Current profile
-
-### Preferences
-
-<preferences></preferences>    
-          
-### Installers
-
-<installer></installer>    
                 `,
                 router: params.router,
                 views: {
-                    installer: () => new InstallersView({ profilesState }),
-                    profiles: () => new ProfilesListView({ profilesState }),
-                    preferences: () => new PreferencesView({ profilesState }),
+                    profiles: () => {
+                        return {
+                            tag: 'div',
+                            children: [
+                                {
+                                    source$: params.appState.session$,
+                                    vdomMap: () => {
+                                        const profilesState =
+                                            new ProfilesState()
+                                        return parseMd({
+                                            src: `
+## Current profile
+
+<selectProfile></selectProfile>
+### Preferences
+<preferences></preferences>    
+
+### Installers
+<installer></installer>
+`,
+                                            router: params.router,
+                                            emitHtmlUpdated: true,
+                                            views: {
+                                                selectProfile: () =>
+                                                    new ProfilesListView({
+                                                        profilesState,
+                                                    }),
+                                                preferences: () =>
+                                                    new PreferencesView({
+                                                        profilesState,
+                                                    }),
+                                                installer: () =>
+                                                    new InstallersView({
+                                                        profilesState,
+                                                    }),
+                                            },
+                                        })
+                                    },
+                                },
+                            ],
+                        }
+                    },
                 },
             }),
         ]

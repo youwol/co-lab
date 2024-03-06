@@ -20,6 +20,9 @@ import { mountBackends } from './environment/backends'
 import { debounceTime, Observable, Subject } from 'rxjs'
 import { mountComponents } from './components'
 import { DisconnectedView } from './disconnected.view'
+import { map } from 'rxjs/operators'
+import { mountExplorer } from './explorer'
+import { Accounts } from '@youwol/http-clients'
 
 const appState = new AppState()
 
@@ -101,6 +104,26 @@ const router = new Router({
             }) => {
                 mountComponents({
                     packages: data.packages,
+                    router,
+                    treeState,
+                })
+            },
+        },
+        {
+            from$: appState.session$.pipe(
+                map(({ userInfo }) => userInfo.groups),
+            ),
+            then: ({
+                data,
+                router,
+                treeState,
+            }: {
+                router: Router
+                treeState: ImmutableTree.State<ExplicitNode>
+                data: Accounts.Groups[]
+            }) => {
+                mountExplorer({
+                    groups: data,
                     router,
                     treeState,
                 })

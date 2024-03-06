@@ -1,5 +1,5 @@
 import { distinctUntilChanged, Observable, Subject } from 'rxjs'
-import { filter, map, shareReplay, take, tap } from 'rxjs/operators'
+import { filter, map, mergeMap, shareReplay, take, tap } from 'rxjs/operators'
 import * as Projects from './projects'
 import * as Components from './components'
 import * as Backends from './environment/backends'
@@ -8,6 +8,8 @@ import * as Notification from './environment/notifications'
 import { AnyVirtualDOM } from '@youwol/rx-vdom'
 import * as pyYw from '@youwol/local-youwol-client'
 import { WsRouter } from '@youwol/local-youwol-client'
+import { Accounts } from '@youwol/http-clients'
+import { raiseHTTPErrors } from '@youwol/http-primitives'
 
 export type Topic =
     | 'Projects'
@@ -45,6 +47,11 @@ export class AppState {
      * @group Observables
      */
     public readonly environment$: Observable<pyYw.Routers.Environment.EnvironmentStatusResponse>
+
+    /**
+     * @group Observables
+     */
+    public readonly session$: Observable<Accounts.SessionDetails>
 
     /**
      * @group State
@@ -106,5 +113,15 @@ export class AppState {
         this.confChanged$.subscribe(() => {
             this.cdnState.refreshPackages()
         })
+
+        this.session$ = this.environment$.pipe(
+            map((env) => env['youwolEnvironment'].currentConnection),
+            distinctUntilChanged(
+                (prev, curr) => JSON.stringify(prev) === JSON.stringify(curr),
+            ),
+            mergeMap(() => new Accounts.AccountsClient().getSessionDetails$()),
+            raiseHTTPErrors(),
+            shareReplay(1),
+        )
     }
 }
