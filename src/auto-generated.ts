@@ -33,8 +33,8 @@ const externals = {
     "@youwol/rx-code-mirror-editors": "window['@youwol/rx-code-mirror-editors_APIv05']",
     "rxjs": "window['rxjs_APIv7']",
     "d3": "window['d3_APIv7']",
-    "rxjs/operators": "window['rxjs_APIv7']['operators']",
-    "@youwol/local-youwol-client/src/lib/routers/projects/interfaces": "window['@youwol/local-youwol-client_APIv02']['src']['lib']['routers']['projects']['interfaces']"
+    "@youwol/local-youwol-client/src/lib/routers/projects/interfaces": "window['@youwol/local-youwol-client_APIv02']['src']['lib']['routers']['projects']['interfaces']",
+    "rxjs/operators": "window['rxjs_APIv7']['operators']"
 }
 const exportedSymbols = {
     "@youwol/mkdocs-ts": {
