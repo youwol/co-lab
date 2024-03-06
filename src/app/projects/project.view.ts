@@ -11,6 +11,12 @@ import { debounceTime, merge, mergeMap, of } from 'rxjs'
 import { AppState } from '../app-state'
 import { SelectedStepView } from './project/selected-step.view'
 import { CdnLinkView, ExplorerLinkView } from '../common/links.view'
+import { parse } from 'marked'
+import {
+    FailureDirectoryNotFound,
+    FailureImportException,
+    FailurePipelineNotFound,
+} from '@youwol/local-youwol-client/src/lib/routers/projects/interfaces'
 
 export class ProjectView implements VirtualDOM<'div'> {
     public readonly tag = 'div'
@@ -262,52 +268,95 @@ export class NewProjectsCard implements VirtualDOM<'div'> {
     }
 }
 
+type Failures =
+    | FailurePipelineNotFound[]
+    | FailureDirectoryNotFound[]
+    | FailureImportException[]
+
 export class FailuresView implements VirtualDOM<'div'> {
     public readonly tag = 'div'
     public readonly children: ChildrenLike
 
-    constructor({ appState }: { appState: AppState; router: Router }) {
+    constructor({ appState, router }: { appState: AppState; router: Router }) {
         this.children = {
             policy: 'replace',
             source$: appState.projectsState.projectsFailures$,
-            vdomMap: (failures: Routers.Projects.Failure[]) => {
-                return failures.map((failure) => ({
-                    tag: 'div' as const,
-                    class: 'my-4',
-                    children: [
-                        new ExpandableGroupView({
-                            title: {
-                                tag: 'div',
-                                style: {
-                                    maxWidth: '75%',
-                                },
-                                children: [
-                                    new HdPathBookView({
-                                        path: failure.path,
-                                        appState,
-                                    }),
-                                ],
-                            },
-                            icon: 'fas fa-times fv-text-error',
-                            content: () => {
-                                return {
-                                    tag: 'pre',
-                                    children: [
-                                        {
-                                            tag: 'div',
-                                            class: 'pt-2 px-2 text-start overflow-auto fv-text-error ',
-                                            style: {
-                                                whiteSpace: 'pre-wrap',
-                                            },
-                                            innerText: failure['traceback'],
-                                        },
-                                    ],
-                                }
-                            },
-                        }),
-                    ],
-                }))
-            },
+            vdomMap: (
+                failures: Routers.Projects.ProjectsLoadingResults['failures'],
+            ) => [
+                new FailuresCategoryView(
+                    { appState, router },
+                    failures.importExceptions,
+                    'Import Failures',
+                ),
+                new FailuresCategoryView(
+                    { appState, router },
+                    failures.directoriesNotFound,
+                    'Directory Not Found Failures',
+                ),
+                new FailuresCategoryView(
+                    { appState, router },
+                    failures.pipelinesNotFound,
+                    'Pipeline Not Found Failures',
+                ),
+            ],
         }
+    }
+}
+
+class FailuresCategoryView implements VirtualDOM<'div'> {
+    public readonly tag = 'div'
+    public readonly children: ChildrenLike
+    constructor(
+        { appState }: { appState: AppState; router: Router },
+        failures: Failures,
+        title: string,
+    ) {
+        this.children = [
+            failures.length !== 0
+                ? {
+                      tag: 'div',
+                      innerHTML: parse(`### ${title}`),
+                      children: failures.map((failure) => ({
+                          tag: 'div' as const,
+                          class: 'my-4',
+                          children: [
+                              new ExpandableGroupView({
+                                  title: {
+                                      tag: 'div',
+                                      style: {
+                                          maxWidth: '75%',
+                                      },
+                                      children: [
+                                          new HdPathBookView({
+                                              path: failure.path,
+                                              appState,
+                                          }),
+                                      ],
+                                  },
+                                  icon: 'fas fa-times fv-text-error',
+                                  content: () => {
+                                      return {
+                                          tag: 'pre',
+                                          children: [
+                                              {
+                                                  tag: 'div',
+                                                  class: 'pt-2 px-2 text-start overflow-auto fv-text-error ',
+                                                  style: {
+                                                      whiteSpace: 'pre-wrap',
+                                                  },
+                                                  innerText:
+                                                      failure['traceback'] ??
+                                                      failure.message,
+                                              },
+                                          ],
+                                      }
+                                  },
+                              }),
+                          ],
+                      })),
+                  }
+                : { tag: 'div' },
+        ]
     }
 }
