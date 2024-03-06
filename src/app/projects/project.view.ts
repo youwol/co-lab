@@ -277,28 +277,28 @@ export class FailuresView implements VirtualDOM<'div'> {
     public readonly tag = 'div'
     public readonly children: ChildrenLike
 
-    constructor({ appState, router }: { appState: AppState; router: Router }) {
+    constructor({ appState }: { appState: AppState; router: Router }) {
         this.children = {
             policy: 'replace',
             source$: appState.projectsState.projectsFailures$,
             vdomMap: (
                 failures: Routers.Projects.ProjectsLoadingResults['failures'],
             ) => [
-                new FailuresCategoryView(
-                    { appState, router },
-                    failures.importExceptions,
-                    'Import Failures',
-                ),
-                new FailuresCategoryView(
-                    { appState, router },
-                    failures.directoriesNotFound,
-                    'Directory Not Found Failures',
-                ),
-                new FailuresCategoryView(
-                    { appState, router },
-                    failures.pipelinesNotFound,
-                    'Pipeline Not Found Failures',
-                ),
+                new FailuresCategoryView({
+                    appState: appState,
+                    failures: failures.importExceptions,
+                    title: 'Import Failures',
+                }),
+                new FailuresCategoryView({
+                    appState: appState,
+                    failures: failures.directoriesNotFound,
+                    title: 'Directory Not Found Failures',
+                }),
+                new FailuresCategoryView({
+                    appState: appState,
+                    failures: failures.pipelinesNotFound,
+                    title: 'Pipeline Not Found Failures',
+                }),
             ],
         }
     }
@@ -307,11 +307,16 @@ export class FailuresView implements VirtualDOM<'div'> {
 class FailuresCategoryView implements VirtualDOM<'div'> {
     public readonly tag = 'div'
     public readonly children: ChildrenLike
-    constructor(
-        { appState }: { appState: AppState; router: Router },
-        failures: Failures,
-        title: string,
-    ) {
+
+    constructor({
+        appState,
+        failures,
+        title,
+    }: {
+        appState: AppState
+        failures: Failures
+        title: string
+    }) {
         this.children = [
             failures.length !== 0
                 ? {
