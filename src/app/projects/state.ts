@@ -217,7 +217,9 @@ export class State {
     /**
      * @group Observables
      */
-    public readonly projectsFailures$: Observable<Routers.Projects.Failure[]>
+    public readonly projectsFailures$: Observable<
+        Routers.Projects.ProjectsLoadingResults['failures']
+    >
 
     /**
      * @group Observables
@@ -250,7 +252,7 @@ export class State {
         )
 
         this.projectsFailures$ = this.projectsLoading$.pipe(
-            map((data) => data.failures.importExceptions),
+            map((data) => data.failures),
             shareReplay(1),
         )
         this.projectsClient.status$().subscribe()
