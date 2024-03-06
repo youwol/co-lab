@@ -361,7 +361,7 @@ class FailuresCategoryView implements VirtualDOM<'div'> {
                           ],
                       })),
                   }
-                : { tag: 'div' },
+                : undefined,
         ]
     }
 }
