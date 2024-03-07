@@ -8,8 +8,8 @@ import { pyYwDocLink } from '../common/py-yw-references.view'
 import { Routers } from '@youwol/local-youwol-client'
 import { icon } from './icons'
 import { ImmutableTree } from '@youwol/rx-tree-views'
-import { firstValueFrom, of } from 'rxjs'
-import { map } from 'rxjs/operators'
+import { BehaviorSubject, firstValueFrom, of } from 'rxjs'
+import { delay, map } from 'rxjs/operators'
 import { mountReactiveNav } from '../common/mount-reactive-nav'
 
 export * from './state'
@@ -17,10 +17,40 @@ export * from './state'
 const skipNamespace = (name: string) => {
     return name.split('/').slice(-1)[0]
 }
-
+const refresh$ = new BehaviorSubject(false)
 export const navigation = (appState: AppState) => ({
     name: 'Projects',
     icon: { tag: 'i', class: 'fas  fa-boxes mr-2' },
+    actions: [
+        {
+            tag: 'button',
+            class: 'mx-2 btn btn-info btn-sm px-1',
+            style: {
+                padding: '0px',
+            },
+            onclick: (ev: MouseEvent) => {
+                refresh$.next(true)
+                ev.preventDefault()
+                ev.stopPropagation()
+                appState.projectsState.projectsClient
+                    .status$()
+                    .pipe(delay(500))
+                    .subscribe(() => {
+                        refresh$.next(false)
+                    })
+            },
+            children: [
+                {
+                    tag: 'i',
+                    class: {
+                        source$: refresh$,
+                        vdomMap: (r: boolean) => (r ? 'fa-spin' : ''),
+                        wrapper: (d: string) => `${d} fas fa-sync`,
+                    },
+                },
+            ],
+        },
+    ],
     tableOfContent: Views.tocView,
     html: ({ router }) =>
         new PageView({

@@ -1,7 +1,7 @@
 
 const runTimeDependencies = {
     "externals": {
-        "@youwol/mkdocs-ts": "^0.2.1",
+        "@youwol/mkdocs-ts": "^0.2.3",
         "@youwol/rx-vdom": "^1.0.1",
         "bootstrap": "^4.4.1",
         "@youwol/webpm-client": "^3.0.0",
@@ -10,7 +10,7 @@ const runTimeDependencies = {
         "@youwol/local-youwol-client": "^0.2.8",
         "@youwol/os-core": "^0.2.0",
         "@youwol/os-widgets": "^0.2.6",
-        "@youwol/rx-tree-views": "0.3.1",
+        "@youwol/rx-tree-views": "^0.3.1",
         "@youwol/rx-code-mirror-editors": "0.5.0",
         "rxjs": "^7.5.6",
         "d3": "^7.7.0"
@@ -33,8 +33,8 @@ const externals = {
     "@youwol/rx-code-mirror-editors": "window['@youwol/rx-code-mirror-editors_APIv05']",
     "rxjs": "window['rxjs_APIv7']",
     "d3": "window['d3_APIv7']",
-    "rxjs/operators": "window['rxjs_APIv7']['operators']",
-    "@youwol/local-youwol-client/src/lib/routers/projects/interfaces": "window['@youwol/local-youwol-client_APIv02']['src']['lib']['routers']['projects']['interfaces']"
+    "@youwol/local-youwol-client/src/lib/routers/projects/interfaces": "window['@youwol/local-youwol-client_APIv02']['src']['lib']['routers']['projects']['interfaces']",
+    "rxjs/operators": "window['rxjs_APIv7']['operators']"
 }
 const exportedSymbols = {
     "@youwol/mkdocs-ts": {
