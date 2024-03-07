@@ -20,7 +20,7 @@ externals_deps = {
     '@youwol/local-youwol-client': '^0.2.8',
     '@youwol/os-core': '^0.2.0',
     '@youwol/os-widgets': '^0.2.6',
-    "@youwol/rx-tree-views": "0.3.1",
+    "@youwol/rx-tree-views": "^0.3.1",
     "@youwol/rx-code-mirror-editors": "0.5.0",
     "rxjs": "^7.5.6",
     'd3': '^7.7.0',
