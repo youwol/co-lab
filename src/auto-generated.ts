@@ -33,8 +33,8 @@ const externals = {
     "@youwol/rx-code-mirror-editors": "window['@youwol/rx-code-mirror-editors_APIv05']",
     "rxjs": "window['rxjs_APIv7']",
     "d3": "window['d3_APIv7']",
-    "@youwol/local-youwol-client/src/lib/routers/projects/interfaces": "window['@youwol/local-youwol-client_APIv02']['src']['lib']['routers']['projects']['interfaces']",
-    "rxjs/operators": "window['rxjs_APIv7']['operators']"
+    "rxjs/operators": "window['rxjs_APIv7']['operators']",
+    "@youwol/local-youwol-client/src/lib/routers/projects/interfaces": "window['@youwol/local-youwol-client_APIv02']['src']['lib']['routers']['projects']['interfaces']"
 }
 const exportedSymbols = {
     "@youwol/mkdocs-ts": {
@@ -119,7 +119,7 @@ const entries = {
 export const setup = {
     name:'@youwol/co-lab',
         assetId:'QHlvdXdvbC9jby1sYWI=',
-    version:'0.2.1-wip',
+    version:'0.2.2-wip',
     shortDescription:"The YouWol's collaborative laboratory application.",
     developerDocumentation:'https://platform.youwol.com/applications/@youwol/cdn-explorer/latest?package=@youwol/co-lab&tab=doc',
     npmPackage:'https://www.npmjs.com/package/@youwol/co-lab',
@@ -165,7 +165,7 @@ export const setup = {
         const parameters = installParameters || {}
         const scripts = [
             ...(parameters.scripts || []),
-            `@youwol/co-lab#0.2.1-wip~dist/@youwol/co-lab/${entry.name}.js`
+            `@youwol/co-lab#0.2.2-wip~dist/@youwol/co-lab/${entry.name}.js`
         ]
         const modules = [
             ...(parameters.modules || []),
