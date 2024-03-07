@@ -29,7 +29,7 @@
         ]
     },
     "dependencies": {
-        "@youwol/mkdocs-ts": "^0.2.1",
+        "@youwol/mkdocs-ts": "^0.2.3",
         "@youwol/rx-vdom": "^1.0.1",
         "bootstrap": "^4.4.1",
         "@youwol/webpm-client": "^3.0.0",
@@ -38,7 +38,7 @@
         "@youwol/local-youwol-client": "^0.2.8",
         "@youwol/os-core": "^0.2.0",
         "@youwol/os-widgets": "^0.2.6",
-        "@youwol/rx-tree-views": "0.3.1",
+        "@youwol/rx-tree-views": "^0.3.1",
         "@youwol/rx-code-mirror-editors": "0.5.0",
         "rxjs": "^7.5.6",
         "d3": "^7.7.0",
@@ -72,7 +72,7 @@
     },
     "webpm": {
         "dependencies": {
-            "@youwol/mkdocs-ts": "^0.2.1",
+            "@youwol/mkdocs-ts": "^0.2.3",
             "@youwol/rx-vdom": "^1.0.1",
             "bootstrap": "^4.4.1",
             "@youwol/webpm-client": "^3.0.0",
@@ -81,7 +81,7 @@
             "@youwol/local-youwol-client": "^0.2.8",
             "@youwol/os-core": "^0.2.0",
             "@youwol/os-widgets": "^0.2.6",
-            "@youwol/rx-tree-views": "0.3.1",
+            "@youwol/rx-tree-views": "^0.3.1",
             "@youwol/rx-code-mirror-editors": "0.5.0",
             "rxjs": "^7.5.6",
             "d3": "^7.7.0"
