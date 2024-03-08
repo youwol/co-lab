@@ -12,11 +12,6 @@ import { AppState } from '../app-state'
 import { SelectedStepView } from './project/selected-step.view'
 import { CdnLinkView, ExplorerLinkView } from '../common/links.view'
 import { parse } from 'marked'
-import {
-    FailureDirectoryNotFound,
-    FailureImportException,
-    FailurePipelineNotFound,
-} from '@youwol/local-youwol-client/src/lib/routers/projects/interfaces'
 
 export class ProjectView implements VirtualDOM<'div'> {
     public readonly tag = 'div'
@@ -269,9 +264,9 @@ export class NewProjectsCard implements VirtualDOM<'div'> {
 }
 
 type Failures =
-    | FailurePipelineNotFound[]
-    | FailureDirectoryNotFound[]
-    | FailureImportException[]
+    | Routers.Projects.FailurePipelineNotFound[]
+    | Routers.Projects.FailureDirectoryNotFound[]
+    | Routers.Projects.FailureImportException[]
 
 export class FailuresView implements VirtualDOM<'div'> {
     public readonly tag = 'div'
