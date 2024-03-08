@@ -4,7 +4,7 @@ import { ExplicitNode, parseMd, Router, Views } from '@youwol/mkdocs-ts'
 import { ImmutableTree } from '@youwol/rx-tree-views'
 import { PyYouwolClient } from '@youwol/local-youwol-client'
 import { raiseHTTPErrors } from '@youwol/http-primitives'
-import { map, take } from 'rxjs/operators'
+import { map, shareReplay, take } from 'rxjs/operators'
 import { of } from 'rxjs'
 import { FileContentView, FilesListView } from './views'
 
@@ -33,7 +33,7 @@ export const navigation = (appState: AppState) => ({
                     })
                 }
                 return new FilesListView({
-                    baseUrl: `/mounted/${path}`,
+                    baseUrl: `/mounted${path}`,
                     path: decodeHRef(`${parts[0]}/${parts.slice(1).join('/')}`),
                     router,
                 })
@@ -51,23 +51,34 @@ export function mountFolder({
     treeState: ImmutableTree.State<ExplicitNode>
     router: Router
 }) {
-    treeState.selectNodeAndExpand(treeState.getNode(`/${basePath}`))
-    const name = folder.split('/').slice(-1)[0]
-    const node = new ExplicitNode({
-        id: `/${basePath}/${name}`,
-        name,
-        children: getFolderChildren$(window.btoa(folder), ''),
-        href: `/${basePath}/${window.btoa(folder)}`,
-        icon: {
-            tag: 'div',
-            class: 'fas fa-folder mx-2',
-        },
+    const parentNode = treeState.getNode(`/${basePath}`)
+
+    treeState.getChildren$(parentNode).subscribe((children: ExplicitNode[]) => {
+        const name = folder.split('/').slice(-1)[0]
+        const id = `/${basePath}/${window.btoa(folder)}`
+        if (children.find((node) => node.id === id)) {
+            return
+        }
+        const node = new ExplicitNode({
+            id: id,
+            name,
+            // if share replay is omitted:
+            // Failed to execute 'fetch' on 'Window':
+            // Cannot construct a Request with a Request object that has already been used.
+            // This is because of `router.navigateTo` below; the shareReplay somehow prevents this
+            children: getFolderChildren$(window.btoa(folder), '').pipe(
+                shareReplay(1),
+            ),
+            href: id,
+            icon: {
+                tag: 'div',
+                class: 'fas fa-folder mx-2',
+            },
+        })
+        treeState.addChild(parentNode, node)
+        router.navigateTo({ path: node.href })
     })
-    if (!treeState.getNode(node.id)) {
-        treeState.addChild(`/${basePath}`, node)
-    }
-    treeState.selectNodeAndExpand(treeState.getNode(node.id))
-    router.navigateTo({ path: `/${basePath}/${window.btoa(folder)}` })
+    treeState.getChildren(parentNode)
 }
 
 export class PageView implements VirtualDOM<'div'> {
@@ -99,22 +110,11 @@ export function decodeHRef(path) {
         .map((p) => window.atob(p))
         .join('/')
 }
-export function encodeHRef(path) {
-    return path
-        .split('/')
-        .map((p) => window.btoa(p))
-        .join('/')
-}
 
 function getFolderChildren$(origin: string, from: string) {
     const fromDecoded = from != '' ? decodeHRef(from) : ''
 
-    function getHRef(item: string) {
-        return `/${basePath}/${origin}${from}/${window.btoa(item)}`
-    }
-    function getId(item: string) {
-        return `${window.atob(origin)}/${fromDecoded}/${item}`
-    }
+    const baseId = `/${basePath}/${origin}${from}`
     return new PyYouwolClient().admin.system
         .queryFolderContent$({
             path: window.atob(origin) + fromDecoded,
@@ -125,14 +125,15 @@ function getFolderChildren$(origin: string, from: string) {
             map((response) => {
                 return [
                     ...response.folders.map((folder) => {
+                        const id = `${baseId}/${window.btoa(folder)}`
                         return new ExplicitNode({
-                            id: getId(folder),
+                            id,
                             name: folder,
                             children: getFolderChildren$(
                                 origin,
                                 `${from}/${window.btoa(folder)}`,
                             ),
-                            href: getHRef(folder),
+                            href: id,
                             icon: {
                                 tag: 'div',
                                 class: 'fas fa-folder mx-2',
@@ -140,12 +141,16 @@ function getFolderChildren$(origin: string, from: string) {
                         })
                     }),
                     ...response.files.map((file) => {
+                        const id = `${baseId}/file_${window.btoa(file)}`
                         return new ExplicitNode({
-                            id: getId(file),
+                            id,
                             name: file,
                             children: undefined,
-                            href: getHRef(file),
-                            wrapperClass: 'd-none',
+                            href: id,
+                            icon: {
+                                tag: 'div',
+                                class: 'fas fa-file mx-2',
+                            },
                         })
                     }),
                 ]

@@ -228,11 +228,6 @@ export class State {
         Routers.Projects.Project[]
     >([])
 
-    /**
-     * @group Mutable Variables
-     */
-    public readonly screensId = {}
-
     constructor(params: { appState: AppState }) {
         Object.assign(this, params)
 
@@ -258,11 +253,11 @@ export class State {
         this.projectsClient.status$().subscribe()
     }
 
-    runStep(projectId, flowId, stepId) {
+    runStep(projectId: string, flowId: string, stepId: string) {
         this.projectsClient.runStep$({ projectId, flowId, stepId }).subscribe()
     }
 
-    configureStep(projectId, flowId, stepId) {
+    configureStep(projectId: string, flowId: string, stepId: string) {
         const events = this.projectEvents[projectId]
         const step = events.project.pipeline.steps.find((s) => s.id == stepId)
         this.projectEvents[projectId].configureStep$.next({
@@ -298,19 +293,6 @@ export class State {
                 .subscribe()
         }
         events.selectedStep$.next({ flowId, step })
-    }
-
-    newProjectFromTemplate(
-        _projectTemplate: Routers.Environment.ProjectTemplate,
-    ) {
-        // this.screensId[projectTemplate.type] = this.appState.registerScreen({
-        //     topic: 'Projects',
-        //     viewId: projectTemplate.type,
-        //     view: new NewProjectFromTemplateView({
-        //         projectsState: this,
-        //         projectTemplate,
-        //     }),
-        // })
     }
 
     createProjectFromTemplate$({
