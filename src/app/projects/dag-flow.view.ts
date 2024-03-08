@@ -290,10 +290,7 @@ export class DagFlowView implements VirtualDOM<'div'> {
             .on('click', () =>
                 this.projectsState.selectStep(this.project.id, this.flowId),
             )
-        svgSelection.attr(
-            'viewBox',
-            [0, 0, height * 1.2, width * 1.2].join(' '),
-        )
+        svgSelection.attr('viewBox', [0, 0, height, width].join(' '))
 
         withDefaultStyleAttributes(
             svgSelection
