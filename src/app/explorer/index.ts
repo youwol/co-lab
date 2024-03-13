@@ -60,119 +60,171 @@ function lazyResolver({
     const parts = path.split('/').filter((d) => d != '')
     const client = new AssetsGateway.Client()
     if (parts.length == 0) {
-        const obs = client.accounts.getSessionDetails$().pipe(
-            raiseHTTPErrors(),
-            map((details) => {
-                return {
-                    children: details.userInfo.groups.map((g) => {
-                        return {
-                            name: g.path.split('/').slice(-1)[0],
-                            decoration: {
-                                icon: {
-                                    tag: 'div' as const,
-                                    class: g.id.includes('private')
-                                        ? 'fas fa-user mx-2'
-                                        : 'fas fa-users mx-2',
-                                },
+        return lazyResolverGroups({ client })
+    }
+    if (parts.length == 1) {
+        return lazyResolverDrives({ groupId: parts[0], client })
+    }
+    if (parts.length >= 2 && parts.slice(-1)[0].startsWith('folder_')) {
+        return lazyResolverFolders({
+            path,
+            parentId: parts.slice(-1)[0].replace('folder_', ''),
+            client,
+        })
+    }
+    if (parts.length >= 2 && parts.slice(-1)[0].startsWith('asset_')) {
+        return lazyResolverAsset({
+            parentId: parts.slice(-2)[0].replace('folder_', ''),
+            assetId: parts.slice(-1)[0].replace('asset_', ''),
+            client,
+            router,
+            path,
+        })
+    }
+}
+
+function lazyResolverGroups({
+    client,
+}: {
+    client: AssetsGateway.Client
+}): CatchAllNav {
+    return client.accounts.getSessionDetails$().pipe(
+        raiseHTTPErrors(),
+        map((details) => {
+            return {
+                children: details.userInfo.groups.map((g) => {
+                    return {
+                        name: g.path.split('/').slice(-1)[0],
+                        decoration: {
+                            icon: {
+                                tag: 'div' as const,
+                                class: g.id.includes('private')
+                                    ? 'fas fa-user mx-2'
+                                    : 'fas fa-users mx-2',
                             },
-                            id: g.id,
-                        }
+                        },
+                        id: g.id,
+                    }
+                }),
+                html: () => ({ tag: 'h1' as const, innerText: 'Groups' }),
+            }
+        }),
+    )
+}
+
+function lazyResolverDrives({
+    groupId,
+    client,
+}: {
+    groupId: string
+    client: AssetsGateway.Client
+}): CatchAllNav {
+    return client.explorer
+        .queryDrives$({
+            groupId,
+        })
+        .pipe(
+            raiseHTTPErrors(),
+            take(1),
+            map(({ drives }) => {
+                return {
+                    children: drives.map((d) => ({
+                        name: d.name,
+                        id: 'folder_' + d.driveId,
+                        decoration: {
+                            icon: {
+                                tag: 'div' as const,
+                                class: 'fas fa-hdd mx-2',
+                            },
+                        },
+                    })),
+                    html: () => ({
+                        tag: 'h1' as const,
+                        innerText: 'Drives',
                     }),
-                    html: () => ({ tag: 'h1' as const, innerText: 'Groups' }),
                 }
             }),
         )
-        return obs
-    }
-    if (parts.length == 1) {
-        const obs = client.explorer
-            .queryDrives$({
-                groupId: parts[0],
-            })
-            .pipe(
-                raiseHTTPErrors(),
-                take(1),
-                map(({ drives }) => {
-                    return {
-                        children: drives.map((d) => ({
+}
+
+function lazyResolverFolders({
+    path,
+    parentId,
+    client,
+}: {
+    path: string
+    parentId: string
+    client: AssetsGateway.Client
+}): CatchAllNav {
+    return client.explorer
+        .queryChildren$({
+            parentId,
+        })
+        .pipe(
+            raiseHTTPErrors(),
+            take(1),
+            map((response) => {
+                return {
+                    children: [
+                        ...response.folders.map((d) => ({
                             name: d.name,
-                            id: 'folder_' + d.driveId,
+                            id: `folder_${d.folderId}`,
                             decoration: {
                                 icon: {
                                     tag: 'div' as const,
-                                    class: 'fas fa-hdd mx-2',
+                                    class: 'fas fa-folder mx-2',
                                 },
                             },
                         })),
-                        html: () => ({
-                            tag: 'h1' as const,
-                            innerText: 'Drives',
-                        }),
-                    }
-                }),
-            )
-        return obs
-    }
-    if (parts.length >= 2 && parts.slice(-1)[0].startsWith('folder_')) {
-        const obs = client.explorer
-            .queryChildren$({
-                parentId: parts.slice(-1)[0].replace('folder_', ''),
-            })
-            .pipe(
-                raiseHTTPErrors(),
-                take(1),
-                map((response) => {
-                    return {
-                        children: [
-                            ...response.folders.map((d) => ({
-                                name: d.name,
-                                id: `folder_${d.folderId}`,
-                                decoration: {
-                                    icon: {
-                                        tag: 'div' as const,
-                                        class: 'fas fa-folder mx-2',
-                                    },
-                                },
-                            })),
-                            ...response.items.map((d) => ({
-                                name: d.name,
-                                id: `asset_${d.assetId}`,
-                                decoration: { wrapperClass: 'd-none' },
-                                leaf: true,
-                            })),
-                        ],
-                        html: () => new ExplorerView({ response, path }),
-                    }
-                }),
-            )
-        return obs
-    }
-    if (parts.length >= 2 && parts.slice(-1)[0].startsWith('asset_')) {
-        const obs = combineLatest([
-            client.assets
-                .getAsset$({
-                    assetId: parts.slice(-1)[0].replace('asset_', ''),
-                })
-                .pipe(raiseHTTPErrors(), take(1)),
-            client.explorer
-                .queryChildren$({
-                    parentId: parts.slice(-2)[0].replace('folder_', ''),
-                })
-                .pipe(raiseHTTPErrors(), take(1)),
-        ]).pipe(
-            map(([assetResponse, itemsResponse]) => ({
-                leaf: true,
-                children: [],
-                tableOfContent,
-                html: () =>
-                    new AssetView({
-                        assetResponse,
-                        itemsResponse,
-                        router,
-                        path,
-                    }),
-            })),
+                        ...response.items.map((d) => ({
+                            name: d.name,
+                            id: `asset_${d.assetId}`,
+                            decoration: { wrapperClass: 'd-none' },
+                            leaf: true,
+                        })),
+                    ],
+                    html: () => new ExplorerView({ response, path }),
+                }
+            }),
         )
-        return obs
-    }
+}
+
+function lazyResolverAsset({
+    path,
+    parentId,
+    assetId,
+    router,
+    client,
+}: {
+    path: string
+    parentId: string
+    assetId: string
+    router: Router
+    client: AssetsGateway.Client
+}): CatchAllNav {
+    return combineLatest([
+        client.assets
+            .getAsset$({
+                assetId, //parts.slice(-1)[0].replace('asset_', ''),
+            })
+            .pipe(raiseHTTPErrors(), take(1)),
+        client.explorer
+            .queryChildren$({
+                parentId, //: parts.slice(-2)[0].replace('folder_', ''),
+            })
+            .pipe(raiseHTTPErrors(), take(1)),
+    ]).pipe(
+        map(([assetResponse, itemsResponse]) => ({
+            leaf: true,
+            children: [],
+            tableOfContent,
+            html: () =>
+                new AssetView({
+                    assetResponse,
+                    itemsResponse,
+                    router,
+                    path,
+                }),
+        })),
+    )
 }
