@@ -86,7 +86,7 @@ Publishing a components means to publish all or a part of those artifacts.
                                     source$: appState.cdnState.status$,
                                     vdomMap: () =>
                                         new CdnLinkView({
-                                            name: project.name,
+                                            name: project.name.split('~')[0],
                                             router,
                                         }),
                                 },
@@ -95,7 +95,7 @@ Publishing a components means to publish all or a part of those artifacts.
                     },
                     explorerLink: () => {
                         return new ExplorerLinkView({
-                            name: project.name,
+                            name: project.name.split('~')[0],
                             router,
                         })
                     },
