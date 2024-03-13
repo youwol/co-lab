@@ -1,29 +1,22 @@
 import { AppState } from '../../app-state'
 import { ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
-import { parseMd, Router, Views } from '@youwol/mkdocs-ts'
-import { BackendView } from './package.views'
+import { Navigation, parseMd, Router } from '@youwol/mkdocs-ts'
+import { lazyResolver } from '../index'
+import { debounceTime } from 'rxjs'
+import { map } from 'rxjs/operators'
 
-export const navigation = (appState: AppState) => ({
+export const navigation = (appState: AppState): Navigation => ({
     name: 'Backends',
-    icon: {
-        tag: 'div',
-        class: 'fas fa-server mr-2',
+    decoration: {
+        icon: {
+            tag: 'div',
+            class: 'fas fa-server mr-2',
+        },
     },
     html: ({ router }) => new PageView({ router, appState }),
-    '/**': async ({ path }: { path: string }) => {
-        const parts = path.split('/').filter((d) => d != '')
-        return {
-            tableOfContent: Views.tocView,
-            children: [],
-            html: ({ router }) => {
-                return new BackendView({
-                    router,
-                    appState: appState,
-                    packageId: parts.slice(-1)[0],
-                })
-            },
-        }
-    },
+    '...': appState.cdnState.status$
+        .pipe(debounceTime(500))
+        .pipe(map((status) => lazyResolver(status, appState, 'backend'))),
 })
 
 class PageView implements VirtualDOM<'div'> {

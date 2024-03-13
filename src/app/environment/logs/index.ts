@@ -1,14 +1,14 @@
 import { AppState } from '../../app-state'
-import { parseMd, Router, Views } from '@youwol/mkdocs-ts'
+import { Navigation, parseMd, Router, Views } from '@youwol/mkdocs-ts'
 import { ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
 import { InfoSectionView } from '../../common'
 import { LogsExplorerView } from '../../common/logs-explorer.view'
 import { raiseHTTPErrors } from '@youwol/http-primitives'
 import * as pyYw from '@youwol/local-youwol-client'
 
-export const navigation = (appState: AppState) => ({
+export const navigation = (appState: AppState): Navigation => ({
     name: 'Logs',
-    icon: { tag: 'i', class: 'fas fa-bug mr-2' },
+    decoration: { icon: { tag: 'i', class: 'fas fa-bug mr-2' } },
     tableOfContent: Views.tocView,
     html: ({ router }) => new PageView({ router, appState }),
 })

@@ -1,6 +1,6 @@
 import { AppState } from '../../app-state'
 import { CodeEditorView } from '../../common/code-editor.view'
-import { parseMd, Router, Views } from '@youwol/mkdocs-ts'
+import { Navigation, parseMd, Router, Views } from '@youwol/mkdocs-ts'
 import { ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
 import { HdPathBookView } from '../../common'
 import { PyYwReferencesView } from '../../common/py-yw-references.view'
@@ -8,9 +8,9 @@ import { map, mergeMap } from 'rxjs/operators'
 import { raiseHTTPErrors } from '@youwol/http-primitives'
 import { PyYouwolClient } from '@youwol/local-youwol-client'
 
-export const navigation = (appState: AppState) => ({
+export const navigation = (appState: AppState): Navigation => ({
     html: ({ router }) => new PageView({ appState, router }),
-    icon: { tag: 'i', class: 'fas fa-wrench mr-2' },
+    decoration: { icon: { tag: 'i', class: 'fas fa-wrench mr-2' } },
     name: 'Server config.',
     tableOfContent: Views.tocView,
 })

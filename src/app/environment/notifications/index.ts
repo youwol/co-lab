@@ -1,5 +1,5 @@
 import { AppState } from '../../app-state'
-import { parseMd, Router, Views } from '@youwol/mkdocs-ts'
+import { Navigation, parseMd, Router, Views } from '@youwol/mkdocs-ts'
 import { ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
 import { InfoSectionView } from '../../common'
 import {
@@ -15,11 +15,11 @@ import { AssetDownloadNotificationView } from './asset/views'
 
 export * from './state'
 
-export const navigation = (appState: AppState) => ({
+export const navigation = (appState: AppState): Navigation => ({
     name: 'Notifications',
     html: ({ router }) => new PageView({ router, appState }),
     tableOfContent: Views.tocView,
-    icon: { tag: 'i', class: 'fas fa-envelope-open-text mr-2' },
+    decoration: { icon: { tag: 'i', class: 'fas fa-envelope-open-text mr-2' } },
 })
 
 export class PageView implements VirtualDOM<'div'> {

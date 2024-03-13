@@ -1,14 +1,12 @@
 import { ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
-import { ExplicitNode, parseMd, Router, Views } from '@youwol/mkdocs-ts'
+import { Navigation, parseMd, Router, Views } from '@youwol/mkdocs-ts'
 import { AppState } from '../../app-state'
 import { InfoSectionView } from '../../common'
 import { debounceTime, merge, Observable, of } from 'rxjs'
 import { raiseHTTPErrors } from '@youwol/http-primitives'
 import { PyYouwolClient, Routers } from '@youwol/local-youwol-client'
 import { LogsExplorerView } from '../../common/logs-explorer.view'
-import { filter, mergeMap, shareReplay } from 'rxjs/operators'
-import { ImmutableTree } from '@youwol/rx-tree-views'
-import { mountReactiveNav } from '../../common/mount-reactive-nav'
+import { filter, map, mergeMap, shareReplay } from 'rxjs/operators'
 
 export * from './state'
 
@@ -19,52 +17,67 @@ function backendName(backend: Routers.Environment.ProxiedBackend) {
     return `${backend.name}#${backend.version}`
 }
 
-export const navigation = (appState: AppState) => ({
+export const navigation = (appState: AppState): Navigation => ({
     name: 'Backends',
-    icon: { tag: 'i', class: 'fas fa-server mr-2' },
+    decoration: { icon: { tag: 'i', class: 'fas fa-server mr-2' } },
     tableOfContent: Views.tocView,
     html: ({ router }) => new PageView({ router, appState }),
-    '/**': ({ path, router }: { path: string; router: Router }) => {
-        const parts = path.split('/').filter((d) => d != '')
-        return of({
-            tableOfContent: Views.tocView,
-            children: [],
-            html: async () => {
-                const id = window.atob(parts.slice(-1)[0])
-                return new ExampleBackendView({
-                    backend: {
-                        name: id.split('#')[0],
-                        version: id.split('#')[1],
-                    },
-                    router,
-                    appState,
-                })
-            },
-        })
-    },
+    '...': appState.environment$.pipe(
+        map((env) => ({ path, router }: { path: string; router: Router }) => {
+            return lazyResolver(path, env, router, appState)
+        }),
+    ),
 })
-export function mountBackends({
-    backends,
-    treeState,
-    router,
-}: {
-    backends: Routers.Environment.ProxiedBackend[]
-    treeState: ImmutableTree.State<ExplicitNode>
-    router: Router
-}) {
-    const entities = backends.map((backend) => {
+
+function lazyResolver(
+    path: string,
+    env: Routers.Environment.EnvironmentStatusResponse,
+    router: Router,
+    appState: AppState,
+) {
+    const parts = path.split('/').filter((d) => d != '')
+    if (parts.length === 0) {
+        const children = env.youwolEnvironment.proxiedBackends
+            .map((backend) => {
+                return {
+                    name: backendName(backend),
+                    id: backendId(backend),
+                }
+            })
+            .sort((a, b) => a['name'].localeCompare(b['name']))
+            .map(({ name, id }) => {
+                return {
+                    name,
+                    id,
+                    leaf: true,
+                    decoration: {
+                        icon: {
+                            tag: 'i' as const,
+                            class: 'fas fa-running mr-2',
+                        },
+                    },
+                }
+            })
         return {
-            name: backendName(backend),
-            id: backendId(backend),
+            children,
+            html: undefined,
         }
-    })
-    mountReactiveNav({
-        basePath: `/environment/backends`,
-        entities,
-        router,
-        treeState,
-        icon: () => ({ tag: 'i', class: 'fas fa-running mr-2' }),
-    })
+    }
+    return {
+        tableOfContent: Views.tocView,
+        children: [],
+        html: () => {
+            const id = window.atob(parts.slice(-1)[0])
+            return new ExampleBackendView({
+                backend: {
+                    name: id.split('#')[0],
+                    version: id.split('#')[1],
+                },
+                router,
+                appState,
+            })
+        },
+    }
 }
 
 export class PageView implements VirtualDOM<'div'> {

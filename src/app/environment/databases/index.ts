@@ -1,12 +1,12 @@
 import { ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
-import { parseMd, Router, Views } from '@youwol/mkdocs-ts'
+import { Navigation, parseMd, Router, Views } from '@youwol/mkdocs-ts'
 import { map } from 'rxjs/operators'
 import { AppState } from '../../app-state'
 import { HdPathBookView, InfoSectionView } from '../../common'
 
-export const navigation = (appState: AppState) => ({
+export const navigation = (appState: AppState): Navigation => ({
     name: 'Databases',
-    icon: { tag: 'i', class: 'fas fa-database mr-2' },
+    decoration: { icon: { tag: 'i', class: 'fas fa-database mr-2' } },
     tableOfContent: Views.tocView,
     html: ({ router }) => new PageView({ router, appState }),
 })

@@ -1,16 +1,14 @@
 import { FailuresView, NewProjectsCard, ProjectView } from './project.view'
 import { AppState } from '../app-state'
-import { ExplicitNode, parseMd, Router, Views } from '@youwol/mkdocs-ts'
+import { Navigation, parseMd, Router, Views } from '@youwol/mkdocs-ts'
 import { ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
 import { SearchView } from './search.view'
 import { InfoSectionView } from '../common'
 import { pyYwDocLink } from '../common/py-yw-references.view'
 import { Routers } from '@youwol/local-youwol-client'
-import { icon } from './icons'
-import { ImmutableTree } from '@youwol/rx-tree-views'
-import { BehaviorSubject, firstValueFrom, of } from 'rxjs'
+import { BehaviorSubject } from 'rxjs'
 import { delay, map } from 'rxjs/operators'
-import { mountReactiveNav } from '../common/mount-reactive-nav'
+import { icon } from './icons'
 
 export * from './state'
 
@@ -18,89 +16,55 @@ const skipNamespace = (name: string) => {
     return name.split('/').slice(-1)[0]
 }
 const refresh$ = new BehaviorSubject(false)
-export const navigation = (appState: AppState) => ({
+export const navigation = (appState: AppState): Navigation => ({
     name: 'Projects',
-    icon: { tag: 'i', class: 'fas  fa-boxes mr-2' },
-    actions: [
-        {
-            tag: 'button',
-            class: 'mx-2 btn btn-info btn-sm px-1',
-            style: {
-                padding: '0px',
-            },
-            onclick: (ev: MouseEvent) => {
-                refresh$.next(true)
-                ev.preventDefault()
-                ev.stopPropagation()
-                appState.projectsState.projectsClient
-                    .status$()
-                    .pipe(delay(500))
-                    .subscribe(() => {
-                        refresh$.next(false)
-                    })
-            },
-            children: [
-                {
-                    tag: 'i',
-                    class: {
-                        source$: refresh$,
-                        vdomMap: (r: boolean) => (r ? 'fa-spin' : ''),
-                        wrapper: (d: string) => `${d} fas fa-sync`,
-                    },
+    decoration: {
+        icon: { tag: 'i', class: 'fas  fa-boxes mr-2' },
+        actions: [
+            {
+                tag: 'button',
+                class: 'mx-2 btn btn-info btn-sm px-1',
+                style: {
+                    padding: '0px',
                 },
-            ],
-        },
-    ],
+                onclick: (ev: MouseEvent) => {
+                    refresh$.next(true)
+                    ev.preventDefault()
+                    ev.stopPropagation()
+                    appState.projectsState.projectsClient
+                        .status$()
+                        .pipe(delay(500))
+                        .subscribe(() => {
+                            refresh$.next(false)
+                        })
+                },
+                children: [
+                    {
+                        tag: 'i',
+                        class: {
+                            source$: refresh$,
+                            vdomMap: (r: boolean) => (r ? 'fa-spin' : ''),
+                            wrapper: (d: string) => `${d} fas fa-sync`,
+                        },
+                    },
+                ],
+            },
+        ],
+    },
     tableOfContent: Views.tocView,
     html: ({ router }) =>
         new PageView({
             router,
             appState,
         }),
-    '/**': ({ path }: { path: string; router: Router }) => {
-        const parts = path.split('/').filter((d) => d != '')
-        return of({
-            tableOfContent: Views.tocView,
-            children: [],
-            html: async ({ router }) => {
-                const project$ = appState.projectsState.projects$.pipe(
-                    map((projects) => {
-                        return projects.find((p) => p.id === parts.slice(-1)[0])
-                    }),
-                )
-                return firstValueFrom(project$).then((project) => {
-                    return new ProjectView({
-                        router,
-                        project,
-                        appState,
-                    })
-                })
-            },
-        })
-    },
+    '...': appState.projectsState.projects$.pipe(
+        map((projects) => {
+            return ({ path }: { path: string; router: Router }) => {
+                return lazyResolver(path, projects, appState)
+            }
+        }),
+    ),
 })
-
-export function mountProjects({
-    projects,
-    router,
-    treeState,
-}: {
-    projects: Routers.Projects.Project[]
-    treeState: ImmutableTree.State<ExplicitNode>
-    router: Router
-}) {
-    const entities = projects.map((project) => ({
-        ...project,
-        name: skipNamespace(project.name),
-    }))
-    mountReactiveNav<Routers.Projects.Project>({
-        basePath: '/projects',
-        entities,
-        router,
-        treeState,
-        icon: (entity) => icon(entity),
-    })
-}
 
 export class PageView implements VirtualDOM<'div'> {
     public readonly tag = 'div'
@@ -194,5 +158,45 @@ The following projects have failed to load:
                 },
             }),
         ]
+    }
+}
+
+function lazyResolver(
+    path: string,
+    projects: Routers.Projects.Project[],
+    appState: AppState,
+) {
+    const parts = path.split('/').filter((d) => d != '')
+    if (parts.length === 0) {
+        return {
+            tableOfContent: Views.tocView,
+            children: projects
+                .map((project) => ({
+                    ...project,
+                    name: skipNamespace(project.name),
+                }))
+                .sort((a, b) => a['name'].localeCompare(b['name']))
+                .map((p) => {
+                    return {
+                        name: p.name,
+                        id: p.id,
+                        decoration: {
+                            icon: icon(p),
+                        },
+                    }
+                }),
+            html: undefined,
+        }
+    }
+    const project = projects.find((p) => p.id === parts.slice(-1)[0])
+    return {
+        tableOfContent: Views.tocView,
+        children: [],
+        html: ({ router }) =>
+            new ProjectView({
+                router,
+                project,
+                appState,
+            }),
     }
 }

@@ -1,11 +1,11 @@
 import { AppState } from '../../app-state'
 import { NavIconSvg } from '../../common'
 import { ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
-import { parseMd, Router } from '@youwol/mkdocs-ts'
+import { Navigation, parseMd, Router } from '@youwol/mkdocs-ts'
 
-export const navigation = (appState: AppState) => ({
+export const navigation = (appState: AppState): Navigation => ({
     name: 'Pyodide',
-    icon: new NavIconSvg({ filename: 'icon-python.svg' }),
+    decoration: { icon: new NavIconSvg({ filename: 'icon-python.svg' }) },
     html: ({ router }) => new PageView({ router, appState }),
 })
 

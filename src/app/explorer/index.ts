@@ -1,50 +1,29 @@
-import { ExplicitNode, parseMd, Router, Views } from '@youwol/mkdocs-ts'
-import { Accounts, AssetsGateway } from '@youwol/http-clients'
+import {
+    Navigation,
+    parseMd,
+    Router,
+    Views,
+    CatchAllNav,
+} from '@youwol/mkdocs-ts'
+import { AssetsGateway } from '@youwol/http-clients'
 import { raiseHTTPErrors } from '@youwol/http-primitives'
 import { map, take } from 'rxjs/operators'
 import { AssetView, ExplorerView } from './explorer.views'
-import { combineLatest, of } from 'rxjs'
+import { combineLatest } from 'rxjs'
 import { AppState } from '../app-state'
 import { ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
 import { Installer, PreferencesFacade } from '@youwol/os-core'
-import { ImmutableTree } from '@youwol/rx-tree-views'
-import { mountReactiveNav } from '../common/mount-reactive-nav'
 
 const tableOfContent = Views.tocView
 
-export const navigation = (appState: AppState) => ({
+export const navigation = (appState: AppState): Navigation => ({
     name: 'Explorer',
-    icon: { tag: 'i', class: 'fas fa-folder mr-2' },
+    decoration: { icon: { tag: 'i', class: 'fas fa-folder mr-2' } },
     tableOfContent,
     html: ({ router }) => new PageView({ router, appState }),
-    '/**': explorerNavigation,
+    '...': appState.session$.pipe(map(() => lazyResolver)),
 })
 
-export function mountExplorer({
-    groups,
-    router,
-    treeState,
-}: {
-    groups: Accounts.Groups[]
-    treeState: ImmutableTree.State<ExplicitNode>
-    router: Router
-}) {
-    mountReactiveNav<{ id: string; name: string }>({
-        basePath: '/explorer',
-        entities: groups.map((g) => ({
-            id: g.id,
-            name: g.path.split('/').slice(-1)[0],
-        })),
-        router,
-        treeState,
-        icon: (entity) => ({
-            tag: 'div',
-            class: entity.id.includes('private')
-                ? 'fas fa-user mx-2'
-                : 'fas fa-users mx-2',
-        }),
-    })
-}
 export class PageView implements VirtualDOM<'div'> {
     public readonly tag = 'div'
     public readonly children: ChildrenLike
@@ -71,37 +50,42 @@ The explorer organize assets in a files-explorer like structure.
     }
 }
 
-function explorerNavigation({
+function lazyResolver({
     path,
     router,
 }: {
     path: string
     router: Router
-}) {
+}): CatchAllNav {
     const parts = path.split('/').filter((d) => d != '')
     const client = new AssetsGateway.Client()
     if (parts.length == 0) {
-        return client.accounts.getSessionDetails$().pipe(
+        const obs = client.accounts.getSessionDetails$().pipe(
             raiseHTTPErrors(),
             map((details) => {
                 return {
-                    children: details.userInfo.groups.map((g) => ({
-                        name: g.path.split('/').slice(-1)[0],
-                        icon: {
-                            tag: 'div',
-                            class: g.id.includes('private')
-                                ? 'fas fa-user mx-2'
-                                : 'fas fa-users mx-2',
-                        },
-                        id: g.id,
-                    })),
-                    html: async () => ({ tag: 'h1', innerText: 'Groups' }),
+                    children: details.userInfo.groups.map((g) => {
+                        return {
+                            name: g.path.split('/').slice(-1)[0],
+                            decoration: {
+                                icon: {
+                                    tag: 'div' as const,
+                                    class: g.id.includes('private')
+                                        ? 'fas fa-user mx-2'
+                                        : 'fas fa-users mx-2',
+                                },
+                            },
+                            id: g.id,
+                        }
+                    }),
+                    html: () => ({ tag: 'h1' as const, innerText: 'Groups' }),
                 }
             }),
         )
+        return obs
     }
     if (parts.length == 1) {
-        return client.explorer
+        const obs = client.explorer
             .queryDrives$({
                 groupId: parts[0],
             })
@@ -113,18 +97,24 @@ function explorerNavigation({
                         children: drives.map((d) => ({
                             name: d.name,
                             id: 'folder_' + d.driveId,
-                            icon: {
-                                tag: 'div',
-                                class: 'fas fa-hdd mx-2',
+                            decoration: {
+                                icon: {
+                                    tag: 'div' as const,
+                                    class: 'fas fa-hdd mx-2',
+                                },
                             },
                         })),
-                        html: async () => ({ tag: 'h1', innerText: 'Drives' }),
+                        html: () => ({
+                            tag: 'h1' as const,
+                            innerText: 'Drives',
+                        }),
                     }
                 }),
             )
+        return obs
     }
     if (parts.length >= 2 && parts.slice(-1)[0].startsWith('folder_')) {
-        return client.explorer
+        const obs = client.explorer
             .queryChildren$({
                 parentId: parts.slice(-1)[0].replace('folder_', ''),
             })
@@ -137,25 +127,28 @@ function explorerNavigation({
                             ...response.folders.map((d) => ({
                                 name: d.name,
                                 id: `folder_${d.folderId}`,
-                                icon: {
-                                    tag: 'div',
-                                    class: 'fas fa-folder mx-2',
+                                decoration: {
+                                    icon: {
+                                        tag: 'div' as const,
+                                        class: 'fas fa-folder mx-2',
+                                    },
                                 },
                             })),
                             ...response.items.map((d) => ({
                                 name: d.name,
                                 id: `asset_${d.assetId}`,
-                                wrapperClass: 'd-none',
+                                decoration: { wrapperClass: 'd-none' },
                                 leaf: true,
                             })),
                         ],
-                        html: async () => new ExplorerView({ response, path }),
+                        html: () => new ExplorerView({ response, path }),
                     }
                 }),
             )
+        return obs
     }
     if (parts.length >= 2 && parts.slice(-1)[0].startsWith('asset_')) {
-        return combineLatest([
+        const obs = combineLatest([
             client.assets
                 .getAsset$({
                     assetId: parts.slice(-1)[0].replace('asset_', ''),
@@ -171,7 +164,7 @@ function explorerNavigation({
                 leaf: true,
                 children: [],
                 tableOfContent,
-                html: async () =>
+                html: () =>
                     new AssetView({
                         assetResponse,
                         itemsResponse,
@@ -180,6 +173,6 @@ function explorerNavigation({
                     }),
             })),
         )
+        return obs
     }
-    return of({ children: [] })
 }
