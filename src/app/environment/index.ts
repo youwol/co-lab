@@ -1,5 +1,5 @@
 import { AppState } from '../app-state'
-import { parseMd, Router, Views } from '@youwol/mkdocs-ts'
+import { parseMd, Router, Views, Navigation } from '@youwol/mkdocs-ts'
 
 import * as YwConfiguration from './yw-configuration'
 import * as Profiles from './profiles'
@@ -14,10 +14,10 @@ import { CommandsListView } from './commands.view'
 import * as Logs from './logs'
 export * from './state'
 
-export const navigation = (appState: AppState) => ({
+export const navigation = (appState: AppState): Navigation => ({
     name: 'Environment',
     tableOfContent: Views.tocView,
-    icon: { tag: 'i', class: 'fas fa-tasks mr-2' },
+    decoration: { icon: { tag: 'i', class: 'fas fa-tasks mr-2' } },
     html: ({ router }) => new PageView({ appState, router }),
     '/yw-configuration': YwConfiguration.navigation(appState),
     '/profiles': Profiles.navigation(appState),

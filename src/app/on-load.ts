@@ -1,32 +1,23 @@
 import { ChildrenLike, render, VirtualDOM } from '@youwol/rx-vdom'
-import { parseMd, Router, Views, ExplicitNode } from '@youwol/mkdocs-ts'
-import { setup } from '../auto-generated'
+import { parseMd, Router, Views } from '@youwol/mkdocs-ts'
 
 import { TopBannerView } from './top-banner.view'
 import { AppState } from './app-state'
-import * as Components from './components'
-import * as Explorer from './explorer'
-import * as Projects from './projects'
-import * as Environment from './environment'
-import * as Dashboard from './dashboard'
-import * as Mounted from './mounted'
 import { CoLabBanner, CoLabLogo } from './common'
 import { pyYwDocLink } from './common/py-yw-references.view'
-import { mountProjects } from './projects'
-import { ImmutableTree } from '@youwol/rx-tree-views'
-import { mountFolder } from './mounted'
-import { Routers } from '@youwol/local-youwol-client'
-import { mountBackends } from './environment/backends'
-import { debounceTime, Observable, Subject } from 'rxjs'
-import { mountComponents } from './components'
+import { Observable, Subject } from 'rxjs'
 import { DisconnectedView } from './disconnected.view'
-import { map } from 'rxjs/operators'
-import { mountExplorer } from './explorer'
-import { Accounts } from '@youwol/http-clients'
+import * as Dashboard from './dashboard'
+import * as Environment from './environment'
+import * as Components from './components'
+import * as Projects from './projects'
+import * as Explorer from './explorer'
+import * as Mounted from './mounted'
+import { setup } from '../auto-generated'
 
 const appState = new AppState()
 
-export const navigation = {
+const navigation = {
     name: '',
     tableOfContent: Views.tocView,
     html: ({ router }) => new PageView({ router }),
@@ -38,100 +29,9 @@ export const navigation = {
     '/mounted': Mounted.navigation(appState),
 }
 const router = new Router({
-    navigation,
+    navigation: navigation,
     basePath: `/applications/${setup.name}/${setup.version}`,
-    updates: [
-        {
-            from$: appState.hdFolder$,
-            then: ({
-                data,
-                router,
-                treeState,
-            }: {
-                router: Router
-                treeState: ImmutableTree.State<ExplicitNode>
-                data: string
-            }) => {
-                mountFolder({ folder: data, router, treeState })
-            },
-        },
-        {
-            from$: appState.projectsState.projects$,
-            then: ({
-                data,
-                router,
-                treeState,
-            }: {
-                router: Router
-                treeState: ImmutableTree.State<ExplicitNode>
-                data: Routers.Projects.Project[]
-            }) => {
-                mountProjects({
-                    projects: data,
-                    router,
-                    treeState,
-                })
-            },
-        },
-        {
-            from$: appState.environment$,
-            then: ({
-                data,
-                router,
-                treeState,
-            }: {
-                router: Router
-                treeState: ImmutableTree.State<ExplicitNode>
-                data: Routers.Environment.EnvironmentStatusResponse
-            }) => {
-                mountBackends({
-                    backends: data.configuration.proxiedBackends,
-                    router,
-                    treeState,
-                })
-            },
-        },
-        {
-            from$: appState.cdnState.status$.pipe(debounceTime(500)),
-            then: ({
-                data,
-                router,
-                treeState,
-            }: {
-                router: Router
-                treeState: ImmutableTree.State<ExplicitNode>
-                data: Routers.LocalCdn.CdnStatusResponse
-            }) => {
-                mountComponents({
-                    packages: data.packages,
-                    router,
-                    treeState,
-                })
-            },
-        },
-        {
-            from$: appState.session$.pipe(
-                map(({ userInfo }) => userInfo.groups),
-            ),
-            then: ({
-                data,
-                router,
-                treeState,
-            }: {
-                router: Router
-                treeState: ImmutableTree.State<ExplicitNode>
-                data: Accounts.Groups[]
-            }) => {
-                mountExplorer({
-                    groups: data,
-                    router,
-                    treeState,
-                })
-            },
-        },
-    ],
 })
-
 export interface ColabController {
     navigation$: Observable<string>
 }

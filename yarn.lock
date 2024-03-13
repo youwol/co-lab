@@ -1479,10 +1479,10 @@
     "@youwol/rx-vdom" "^1.0.1"
     rxjs "^7.5.6"
 
-"@youwol/mkdocs-ts@^0.2.3":
-  version "0.2.3"
-  resolved "https://registry.yarnpkg.com/@youwol/mkdocs-ts/-/mkdocs-ts-0.2.3.tgz#57187e5c9efc1cd32763b849b47fe8ea020fb2b0"
-  integrity sha512-sRLQ7Q5j0XYwFmVcCjq+wmR4VYXEql1TbHMooxjV9SRKWm43/+pE1O02i3sVV6e0vfAVbV2VB6Lq7qOmjwo63w==
+"@youwol/mkdocs-ts@^0.3.0":
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/@youwol/mkdocs-ts/-/mkdocs-ts-0.3.0.tgz#ab334f461b6e11b66aa8f9d943480dbc12ddd030"
+  integrity sha512-R5zrKMTwM4MoN5V6BYXmu1XD+DG2gBXgzwUp53b8BXH4RGL5X80BUwFbZ0SbNBfPcEYtzIPXqGrFRHIWwOgaFg==
   dependencies:
     "@youwol/os-top-banner" "^0.2.0"
     "@youwol/rx-tree-views" "^0.3.3"

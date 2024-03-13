@@ -1,27 +1,18 @@
 import { AppState } from '../../app-state'
-import { parseMd, Router, Views } from '@youwol/mkdocs-ts'
+import { Navigation, parseMd, Router } from '@youwol/mkdocs-ts'
 import { ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
 import { NavIconSvg } from '../../common'
-import { PackageView } from './package.views'
+import { debounceTime } from 'rxjs'
+import { map } from 'rxjs/operators'
+import { lazyResolver } from '../index'
 
-export const navigation = (appState: AppState) => ({
+export const navigation = (appState: AppState): Navigation => ({
     name: 'Js/WASM',
-    icon: new NavIconSvg({ filename: 'icon-js.svg' }),
+    decoration: { icon: new NavIconSvg({ filename: 'icon-js.svg' }) },
     html: ({ router }) => new PageView({ router, appState }),
-    '/**': async ({ path }: { path: string }) => {
-        const parts = path.split('/').filter((d) => d != '')
-        return {
-            tableOfContent: Views.tocView,
-            children: [],
-            html: ({ router }) => {
-                return new PackageView({
-                    router,
-                    cdnState: appState.cdnState,
-                    packageId: parts.slice(-1)[0],
-                })
-            },
-        }
-    },
+    '...': appState.cdnState.status$
+        .pipe(debounceTime(500))
+        .pipe(map((status) => lazyResolver(status, appState, 'js/wasm'))),
 })
 
 class PageView implements VirtualDOM<'div'> {

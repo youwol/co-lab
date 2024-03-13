@@ -1,4 +1,4 @@
-import { parseMd, Router, Views } from '@youwol/mkdocs-ts'
+import { Navigation, parseMd, Router, Views } from '@youwol/mkdocs-ts'
 import { AppState } from '../app-state'
 import { ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
 import { combineLatest } from 'rxjs'
@@ -7,10 +7,10 @@ import { Routers } from '@youwol/local-youwol-client'
 import { InfoSectionView } from '../common'
 import { NewAppsView, DesktopWidgetsView } from './views'
 
-export const navigation = (appState: AppState) => ({
+export const navigation = (appState: AppState): Navigation => ({
     name: 'Dashboard',
     tableOfContent: Views.tocView,
-    icon: { tag: 'i', class: 'fas fa-tachometer-alt mr-2' },
+    decoration: { icon: { tag: 'i', class: 'fas fa-tachometer-alt mr-2' } },
     html: ({ router }) => new PageView({ appState, router }),
 })
 

@@ -1,85 +1,26 @@
 import { ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
 import { AppState } from '../app-state'
-import { ExplicitNode, parseMd, Router, Views } from '@youwol/mkdocs-ts'
-import { ImmutableTree } from '@youwol/rx-tree-views'
+import { Navigation, parseMd, Router, Views } from '@youwol/mkdocs-ts'
+import { FileContentView, FilesListView } from './views'
+import { map, scan, take } from 'rxjs/operators'
 import { PyYouwolClient } from '@youwol/local-youwol-client'
 import { raiseHTTPErrors } from '@youwol/http-primitives'
-import { map, shareReplay, take } from 'rxjs/operators'
-import { of } from 'rxjs'
-import { FileContentView, FilesListView } from './views'
 
-const basePath = 'mounted'
-export const navigation = (appState: AppState) => ({
+export const navigation = (appState: AppState): Navigation => ({
     name: 'Mounted',
-    icon: { tag: 'i', class: 'fas fa-laptop mr-2' },
+    decoration: { icon: { tag: 'i', class: 'fas fa-laptop mr-2' } },
     tableOfContent: Views.tocView,
     html: ({ router }) => new PageView({ router, appState }),
-    '/**': ({ path, router }: { path: string; router: Router }) => {
-        const parts = path.split('/').filter((d) => d != '')
-        return of({
-            tableOfContent: Views.tocView,
-            children: [],
-            html: async () => {
-                if (parts.slice(-1)[0].startsWith('file_')) {
-                    parts[parts.length - 1] = parts[parts.length - 1].replace(
-                        'file_',
-                        '',
-                    )
-                    const path = decodeHRef(
-                        `${parts[0]}/${parts.slice(1).join('/')}`,
-                    )
-                    return new FileContentView({
-                        path,
-                    })
-                }
-                return new FilesListView({
-                    baseUrl: `/mounted${path}`,
-                    path: decodeHRef(`${parts[0]}/${parts.slice(1).join('/')}`),
-                    router,
-                })
-            },
-        })
-    },
+    '...': appState.hdFolder$.pipe(
+        scan((acc, f) => [...acc, f], []),
+        map(
+            (folders: string[]) =>
+                ({ path, router }: { path: string; router: Router }) => {
+                    return lazyResolver(folders, path, router)
+                },
+        ),
+    ),
 })
-
-export function mountFolder({
-    folder,
-    treeState,
-    router,
-}: {
-    folder: string
-    treeState: ImmutableTree.State<ExplicitNode>
-    router: Router
-}) {
-    const parentNode = treeState.getNode(`/${basePath}`)
-
-    treeState.getChildren$(parentNode).subscribe((children: ExplicitNode[]) => {
-        const name = folder.split('/').slice(-1)[0]
-        const id = `/${basePath}/${window.btoa(folder)}`
-        if (children.find((node) => node.id === id)) {
-            return
-        }
-        const node = new ExplicitNode({
-            id: id,
-            name,
-            // if share replay is omitted:
-            // Failed to execute 'fetch' on 'Window':
-            // Cannot construct a Request with a Request object that has already been used.
-            // This is because of `router.navigateTo` below; the shareReplay somehow prevents this
-            children: getFolderChildren$(window.btoa(folder), '').pipe(
-                shareReplay(1),
-            ),
-            href: id,
-            icon: {
-                tag: 'div',
-                class: 'fas fa-folder mx-2',
-            },
-        })
-        treeState.addChild(parentNode, node)
-        router.navigateTo({ path: node.href })
-    })
-    treeState.getChildren(parentNode)
-}
 
 export class PageView implements VirtualDOM<'div'> {
     public readonly tag = 'div'
@@ -110,50 +51,102 @@ export function decodeHRef(path) {
         .map((p) => window.atob(p))
         .join('/')
 }
+//
+function lazyResolver(folders: string[], path: string, router: Router) {
+    const parts = path.split('/').filter((d) => d != '')
 
-function getFolderChildren$(origin: string, from: string) {
+    if (parts.length === 0) {
+        return {
+            children: folders.map((folder) => {
+                return {
+                    id: window.btoa(folder),
+                    name: folder.split('/').slice(-1)[0],
+                    decoration: {
+                        icon: {
+                            tag: 'div' as const,
+                            class: 'fas fa-folder mx-2',
+                        },
+                    },
+                }
+            }),
+            html: undefined,
+        }
+    }
+    if (parts.slice(-1)[0].startsWith('file_')) {
+        parts[parts.length - 1] = parts[parts.length - 1].replace('file_', '')
+        const path = decodeHRef(`${parts[0]}/${parts.slice(1).join('/')}`)
+        return {
+            tableOfContent: Views.tocView,
+            children: undefined,
+            html: () =>
+                new FileContentView({
+                    path,
+                }),
+        }
+    }
+    const origin = parts[0]
+    const from = parts.slice(1).join('/')
+
     const fromDecoded = from != '' ? decodeHRef(from) : ''
 
-    const baseId = `/${basePath}/${origin}${from}`
     return new PyYouwolClient().admin.system
         .queryFolderContent$({
-            path: window.atob(origin) + fromDecoded,
+            path: `${window.atob(origin)}/${fromDecoded}`,
         })
         .pipe(
             raiseHTTPErrors(),
             take(1),
             map((response) => {
-                return [
-                    ...response.folders.map((folder) => {
-                        const id = `${baseId}/${window.btoa(folder)}`
-                        return new ExplicitNode({
-                            id,
-                            name: folder,
-                            children: getFolderChildren$(
-                                origin,
-                                `${from}/${window.btoa(folder)}`,
+                return {
+                    tableOfContent: Views.tocView,
+                    html: () => {
+                        if (parts.slice(-1)[0].startsWith('file_')) {
+                            parts[parts.length - 1] = parts[
+                                parts.length - 1
+                            ].replace('file_', '')
+                            const path = decodeHRef(
+                                `${parts[0]}/${parts.slice(1).join('/')}`,
+                            )
+                            return new FileContentView({
+                                path,
+                            })
+                        }
+                        return new FilesListView({
+                            baseUrl: `/mounted${path}`,
+                            path: decodeHRef(
+                                `${parts[0]}/${parts.slice(1).join('/')}`,
                             ),
-                            href: id,
-                            icon: {
-                                tag: 'div',
-                                class: 'fas fa-folder mx-2',
-                            },
+                            router,
                         })
-                    }),
-                    ...response.files.map((file) => {
-                        const id = `${baseId}/file_${window.btoa(file)}`
-                        return new ExplicitNode({
-                            id,
-                            name: file,
-                            children: undefined,
-                            href: id,
-                            icon: {
-                                tag: 'div',
-                                class: 'fas fa-file mx-2',
-                            },
-                        })
-                    }),
-                ]
+                    },
+                    children: [
+                        ...response.folders.map((folder) => {
+                            return {
+                                id: window.btoa(folder),
+                                name: folder,
+                                decoration: {
+                                    icon: {
+                                        tag: 'div' as const,
+                                        class: 'fas fa-folder mx-2',
+                                    },
+                                },
+                            }
+                        }),
+                        ...response.files.map((file) => {
+                            return {
+                                id: `file_${window.btoa(file)}`,
+                                name: file,
+                                leaf: true,
+                                decoration: {
+                                    icon: {
+                                        tag: 'div' as const,
+                                        class: 'fas fa-file mx-2',
+                                    },
+                                },
+                            }
+                        }),
+                    ],
+                }
             }),
         )
 }

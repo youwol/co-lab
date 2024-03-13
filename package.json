@@ -29,7 +29,7 @@
         ]
     },
     "dependencies": {
-        "@youwol/mkdocs-ts": "^0.2.3",
+        "@youwol/mkdocs-ts": "^0.3.0",
         "@youwol/rx-vdom": "^1.0.1",
         "bootstrap": "^4.4.1",
         "@youwol/webpm-client": "^3.0.0",
@@ -72,7 +72,7 @@
     },
     "webpm": {
         "dependencies": {
-            "@youwol/mkdocs-ts": "^0.2.3",
+            "@youwol/mkdocs-ts": "^0.3.0",
             "@youwol/rx-vdom": "^1.0.1",
             "bootstrap": "^4.4.1",
             "@youwol/webpm-client": "^3.0.0",

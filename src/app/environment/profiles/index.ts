@@ -4,15 +4,15 @@ import {
     PreferencesView,
     ProfilesListView,
 } from './profiles.view'
-import { parseMd, Router, Views } from '@youwol/mkdocs-ts'
+import { Navigation, parseMd, Router, Views } from '@youwol/mkdocs-ts'
 import { ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
 import { ProfilesState } from './profiles.state'
 
-export const navigation = (appState: AppState) => ({
+export const navigation = (appState: AppState): Navigation => ({
     name: 'Profiles',
     html: ({ router }) => new PageView({ router, appState }),
     tableOfContent: Views.tocView,
-    icon: { tag: 'i', class: 'fas fa-user-friends mr-2' },
+    decoration: { icon: { tag: 'i', class: 'fas fa-user-friends mr-2' } },
 })
 
 export class PageView implements VirtualDOM<'div'> {
