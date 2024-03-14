@@ -22,6 +22,7 @@ externals_deps = {
     '@youwol/os-widgets': '^0.2.6',
     "@youwol/rx-tree-views": "^0.3.1",
     "@youwol/rx-code-mirror-editors": "0.5.0",
+    "@floating-ui/dom": "^1.6.3",
     "rxjs": "^7.5.6",
     'd3': '^7.7.0',
 }
