@@ -183,6 +183,7 @@ function lazyResolver(
                         decoration: {
                             icon: icon(p),
                         },
+                        leaf: true,
                     }
                 }),
             html: undefined,
