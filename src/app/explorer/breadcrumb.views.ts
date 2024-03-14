@@ -28,9 +28,9 @@ export class BreadcrumbViews implements VirtualDOM<'div'> {
             }),
             vdomMap: (paths: ExplorerBackend.GetPathResponse) => {
                 const folderNames = getNestedFolderNames(paths)
-                const folderPath = getNestedFoldersPath(path)
+                const folderPaths = getNestedFoldersPath(path)
 
-                return getBreadcrumb(folderPath, folderNames).map(
+                return getBreadcrumb(folderPaths, folderNames).map(
                     (d) =>
                         new BreadcrumbWidgetViews({
                             name: d.name,
@@ -86,9 +86,9 @@ function getNestedFoldersPath(input: string): string[] {
     let currentPath = ''
 
     input.split('/').forEach((part) => {
-        if (part && part.startsWith('folder_')) {
+        if (part?.startsWith('folder_')) {
             currentPath += `${part}/`
-            folders.push(currentPath)
+            folders.push(currentPath.slice(0, -1))
         } else {
             currentPath += `${part}/`
         }

@@ -11,7 +11,6 @@ import { debounceTime, merge, mergeMap, of } from 'rxjs'
 import { AppState } from '../app-state'
 import { SelectedStepView } from './project/selected-step.view'
 import { CdnLinkView, ExplorerLinkView } from '../common/links.view'
-import { parse } from 'marked'
 
 export class ProjectView implements VirtualDOM<'div'> {
     public readonly tag = 'div'
@@ -312,51 +311,66 @@ class FailuresCategoryView implements VirtualDOM<'div'> {
         failures: Failures
         title: string
     }) {
+        if (failures.length === 0) {
+            return
+        }
         this.children = [
-            failures.length !== 0
-                ? {
-                      tag: 'div',
-                      innerHTML: parse(`### ${title}`),
-                      children: failures.map((failure) => ({
-                          tag: 'div' as const,
-                          class: 'my-4',
-                          children: [
-                              new ExpandableGroupView({
-                                  title: {
-                                      tag: 'div',
-                                      style: {
-                                          maxWidth: '75%',
-                                      },
-                                      children: [
-                                          new HdPathBookView({
-                                              path: failure.path,
-                                              appState,
-                                          }),
-                                      ],
-                                  },
-                                  icon: 'fas fa-times fv-text-error',
-                                  content: () => {
-                                      return {
-                                          tag: 'pre',
-                                          children: [
-                                              {
-                                                  tag: 'div',
-                                                  class: 'pt-2 px-2 text-start overflow-auto fv-text-error ',
-                                                  style: {
-                                                      whiteSpace: 'pre-wrap',
-                                                  },
-                                                  innerText:
-                                                      failure['traceback'] ??
-                                                      failure.message,
-                                              },
-                                          ],
-                                      }
-                                  },
-                              }),
-                          ],
-                      })),
-                  }
-                : undefined,
+            parseMd({
+                src: `
+### ${title}
+
+<failures></failures>
+            `,
+                router: undefined,
+                views: {
+                    failures: () => {
+                        return {
+                            tag: 'div',
+                            children: failures.map((failure) => ({
+                                tag: 'div' as const,
+                                class: 'my-4',
+                                children: [
+                                    new ExpandableGroupView({
+                                        title: {
+                                            tag: 'div',
+                                            style: {
+                                                maxWidth: '75%',
+                                            },
+                                            children: [
+                                                new HdPathBookView({
+                                                    path: failure.path,
+                                                    appState,
+                                                }),
+                                            ],
+                                        },
+                                        icon: 'fas fa-times fv-text-error',
+                                        content: () => {
+                                            return {
+                                                tag: 'pre',
+                                                children: [
+                                                    {
+                                                        tag: 'div',
+                                                        class: 'pt-2 px-2 text-start overflow-auto fv-text-error ',
+                                                        style: {
+                                                            whiteSpace:
+                                                                'pre-wrap',
+                                                        },
+                                                        innerText:
+                                                            failure[
+                                                                'traceback'
+                                                            ] ??
+                                                            failure.message,
+                                                    },
+                                                ],
+                                            }
+                                        },
+                                    }),
+                                ],
+                            })),
+                        }
+                    },
+                },
+            }),
         ]
     }
 }

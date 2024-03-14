@@ -5,11 +5,17 @@ import * as Components from './components'
 import * as Backends from './environment/backends'
 import * as Environment from './environment'
 import * as Notification from './environment/notifications'
+import * as Explorer from './explorer'
 import { AnyVirtualDOM } from '@youwol/rx-vdom'
 import * as pyYw from '@youwol/local-youwol-client'
 import { WsRouter } from '@youwol/local-youwol-client'
 import { Accounts } from '@youwol/http-clients'
 import { raiseHTTPErrors } from '@youwol/http-primitives'
+import { Navigation, Router, Views } from '@youwol/mkdocs-ts'
+import * as Dashboard from './dashboard'
+import * as Mounted from './mounted'
+import { setup } from '../auto-generated'
+import { PageView } from './on-load'
 
 export type Topic =
     | 'Projects'
@@ -33,6 +39,14 @@ pyYw.PyYouwolClient.ws = new WsRouter({
  * @category State
  */
 export class AppState {
+    /**
+     * @group Immutable Constants
+     */
+    public readonly navigation: Navigation
+    /**
+     * @group Immutable Constants
+     */
+    public readonly router: Router
     /**
      * @group Observables
      */
@@ -123,5 +137,26 @@ export class AppState {
             raiseHTTPErrors(),
             shareReplay(1),
         )
+
+        this.navigation = {
+            name: '',
+            tableOfContent: Views.tocView,
+            html: ({ router }) => new PageView({ router }),
+            '/dashboard': Dashboard.navigation(this),
+            '/environment': Environment.navigation(this),
+            '/components': Components.navigation(this),
+            '/projects': Projects.navigation(this),
+            '/explorer': Explorer.navigation({
+                session$: this.session$,
+            }),
+            '/mounted': Mounted.navigation(this),
+        }
+        this.router = new Router({
+            navigation: this.navigation,
+            basePath: `/applications/${setup.name}/${setup.version}`,
+        })
+        this.router.explorerState.selectedNode$.subscribe((node) => {
+            console.log({ node, state: this.router.explorerState })
+        })
     }
 }

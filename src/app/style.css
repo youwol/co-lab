@@ -77,7 +77,12 @@ html {
 .fv-tree-arianeLine {
     display: none;
 }
-
+.nav-ctx-menu-handler {
+    display: none !important;
+}
+.fv-tree-selected .nav-ctx-menu-handler {
+    display: block !important;
+}
 .dag-flow-node-title {
     font-size: 8px;
     font-weight: bold;
@@ -145,4 +150,20 @@ circle.pending {
         stroke-dasharray: 90, 150;
         stroke-dashoffset: -124;
     }
+}
+
+.mkdocs-nav-item {
+    display: none;
+    opacity: 0.5;
+}
+.fv-tree-selected .mkdocs-nav-item {
+    display: flex;
+}
+
+.page-explorer-item-view .ctx-menu-handler {
+    opacity: 0;
+}
+
+.page-explorer-item-view:hover .ctx-menu-handler {
+    opacity: 1;
 }

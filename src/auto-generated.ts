@@ -1,7 +1,7 @@
 
 const runTimeDependencies = {
     "externals": {
-        "@youwol/mkdocs-ts": "^0.3.0",
+        "@youwol/mkdocs-ts": "^0.3.1",
         "@youwol/rx-vdom": "^1.0.1",
         "bootstrap": "^4.4.1",
         "@youwol/webpm-client": "^3.0.0",
@@ -12,6 +12,7 @@ const runTimeDependencies = {
         "@youwol/os-widgets": "^0.2.6",
         "@youwol/rx-tree-views": "^0.3.1",
         "@youwol/rx-code-mirror-editors": "0.5.0",
+        "@floating-ui/dom": "^1.6.3",
         "rxjs": "^7.5.6",
         "d3": "^7.7.0"
     },
@@ -31,6 +32,7 @@ const externals = {
     "@youwol/os-widgets": "window['@youwol/os-widgets_APIv02']",
     "@youwol/rx-tree-views": "window['@youwol/rx-tree-views_APIv03']",
     "@youwol/rx-code-mirror-editors": "window['@youwol/rx-code-mirror-editors_APIv05']",
+    "@floating-ui/dom": "window['@floating-ui/dom_APIv1']",
     "rxjs": "window['rxjs_APIv7']",
     "d3": "window['d3_APIv7']",
     "rxjs/operators": "window['rxjs_APIv7']['operators']"
@@ -80,6 +82,10 @@ const exportedSymbols = {
         "apiKey": "05",
         "exportedSymbol": "@youwol/rx-code-mirror-editors"
     },
+    "@floating-ui/dom": {
+        "apiKey": "1",
+        "exportedSymbol": "@floating-ui/dom"
+    },
     "rxjs": {
         "apiKey": "7",
         "exportedSymbol": "rxjs"
@@ -104,6 +110,7 @@ const mainEntry : {entryFile: string,loadDependencies:string[]} = {
         "@youwol/os-widgets",
         "@youwol/rx-tree-views",
         "@youwol/rx-code-mirror-editors",
+        "@floating-ui/dom",
         "rxjs",
         "d3"
     ]

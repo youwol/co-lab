@@ -7,31 +7,10 @@ import { CoLabBanner, CoLabLogo } from './common'
 import { pyYwDocLink } from './common/py-yw-references.view'
 import { Observable, Subject } from 'rxjs'
 import { DisconnectedView } from './disconnected.view'
-import * as Dashboard from './dashboard'
-import * as Environment from './environment'
-import * as Components from './components'
-import * as Projects from './projects'
-import * as Explorer from './explorer'
-import * as Mounted from './mounted'
-import { setup } from '../auto-generated'
 
 const appState = new AppState()
+const { router } = appState
 
-const navigation = {
-    name: '',
-    tableOfContent: Views.tocView,
-    html: ({ router }) => new PageView({ router }),
-    '/dashboard': Dashboard.navigation(appState),
-    '/environment': Environment.navigation(appState),
-    '/components': Components.navigation(appState),
-    '/projects': Projects.navigation(appState),
-    '/explorer': Explorer.navigation(appState),
-    '/mounted': Mounted.navigation(appState),
-}
-const router = new Router({
-    navigation: navigation,
-    basePath: `/applications/${setup.name}/${setup.version}`,
-})
 export interface ColabController {
     navigation$: Observable<string>
 }
@@ -44,7 +23,7 @@ if (parent['@youwol/co-lab-controller']) {
     })
 }
 
-class PageView implements VirtualDOM<'div'> {
+export class PageView implements VirtualDOM<'div'> {
     public readonly tag = 'div'
     public readonly children: ChildrenLike
 

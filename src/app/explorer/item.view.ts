@@ -6,11 +6,14 @@ import {
     defaultOpeningApp$,
 } from '@youwol/os-core'
 import { Observable, of } from 'rxjs'
+import { ExplorerState } from './explorer.state'
+import { ContextMenuHandler } from './nav-context-menu.view'
 
 export class ItemView implements VirtualDOM<'div'> {
     public readonly tag = 'div'
     public readonly class =
-        'd-flex align-items-center mb-2 p-1 yw-hover-shadow shadow-sm rounded border border-light'
+        'd-flex align-items-center mb-2 p-1 yw-hover-shadow shadow-sm rounded border border-light ' +
+        'page-explorer-item-view'
     public readonly children: ChildrenLike
     public readonly defaultOpeningApp$: Observable<
         | {
@@ -22,13 +25,19 @@ export class ItemView implements VirtualDOM<'div'> {
     constructor({
         item,
         path,
+        explorerState,
     }: {
         item: ExplorerBackend.GetItemResponse
         path: string
+
+        explorerState: ExplorerState
     }) {
         this.defaultOpeningApp$ = ExplorerBackend.isInstanceOfItemResponse(item)
             ? defaultOpeningApp$(item)
             : of(undefined)
+
+        const nodeData = explorerState.getItemData(item)
+
         this.children = [
             new ItemIconView({ item }),
             { tag: 'span', class: 'mx-3' },
@@ -38,6 +47,10 @@ export class ItemView implements VirtualDOM<'div'> {
                 innerText: `${item.name}`,
                 href: '@nav/explorer' + path + '/asset_' + item.assetId,
             },
+            new ContextMenuHandler({
+                node: nodeData,
+                explorerState: explorerState,
+            }),
             {
                 tag: 'div',
                 class: 'flex-grow-1',
@@ -79,9 +92,7 @@ export class ItemIconView implements VirtualDOM<'div'> {
                     appInfo: ApplicationInfo
                     parametrization: OpenWithParametrization
                 }) => {
-                    return appData &&
-                        appData.appInfo.graphics &&
-                        appData.appInfo.graphics.fileIcon
+                    return appData?.appInfo?.graphics?.fileIcon
                         ? {
                               tag: 'div',
                               style: {
