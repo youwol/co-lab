@@ -7,6 +7,8 @@ import { DescriptionsViews } from './descriptions.views'
 import { ExpandableGroupView } from '../common/expandable-group.view'
 import { BreadcrumbViews } from './breadcrumb.views'
 import { ItemView } from './item.view'
+import { ContextMenuHandler } from './nav-context-menu.view'
+import { ExplorerState } from './explorer.state'
 
 export class ExplorerView implements VirtualDOM<'div'> {
     public readonly tag = 'div'
@@ -15,12 +17,14 @@ export class ExplorerView implements VirtualDOM<'div'> {
     constructor({
         response,
         path,
+        explorerState,
     }: {
         response: ExplorerBackend.QueryChildrenResponse
         path: string
+        explorerState: ExplorerState
     }) {
         this.children = response.items.map(
-            (item) => new ItemView({ item, path }),
+            (item) => new ItemView({ item, path, explorerState }),
         )
     }
 }
@@ -33,11 +37,13 @@ export class AssetView implements VirtualDOM<'div'> {
     constructor({
         assetResponse,
         itemsResponse,
+        explorerState,
         router,
         path,
     }: {
         assetResponse: AssetsBackend.GetAssetResponse
         itemsResponse: ExplorerBackend.QueryChildrenResponse
+        explorerState: ExplorerState
         router: Router
         path?: string
     }) {
@@ -46,7 +52,7 @@ export class AssetView implements VirtualDOM<'div'> {
                 src: `
 <path></path>
 
-# ${assetResponse.name}         
+# ${assetResponse.name} <ctxMenuActions></ctxMenuActions>         
 
 
 <tags></tags>
@@ -77,6 +83,16 @@ export class AssetView implements VirtualDOM<'div'> {
                                 }),
                             expanded: true,
                         }),
+                    ctxMenuActions: () => {
+                        const item = itemsResponse.items.find(
+                            (item) => item.assetId === assetResponse.assetId,
+                        )
+                        const nodeData = explorerState.getItemData(item)
+                        return new ContextMenuHandler({
+                            node: nodeData,
+                            explorerState: explorerState,
+                        })
+                    },
                 },
             }),
         ]

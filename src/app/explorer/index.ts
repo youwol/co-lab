@@ -5,24 +5,52 @@ import {
     Views,
     CatchAllNav,
 } from '@youwol/mkdocs-ts'
-import { AssetsGateway } from '@youwol/http-clients'
+import { Accounts, AssetsGateway } from '@youwol/http-clients'
 import { raiseHTTPErrors } from '@youwol/http-primitives'
 import { map, take } from 'rxjs/operators'
 import { AssetView, ExplorerView } from './explorer.views'
-import { combineLatest } from 'rxjs'
-import { AppState } from '../app-state'
+import { combineLatest, Observable, of } from 'rxjs'
 import { ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
 import { Installer, PreferencesFacade } from '@youwol/os-core'
+import { ExplorerState } from './explorer.state'
+import {
+    driveNavNodeInput,
+    folderNavNodeInput,
+    groupNavNodeInput,
+    itemNavNodeInput,
+    trashNavNodeInput,
+} from './utils'
+
+export { ExplorerState as State } from './explorer.state'
 
 const tableOfContent = Views.tocView
 
-export const navigation = (appState: AppState): Navigation => ({
-    name: 'Explorer',
-    decoration: { icon: { tag: 'i', class: 'fas fa-folder mr-2' } },
-    tableOfContent,
-    html: ({ router }) => new PageView({ router, appState }),
-    '...': appState.session$.pipe(map(() => lazyResolver)),
-})
+export const navigation = ({
+    session$,
+}: {
+    session$?: Observable<Accounts.SessionDetails>
+}): Navigation => {
+    const explorerState = new ExplorerState()
+    return {
+        name: 'Explorer',
+        decoration: { icon: { tag: 'i', class: 'fas fa-folder mr-2' } },
+        tableOfContent,
+        html: ({ router }) => {
+            explorerState.setRouter(router)
+            return new PageView({ router })
+        },
+        '...': (session$ || of(undefined)).pipe(
+            map(() => ({ router, path }) => {
+                explorerState.setRouter(router)
+                return lazyResolver({
+                    explorerState,
+                    router,
+                    path,
+                })
+            }),
+        ),
+    }
+}
 
 export class PageView implements VirtualDOM<'div'> {
     public readonly tag = 'div'
@@ -35,7 +63,7 @@ export class PageView implements VirtualDOM<'div'> {
         ]).subscribe()
     }
 
-    constructor({ router }: { router: Router; appState: AppState }) {
+    constructor({ router }: { router: Router }) {
         this.children = [
             parseMd({
                 src: `
@@ -53,9 +81,11 @@ The explorer organize assets in a files-explorer like structure.
 function lazyResolver({
     path,
     router,
+    explorerState,
 }: {
     path: string
     router: Router
+    explorerState: ExplorerState
 }): CatchAllNav {
     const parts = path.split('/').filter((d) => d != '')
     const client = new AssetsGateway.Client()
@@ -65,11 +95,18 @@ function lazyResolver({
     if (parts.length == 1) {
         return lazyResolverDrives({ groupId: parts[0], client })
     }
-    if (parts.length >= 2 && parts.slice(-1)[0].startsWith('folder_')) {
+    if (
+        parts.length >= 2 &&
+        (parts.slice(-1)[0].startsWith('folder_') ||
+            parts.slice(-1)[0].startsWith('trash_'))
+    ) {
         return lazyResolverFolders({
             path,
             parentId: parts.slice(-1)[0].replace('folder_', ''),
             client,
+            explorerState,
+            groupId: parts[0],
+            isDrive: parts.length === 2,
         })
     }
     if (parts.length >= 2 && parts.slice(-1)[0].startsWith('asset_')) {
@@ -79,6 +116,7 @@ function lazyResolver({
             client,
             router,
             path,
+            explorerState,
         })
     }
 }
@@ -92,19 +130,8 @@ function lazyResolverGroups({
         raiseHTTPErrors(),
         map((details) => {
             return {
-                children: details.userInfo.groups.map((g) => {
-                    return {
-                        name: g.path.split('/').slice(-1)[0],
-                        decoration: {
-                            icon: {
-                                tag: 'div' as const,
-                                class: g.id.includes('private')
-                                    ? 'fas fa-user mx-2'
-                                    : 'fas fa-users mx-2',
-                            },
-                        },
-                        id: g.id,
-                    }
+                children: details.userInfo.groups.map((group) => {
+                    return groupNavNodeInput({ group })
                 }),
                 html: () => ({ tag: 'h1' as const, innerText: 'Groups' }),
             }
@@ -128,16 +155,9 @@ function lazyResolverDrives({
             take(1),
             map(({ drives }) => {
                 return {
-                    children: drives.map((d) => ({
-                        name: d.name,
-                        id: 'folder_' + d.driveId,
-                        decoration: {
-                            icon: {
-                                tag: 'div' as const,
-                                class: 'fas fa-hdd mx-2',
-                            },
-                        },
-                    })),
+                    children: drives.map((drive) => {
+                        return driveNavNodeInput({ drive })
+                    }),
                     html: () => ({
                         tag: 'h1' as const,
                         innerText: 'Drives',
@@ -151,42 +171,52 @@ function lazyResolverFolders({
     path,
     parentId,
     client,
+    explorerState,
+    groupId,
+    isDrive,
 }: {
     path: string
     parentId: string
     client: AssetsGateway.Client
+    explorerState: ExplorerState
+    groupId: string
+    isDrive: boolean
 }): CatchAllNav {
-    return client.explorer
-        .queryChildren$({
-            parentId,
-        })
-        .pipe(
-            raiseHTTPErrors(),
-            take(1),
-            map((response) => {
-                return {
-                    children: [
-                        ...response.folders.map((d) => ({
-                            name: d.name,
-                            id: `folder_${d.folderId}`,
-                            decoration: {
-                                icon: {
-                                    tag: 'div' as const,
-                                    class: 'fas fa-folder mx-2',
-                                },
-                            },
-                        })),
-                        ...response.items.map((d) => ({
-                            name: d.name,
-                            id: `asset_${d.assetId}`,
-                            decoration: { wrapperClass: 'd-none' },
-                            leaf: true,
-                        })),
-                    ],
-                    html: () => new ExplorerView({ response, path }),
-                }
-            }),
-        )
+    const source$ = parentId.startsWith('trash_')
+        ? client.explorer.queryDeleted$({
+              driveId: parentId.replace('trash_', ''),
+          })
+        : client.explorer.queryChildren$({
+              parentId,
+          })
+    return source$.pipe(
+        raiseHTTPErrors(),
+        take(1),
+        map((response) => {
+            const children = [
+                ...response.folders.map((folder) => {
+                    return folderNavNodeInput({ folder, explorerState })
+                }),
+                ...response.items.map((item) => {
+                    return itemNavNodeInput({ item, explorerState })
+                }),
+            ]
+            if (isDrive) {
+                children.push(
+                    trashNavNodeInput({ parentId, groupId, explorerState }),
+                )
+            }
+            return {
+                children,
+                html: () =>
+                    new ExplorerView({
+                        response,
+                        path,
+                        explorerState,
+                    }),
+            }
+        }),
+    )
 }
 
 function lazyResolverAsset({
@@ -195,12 +225,14 @@ function lazyResolverAsset({
     assetId,
     router,
     client,
+    explorerState,
 }: {
     path: string
     parentId: string
     assetId: string
     router: Router
     client: AssetsGateway.Client
+    explorerState: ExplorerState
 }): CatchAllNav {
     return combineLatest([
         client.assets
@@ -222,6 +254,7 @@ function lazyResolverAsset({
                 new AssetView({
                     assetResponse,
                     itemsResponse,
+                    explorerState,
                     router,
                     path,
                 }),
