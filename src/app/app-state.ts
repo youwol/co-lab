@@ -121,7 +121,7 @@ export class AppState {
         this.environmentClient.getStatus$().subscribe()
         this.projectsState.projects$.subscribe(() => {})
         this.confChanged$ = this.environment$.pipe(
-            map((env) => env.configuration.pathsBook.config),
+            map((env) => env.youwolEnvironment.pathsBook.config),
             distinctUntilChanged(),
             tap((path) => console.log('Configuration changed', path)),
         )
