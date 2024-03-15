@@ -1,4 +1,4 @@
-import { distinctUntilChanged, Observable, Subject } from 'rxjs'
+import { distinctUntilChanged, merge, Observable, Subject } from 'rxjs'
 import { filter, map, mergeMap, shareReplay, take, tap } from 'rxjs/operators'
 import * as Projects from './projects'
 import * as Components from './components'
@@ -125,7 +125,7 @@ export class AppState {
             distinctUntilChanged(),
             tap((path) => console.log('Configuration changed', path)),
         )
-        this.confChanged$.subscribe(() => {
+        merge(this.connectedLocal$, this.confChanged$).subscribe(() => {
             this.cdnState.refreshPackages()
         })
 
