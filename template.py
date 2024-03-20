@@ -17,7 +17,7 @@ externals_deps = {
     "@youwol/webpm-client": "^3.0.0",
     '@youwol/http-clients': '^3.0.0',
     '@youwol/http-primitives': '^0.2.3',
-    '@youwol/local-youwol-client': '^0.2.8',
+    '@youwol/local-youwol-client': '^0.2.9',
     '@youwol/os-core': '^0.2.0',
     '@youwol/os-widgets': '^0.2.6',
     "@youwol/rx-tree-views": "^0.3.1",
