@@ -21,36 +21,7 @@ export const navigation = (appState: AppState): Navigation => ({
     name: 'Projects',
     decoration: {
         icon: { tag: 'i', class: 'fas  fa-boxes mr-2' },
-        actions: [
-            {
-                tag: 'button',
-                class: 'mx-2 btn btn-info btn-sm px-1',
-                style: {
-                    padding: '0px',
-                },
-                onclick: (ev: MouseEvent) => {
-                    refresh$.next(true)
-                    ev.preventDefault()
-                    ev.stopPropagation()
-                    appState.projectsState.projectsClient
-                        .status$()
-                        .pipe(delay(500))
-                        .subscribe(() => {
-                            refresh$.next(false)
-                        })
-                },
-                children: [
-                    {
-                        tag: 'i',
-                        class: {
-                            source$: refresh$,
-                            vdomMap: (r: boolean) => (r ? 'fa-spin' : ''),
-                            wrapper: (d: string) => `${d} fas fa-sync`,
-                        },
-                    },
-                ],
-            },
-        ],
+        actions: [refreshAction(appState)],
     },
     tableOfContent: Views.tocView,
     html: ({ router }) =>
@@ -68,6 +39,35 @@ export const navigation = (appState: AppState): Navigation => ({
             }
         }),
     ),
+})
+
+const refreshAction = (appState: AppState): VirtualDOM<'i'> => ({
+    tag: 'i' as const,
+    class: 'mx-2 px-1 fv-hover-text-focus fv-pointer fv-tree-selected-only',
+    style: {
+        padding: '0px',
+    },
+    onclick: (ev: MouseEvent) => {
+        refresh$.next(true)
+        ev.preventDefault()
+        ev.stopPropagation()
+        appState.projectsState.projectsClient
+            .index$()
+            .pipe(delay(500))
+            .subscribe(() => {
+                refresh$.next(false)
+            })
+    },
+    children: [
+        {
+            tag: 'i',
+            class: {
+                source$: refresh$,
+                vdomMap: (r: boolean) => (r ? 'fa-spin' : ''),
+                wrapper: (d: string) => `${d} fas fa-sync`,
+            },
+        },
+    ],
 })
 
 export class PageView implements VirtualDOM<'div'> {

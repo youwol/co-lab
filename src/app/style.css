@@ -83,6 +83,14 @@ html {
 .fv-tree-selected .nav-ctx-menu-handler {
     display: block !important;
 }
+
+.fv-tree-selected-only {
+    display: none !important;
+}
+.fv-tree-selected .fv-tree-selected-only {
+    display: block !important;
+}
+
 .dag-flow-node-title {
     font-size: 8px;
     font-weight: bold;
