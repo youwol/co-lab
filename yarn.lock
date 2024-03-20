@@ -1482,10 +1482,10 @@
     jest-junit "^16.0.0"
     ts-jest "^29.1.2"
 
-"@youwol/local-youwol-client@^0.2.8":
-  version "0.2.8"
-  resolved "https://registry.yarnpkg.com/@youwol/local-youwol-client/-/local-youwol-client-0.2.8.tgz#3e3536a26b38d7ae46b18ff3bd3d675610a6a193"
-  integrity sha512-N7z2CSC6snkCa7UpMR7EhzsRdBWopYIb5ePgIwOsVk+gfFUeYNws4qKkhBR2KB8DhBCVOPI3lxczsF0zfFZJ0Q==
+"@youwol/local-youwol-client@^0.2.9":
+  version "0.2.9"
+  resolved "https://registry.yarnpkg.com/@youwol/local-youwol-client/-/local-youwol-client-0.2.9.tgz#511150ec17ed6e1e71337ae9d79ece109fe27f48"
+  integrity sha512-Kz4CAV45WR3A0nyv5/B48ZdcarHL6hWbnUPVsXnsUDdl0K7FuaQaULvpPtSip+mwnPW+VHlrflNa4dcQlKW42g==
   dependencies:
     "@youwol/http-primitives" "^0.2.3"
     rxjs "^7.5.6"
