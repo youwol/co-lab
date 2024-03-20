@@ -76,8 +76,6 @@ export class State {
             map((message) => message.data),
             shareReplay(1),
         )
-
-        this.refreshPackages()
     }
 
     openPackage(packageId: string) {
