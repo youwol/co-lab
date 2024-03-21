@@ -250,7 +250,6 @@ export class State {
             map((data) => data.failures),
             shareReplay(1),
         )
-        this.projectsClient.status$().subscribe()
     }
 
     runStep(projectId: string, flowId: string, stepId: string) {
@@ -308,5 +307,9 @@ export class State {
                 parameters,
             },
         })
+    }
+
+    refreshProjects() {
+        this.projectsClient.status$().subscribe()
     }
 }

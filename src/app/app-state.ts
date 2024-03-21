@@ -1,5 +1,5 @@
-import { distinctUntilChanged, merge, Observable, Subject } from 'rxjs'
-import { filter, map, mergeMap, shareReplay, take, tap } from 'rxjs/operators'
+import { distinctUntilChanged, Observable, Subject, combineLatest } from 'rxjs'
+import { map, mergeMap, shareReplay, take, tap } from 'rxjs/operators'
 import * as Projects from './projects'
 import * as Components from './components'
 import * as Backends from './environment/backends'
@@ -111,23 +111,25 @@ export class AppState {
             shareReplay(1),
         )
         this.connectedLocal$ = pyYw.PyYouwolClient.ws.connected$
-        this.connectedLocal$.pipe(filter((c) => c)).subscribe(() => {
-            this.environmentClient.getStatus$().subscribe()
-        })
+
         this.projectsState = new Projects.State({ appState: this })
         this.cdnState = new Components.State({ appState: this })
         this.environmentState = new Environment.State({ appState: this })
 
-        this.environmentClient.getStatus$().subscribe()
         this.projectsState.projects$.subscribe(() => {})
         this.confChanged$ = this.environment$.pipe(
             map((env) => env.youwolEnvironment.pathsBook.config),
             distinctUntilChanged(),
             tap((path) => console.log('Configuration changed', path)),
         )
-        merge(this.connectedLocal$, this.confChanged$).subscribe(() => {
-            this.cdnState.refreshPackages()
-        })
+        combineLatest([this.connectedLocal$, this.confChanged$]).subscribe(
+            ([connected]) => {
+                if (connected) {
+                    this.cdnState.refreshPackages()
+                    this.projectsState.refreshProjects()
+                }
+            },
+        )
 
         this.session$ = this.environment$.pipe(
             map((env) => env['youwolEnvironment'].currentConnection),
@@ -159,6 +161,7 @@ export class AppState {
         this.router.explorerState.selectedNode$.subscribe((node) => {
             console.log({ node, state: this.router.explorerState })
         })
+        this.environmentClient.getStatus$().subscribe()
     }
 }
 

@@ -7,7 +7,7 @@ const runTimeDependencies = {
         "@youwol/webpm-client": "^3.0.0",
         "@youwol/http-clients": "^3.0.0",
         "@youwol/http-primitives": "^0.2.3",
-        "@youwol/local-youwol-client": "^0.2.8",
+        "@youwol/local-youwol-client": "^0.2.9",
         "@youwol/os-core": "^0.2.0",
         "@youwol/os-widgets": "^0.2.6",
         "@youwol/rx-tree-views": "^0.3.1",
@@ -125,13 +125,13 @@ const entries = {
 export const setup = {
     name:'@youwol/co-lab',
         assetId:'QHlvdXdvbC9jby1sYWI=',
-    version:'0.2.4-wip',
+    version:'0.3.1-wip',
     shortDescription:"The YouWol's collaborative laboratory application.",
     developerDocumentation:'https://platform.youwol.com/applications/@youwol/cdn-explorer/latest?package=@youwol/co-lab&tab=doc',
     npmPackage:'https://www.npmjs.com/package/@youwol/co-lab',
     sourceGithub:'https://github.com/youwol/co-lab',
     userGuide:'https://l.youwol.com/doc/@youwol/co-lab',
-    apiVersion:'02',
+    apiVersion:'03',
     runTimeDependencies,
     externals,
     exportedSymbols,
@@ -156,7 +156,7 @@ export const setup = {
             modules,
             scripts,
         }).then(() => {
-            return window[`@youwol/co-lab_APIv02`]
+            return window[`@youwol/co-lab_APIv03`]
         })
     },
     installAuxiliaryModule: ({name, cdnClient, installParameters}:{
@@ -171,7 +171,7 @@ export const setup = {
         const parameters = installParameters || {}
         const scripts = [
             ...(parameters.scripts || []),
-            `@youwol/co-lab#0.2.4-wip~dist/@youwol/co-lab/${entry.name}.js`
+            `@youwol/co-lab#0.3.1-wip~dist/@youwol/co-lab/${entry.name}.js`
         ]
         const modules = [
             ...(parameters.modules || []),
@@ -182,7 +182,7 @@ export const setup = {
             modules,
             scripts,
         }).then(() => {
-            return window[`@youwol/co-lab/${entry.name}_APIv02`]
+            return window[`@youwol/co-lab/${entry.name}_APIv03`]
         })
     },
     getCdnDependencies(name?: string){

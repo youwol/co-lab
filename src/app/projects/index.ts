@@ -6,9 +6,10 @@ import { SearchView } from './search.view'
 import { InfoSectionView } from '../common'
 import { pyYwDocLink } from '../common/py-yw-references.view'
 import { Routers } from '@youwol/local-youwol-client'
-import { BehaviorSubject } from 'rxjs'
+import { BehaviorSubject, combineLatest } from 'rxjs'
 import { delay, map } from 'rxjs/operators'
 import { icon } from './icons'
+import { ProjectsFinderView } from './projects-finder.view'
 
 export * from './state'
 
@@ -20,36 +21,7 @@ export const navigation = (appState: AppState): Navigation => ({
     name: 'Projects',
     decoration: {
         icon: { tag: 'i', class: 'fas  fa-boxes mr-2' },
-        actions: [
-            {
-                tag: 'button',
-                class: 'mx-2 btn btn-info btn-sm px-1',
-                style: {
-                    padding: '0px',
-                },
-                onclick: (ev: MouseEvent) => {
-                    refresh$.next(true)
-                    ev.preventDefault()
-                    ev.stopPropagation()
-                    appState.projectsState.projectsClient
-                        .status$()
-                        .pipe(delay(500))
-                        .subscribe(() => {
-                            refresh$.next(false)
-                        })
-                },
-                children: [
-                    {
-                        tag: 'i',
-                        class: {
-                            source$: refresh$,
-                            vdomMap: (r: boolean) => (r ? 'fa-spin' : ''),
-                            wrapper: (d: string) => `${d} fas fa-sync`,
-                        },
-                    },
-                ],
-            },
-        ],
+        actions: [refreshAction(appState)],
     },
     tableOfContent: Views.tocView,
     html: ({ router }) =>
@@ -57,13 +29,45 @@ export const navigation = (appState: AppState): Navigation => ({
             router,
             appState,
         }),
-    '...': appState.projectsState.projects$.pipe(
-        map((projects) => {
+    '...': combineLatest([
+        appState.environment$,
+        appState.projectsState.projects$,
+    ]).pipe(
+        map(([env, projects]) => {
             return ({ path }: { path: string; router: Router }) => {
-                return lazyResolver(path, projects, appState)
+                return lazyResolver(path, env, projects, appState)
             }
         }),
     ),
+})
+
+const refreshAction = (appState: AppState): VirtualDOM<'i'> => ({
+    tag: 'i' as const,
+    class: 'mx-2 px-1 fv-hover-text-focus fv-pointer fv-tree-selected-only',
+    style: {
+        padding: '0px',
+    },
+    onclick: (ev: MouseEvent) => {
+        refresh$.next(true)
+        ev.preventDefault()
+        ev.stopPropagation()
+        appState.projectsState.projectsClient
+            .index$()
+            .pipe(delay(500))
+            .subscribe(() => {
+                refresh$.next(false)
+            })
+    },
+    children: [
+        {
+            tag: 'i',
+            class: {
+                source$: refresh$,
+                vdomMap: (r: boolean) => (r ? 'fa-spin' : ''),
+                wrapper: (d: string) => `${d} fas fa-sync`,
+            },
+        },
+    ],
 })
 
 export class PageView implements VirtualDOM<'div'> {
@@ -163,6 +167,7 @@ The following projects have failed to load:
 
 function lazyResolver(
     path: string,
+    env: Routers.Environment.EnvironmentStatusResponse,
     projects: Routers.Projects.Project[],
     appState: AppState,
 ) {
@@ -170,12 +175,34 @@ function lazyResolver(
     if (parts.length === 0) {
         return {
             tableOfContent: Views.tocView,
+            children: env.youwolEnvironment.projects.finders
+                .sort((a, b) => a.name.localeCompare(b.name))
+                .map((p) => {
+                    return {
+                        name: p.name,
+                        id: window.btoa(p['fromPath']),
+                        decoration: {
+                            icon: {
+                                tag: 'i' as const,
+                                class: 'mx-2 fas fa-object-group',
+                            },
+                        },
+                    }
+                }),
+            html: undefined,
+        }
+    }
+    if (parts.length === 1) {
+        const prefix = window.atob(parts[0])
+        return {
+            tableOfContent: Views.tocView,
             children: projects
+                .filter((project) => project.path.startsWith(prefix))
                 .map((project) => ({
                     ...project,
                     name: skipNamespace(project.name),
                 }))
-                .sort((a, b) => a['name'].localeCompare(b['name']))
+                .sort((a, b) => a.name.localeCompare(b.name))
                 .map((p) => {
                     return {
                         name: p.name,
@@ -186,7 +213,16 @@ function lazyResolver(
                         leaf: true,
                     }
                 }),
-            html: undefined,
+            html: ({ router }) => {
+                const finder = env.youwolEnvironment.projects.finders.find(
+                    (f) => f.fromPath === prefix,
+                )
+                return new ProjectsFinderView({
+                    finder,
+                    appState,
+                    router,
+                })
+            },
         }
     }
     const project = projects.find((p) => p.id === parts.slice(-1)[0])

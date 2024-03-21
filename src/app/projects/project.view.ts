@@ -271,7 +271,14 @@ export class FailuresView implements VirtualDOM<'div'> {
     public readonly tag = 'div'
     public readonly children: ChildrenLike
 
-    constructor({ appState }: { appState: AppState; router: Router }) {
+    constructor({
+        appState,
+        prefix,
+    }: {
+        appState: AppState
+        router: Router
+        prefix?: string
+    }) {
         this.children = {
             policy: 'replace',
             source$: appState.projectsState.projectsFailures$,
@@ -280,17 +287,23 @@ export class FailuresView implements VirtualDOM<'div'> {
             ) => [
                 new FailuresCategoryView({
                     appState: appState,
-                    failures: failures.importExceptions,
+                    failures: failures.importExceptions.filter((error) =>
+                        prefix ? error.path.startsWith(prefix) : true,
+                    ),
                     title: 'Import Failures',
                 }),
                 new FailuresCategoryView({
                     appState: appState,
-                    failures: failures.directoriesNotFound,
+                    failures: failures.directoriesNotFound.filter((error) =>
+                        prefix ? error.path.startsWith(prefix) : true,
+                    ),
                     title: 'Directory Not Found Failures',
                 }),
                 new FailuresCategoryView({
                     appState: appState,
-                    failures: failures.pipelinesNotFound,
+                    failures: failures.pipelinesNotFound.filter((error) =>
+                        prefix ? error.path.startsWith(prefix) : true,
+                    ),
                     title: 'Pipeline Not Found Failures',
                 }),
             ],
