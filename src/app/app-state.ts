@@ -158,9 +158,7 @@ export class AppState {
             navigation: this.navigation,
             basePath: `/applications/${setup.name}/${setup.version}`,
         })
-        this.router.explorerState.selectedNode$.subscribe((node) => {
-            console.log({ node, state: this.router.explorerState })
-        })
+
         this.environmentClient.getStatus$().subscribe()
     }
 }
