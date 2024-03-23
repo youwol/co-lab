@@ -379,6 +379,9 @@ export class FilesView implements VirtualDOM<'div'> {
     }
 }
 
+type YwMetadata = {
+    links: { kind: string; name: string; url: string }[]
+}
 export class LinksView implements VirtualDOM<'div'> {
     public readonly tag = 'div'
     public readonly children: ChildrenLike
@@ -401,15 +404,21 @@ export class LinksView implements VirtualDOM<'div'> {
                                 restOfPath: '.yw_metadata.json',
                             })
                             .pipe(
+                                raiseHTTPErrors(),
                                 map((resp) => ({
                                     resp,
                                     version,
                                 })),
                             ),
                     ),
-                    raiseHTTPErrors(),
                 ),
-                vdomMap: ({ resp, version }) => {
+                vdomMap: ({
+                    resp,
+                    version,
+                }: {
+                    resp: YwMetadata
+                    version: string
+                }) => {
                     return {
                         tag: 'ul',
                         children: resp.links.map((link) => {
