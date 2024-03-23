@@ -2,14 +2,17 @@ import { AppState } from '../app-state'
 import * as Backends from './backends'
 import * as JsWasm from './js-wasm'
 import * as Pyodide from './pyodide'
-import { ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
+import { AnyVirtualDOM, ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
 
 import { Navigation, parseMd, Router, Views } from '@youwol/mkdocs-ts'
 import { Routers } from '@youwol/local-youwol-client'
 import { PackageView } from './js-wasm/package.views'
 import { BackendView } from './backends/package.views'
+import { State } from './state'
+import { PyodideView } from './pyodide/package.views'
 export * from './state'
 
+type Target = 'js/wasm' | 'backend' | 'pyodide'
 export const navigation = (appState: AppState): Navigation => ({
     name: 'Components',
     decoration: { icon: { tag: 'i', class: 'fas  fa-microchip mr-2' } },
@@ -21,7 +24,7 @@ export const navigation = (appState: AppState): Navigation => ({
 
 export function formatChildren(
     { packages }: Routers.LocalCdn.CdnStatusResponse,
-    target: 'js/wasm' | 'backend',
+    target: Target,
 ) {
     return packages
         .filter((elem) => {
@@ -43,8 +46,21 @@ export function formatChildren(
 export function lazyResolver(
     status: Routers.LocalCdn.CdnStatusResponse,
     appState: AppState,
-    target: 'js/wasm' | 'backend',
+    target: Routers.LocalCdn.WebpmLibraryType,
 ) {
+    const htmlFactory: Record<
+        Routers.LocalCdn.WebpmLibraryType,
+        (p: {
+            appState: AppState
+            cdnState: State
+            router: Router
+            packageId: string
+        }) => AnyVirtualDOM
+    > = {
+        'js/wasm': (params) => new PackageView(params),
+        backend: (params) => new BackendView(params),
+        pyodide: (params) => new PyodideView(params),
+    }
     return ({ path }: { path: string }) => {
         const parts = path.split('/').filter((d) => d != '')
         if (parts.length === 0) {
@@ -69,9 +85,7 @@ export function lazyResolver(
                     cdnState: appState.cdnState,
                     packageId: parts.slice(-1)[0],
                 }
-                return target === 'js/wasm'
-                    ? new PackageView(params)
-                    : new BackendView(params)
+                return htmlFactory[target](params)
             },
         }
     }
