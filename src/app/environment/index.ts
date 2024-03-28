@@ -5,6 +5,7 @@ import * as YwConfiguration from './yw-configuration'
 import * as Profiles from './profiles'
 import * as Databases from './databases'
 import * as Backends from './backends'
+import * as Browser from './browser'
 import * as Notifications from './notifications'
 import { ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
 import { pyYwDocLink } from '../common/py-yw-references.view'
@@ -22,6 +23,7 @@ export const navigation = (appState: AppState): Navigation => ({
     '/yw-configuration': YwConfiguration.navigation(appState),
     '/profiles': Profiles.navigation(appState),
     '/databases': Databases.navigation(appState),
+    '/browser': Browser.navigation(appState),
     '/logs': Logs.navigation(appState),
     '/backends': Backends.navigation(appState),
     '/notifications': Notifications.navigation(appState),
