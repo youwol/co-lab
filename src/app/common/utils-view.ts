@@ -1,5 +1,10 @@
 import { ChildrenLike, VirtualDOM, CSSAttribute } from '@youwol/rx-vdom'
-import { fromMarkdown, parseMd, Router } from '@youwol/mkdocs-ts'
+import {
+    fromMarkdown,
+    GlobalMarkdownViews,
+    parseMd,
+    Router,
+} from '@youwol/mkdocs-ts'
 import { BehaviorSubject, Observable, of, Subject, timer } from 'rxjs'
 import { setup } from '../../auto-generated'
 import { AppState } from '../app-state'
@@ -426,4 +431,16 @@ export class CoLabBanner implements VirtualDOM<'div'> {
             },
         ]
     }
+}
+
+export const globalMdViews = {
+    ...GlobalMarkdownViews.factory,
+    docLink: (elem: HTMLElement) => {
+        return {
+            tag: 'a' as const,
+            href: `/doc?nav=${elem.getAttribute('nav')}`,
+            target: '_blank',
+            innerText: elem.innerText,
+        }
+    },
 }

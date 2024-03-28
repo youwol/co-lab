@@ -8,6 +8,8 @@ import * as pyYw from '@youwol/local-youwol-client'
 import { Observable } from 'rxjs'
 import { map, mergeMap, shareReplay } from 'rxjs/operators'
 
+import * as Browser from './browser'
+
 export type Method = 'GET' | 'POST' | 'PUT' | 'DELETE'
 
 /**
@@ -49,6 +51,11 @@ export class State {
     public readonly appState: AppState
 
     /**
+     * @group State
+     */
+    public readonly browserState: Browser.State
+
+    /**
      * @group Immutable Constants
      */
     public readonly commandsEvent: { [k: string]: CommandEvents } = {}
@@ -69,6 +76,7 @@ export class State {
             map((response) => response.dispatches),
             shareReplay(1),
         )
+        this.browserState = new Browser.State({ appState: this.appState })
     }
 
     openCommand(command: pyYw.Routers.Environment.Command) {
