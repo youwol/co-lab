@@ -10,7 +10,8 @@ const appState = new AppState()
 const { router } = appState
 
 export interface ColabController {
-    navigation$: Observable<string>
+    navigation$?: Observable<string>
+    refreshPage$?: Observable<unknown>
 }
 
 if (parent['@youwol/co-lab-controller']) {
@@ -18,6 +19,9 @@ if (parent['@youwol/co-lab-controller']) {
     const controller: ColabController = parent['@youwol/co-lab-controller']
     controller.navigation$?.subscribe((path) => {
         router.navigateTo({ path })
+    })
+    controller.refreshPage$?.subscribe(() => {
+        location.reload()
     })
 }
 
