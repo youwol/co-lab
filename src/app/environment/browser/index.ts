@@ -95,7 +95,7 @@ class FileView implements VirtualDOM<'div'> {
                 vdomMap: (
                     status: Routers.Environment.BrowserCacheStatusResponse,
                 ) => {
-                    if (status.file) {
+                    if (status.file && status.file !== 'None') {
                         return {
                             tag: 'div',
                             children: [
@@ -117,7 +117,7 @@ class FileView implements VirtualDOM<'div'> {
                     }
                     return {
                         tag: 'div',
-                        innerText: 'The cache is only persisted in memory',
+                        innerText: 'The cache is persisted in memory',
                     }
                 },
             },
