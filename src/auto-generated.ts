@@ -35,8 +35,8 @@ const externals = {
     "@floating-ui/dom": "window['@floating-ui/dom_APIv1']",
     "rxjs": "window['rxjs_APIv7']",
     "d3": "window['d3_APIv7']",
-    "rxjs/operators": "window['rxjs_APIv7']['operators']",
-    "@youwol/local-youwol-client/src/lib/routers/environment/interfaces": "window['@youwol/local-youwol-client_APIv02']['src']['lib']['routers']['environment']['interfaces']"
+    "@youwol/local-youwol-client/src/lib/routers/environment/interfaces": "window['@youwol/local-youwol-client_APIv02']['src']['lib']['routers']['environment']['interfaces']",
+    "rxjs/operators": "window['rxjs_APIv7']['operators']"
 }
 const exportedSymbols = {
     "@youwol/mkdocs-ts": {
