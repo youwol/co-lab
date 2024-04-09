@@ -10,6 +10,8 @@ import { PackageView } from './js-wasm/package.views'
 import { BackendView } from './backends/package.views'
 import { State } from './state'
 import { PyodideView } from './pyodide/package.views'
+import { InfoSectionView } from '../common'
+import { example1 } from './examples'
 export * from './state'
 
 type Target = 'js/wasm' | 'backend' | 'pyodide'
@@ -98,8 +100,9 @@ class PageView implements VirtualDOM<'div'> {
         this.children = [
             parseMd({
                 src: `
-# Packages
+# Components
 
+<info>
 Gathers the installed components (executables).
 
 They are retrieved either:
@@ -109,9 +112,25 @@ They are retrieved either:
 Executables can be:
 *  applications
 *  libraries
-*  python: Python modules running in the browser.
-*  backends`,
+*  python: Python modules running in the browser using pyodide.
+*  backends
+
+**Examples:**
+
+To help you get started, here are a few examples:
+- Electronic density computations using PySCF: 
+<a href="/applications/@youwol/js-playground/latest?content=${encodeURIComponent(example1)}" target="_blank">here</a>.
+</info>
+`,
                 router: router,
+                views: {
+                    info: (elem: HTMLElement) => {
+                        return new InfoSectionView({
+                            text: elem.innerHTML,
+                            router,
+                        })
+                    },
+                },
             }),
         ]
     }
