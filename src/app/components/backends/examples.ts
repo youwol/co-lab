@@ -55,7 +55,7 @@ export const example1 = `
                 tag:'div',
                 innerText: {
                     // 'client.channel' return an observable that emit items send from the endpoint '/async-job'.
-                    source$: client.channel('/async-job'),
+                    source$: client.stream('/async-job'),
                     // This function simply convert the data from 'source$' into the value displayed as 'innerText'.
                     vdomMap: (resp) => resp.data.result
                 }
