@@ -87,6 +87,7 @@ export class ContentAssetInstallView implements VirtualDOM<'div'> {
                                 parentId: notif.contextId,
                             })
                             .pipe(raiseHTTPErrors()),
+                        title: 'Asset download',
                         showHeaderMenu: false,
                     })
                 },

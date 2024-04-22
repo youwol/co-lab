@@ -1,351 +1,505 @@
-import { ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
+import { AnyVirtualDOM, ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
 import { BehaviorSubject, Observable, ReplaySubject } from 'rxjs'
 import * as pyYw from '@youwol/local-youwol-client'
-import { classesButton } from './utils-view'
 import { Routers } from '@youwol/local-youwol-client'
-import {
-    AttributesView,
-    LogView,
-    MethodLabelView,
-    TerminalState,
-} from './terminal'
-import { ImmutableTree } from '@youwol/rx-tree-views'
 import { raiseHTTPErrors } from '@youwol/http-primitives'
-import { map } from 'rxjs/operators'
+import { ExpandableGroupView } from './expandable-group.view'
+import { Label } from '@youwol/local-youwol-client/src/lib/interfaces'
+import { DataView } from './data.view'
 
-function getChildren(contextId: string) {
-    return new pyYw.PyYouwolClient().admin.system
-        .queryLogs$({ parentId: contextId })
-        .pipe(
-            raiseHTTPErrors(),
-            map(({ logs }) =>
-                logs.map((log) => {
-                    if (log.labels.includes('Label.STARTED')) {
-                        return new LogNode(log, getChildren(log.contextId))
-                    }
-                    return new LogNode(log)
-                }),
-            ),
-        )
+export const labelMethodIcons = {
+    'Label.ADMIN': 'fas fa-users-cog',
+    'Label.API_GATEWAY': 'fas fa-door-open',
+    'Label.MIDDLEWARE': 'fas fa-ghost',
+    'Label.END_POINT': 'fas fa-microchip',
+    'Label.APPLICATION': 'fas fa-play',
+    'Label.LOG': 'fas fa-edit',
+}
+export const labelLogIcons = {
+    'Label.LOG_WARNING': 'fas fa-exclamation-circle fv-text-focus',
+    'Label.LOG_ERROR': 'fas fa-times fv-text-error',
+    'Label.DONE': 'fas fa-flag',
 }
 
-/**
- * @category Data-structure
- */
-export class LogNode extends ImmutableTree.Node {
-    /**
-     * @group Immutable Constants
-     */
-    public readonly text: string
-
-    /**
-     * @group Immutable Constants
-     */
-    public readonly level: string
-
-    /**
-     * @group Immutable Constants
-     */
-    public readonly attributes: { [key: string]: string }
-
-    /**
-     * @group Immutable Constants
-     */
-    public readonly labels: pyYw.Label[]
-
-    /**
-     * @group Immutable Constants
-     */
-    public readonly data: unknown
-
-    /**
-     * @group Immutable Constants
-     */
-    public readonly contextId: string
-
-    /**
-     * @group Immutable Constants
-     */
-    public readonly parentContextId: string
-
-    constructor(
-        params: {
-            text: string
-            level: string
-            attributes: { [key: string]: string }
-            labels: string[]
-            data: unknown
-            contextId: string
-            parentContextId: string
-        },
-        children?: Observable<ImmutableTree.Node[]>,
-    ) {
-        super({
-            id: `${Math.floor(Math.random() * 1e6)}`,
-            children,
-        })
-        Object.assign(this, params)
-    }
-}
-
-/**
- * @category View
- */
-export class LogsExplorerView implements VirtualDOM<'div'> {
-    /**
-     * @group Immutable DOM Constants
-     */
-    public readonly tag = 'div'
-
-    /**
-     * @group Immutable DOM Constants
-     */
-    public readonly class = `w-100 h-100 d-flex flex-column p-2`
-
-    /**
-     * @group Immutable DOM Constants
-     */
-    public readonly children: ChildrenLike
-
-    /**
-     * @group Immutable
-     */
+export class LogsExplorerState {
+    public readonly title: string
+    public readonly t0$ = new BehaviorSubject(Date.now())
     public readonly rootLogs$: Observable<Routers.System.QueryLogsResponse>
-    /**
-     * @group Observables
-     */
+
     public readonly logs$ = new ReplaySubject<pyYw.Routers.System.LogsResponse>(
         1,
     )
 
-    /**
-     * @group Observables
-     */
     public readonly fetchingLogs$ = new BehaviorSubject<boolean>(false)
 
+    public readonly stack$ = new BehaviorSubject<Routers.System.LogResponse[]>(
+        [],
+    )
+
+    private rootLogsResponse: Routers.System.LogsResponse
+    public delta = {}
+
     constructor(params: {
-        rootLogs$: Observable<Routers.System.QueryLogsResponse>
-        showHeaderMenu?: boolean
+        rootLogs$: Observable<Routers.System.QueryLogsResponse> | string
+        title: string
     }) {
         Object.assign(this, params)
-        this.children = [
-            {
-                tag: 'div',
-                class:
-                    'align-items-center ' +
-                    (params.showHeaderMenu ? 'd-flex' : 'd-none'),
-                children: [
-                    {
-                        tag: 'div',
-                        class: `${classesButton} mx-auto px-4`,
-                        children: [
-                            {
-                                tag: 'div',
-                                class: {
-                                    source$: this.fetchingLogs$,
-                                    vdomMap: (isFetching) =>
-                                        isFetching
-                                            ? 'fas fa-spinner fa-spin'
-                                            : 'fas fa-sync',
-                                },
-                            },
-                        ],
-                        style: {
-                            width: 'fit-content',
-                        },
-                        onclick: () => this.refresh(),
-                    },
-                    {
-                        tag: 'div',
-                        class: `${classesButton} mx-auto px-4`,
-                        innerText: 'clear',
-                        onclick: () => this.clear(),
-                    },
-                ],
-            },
-            new LogsView({
-                logs$: this.logs$,
-            }),
-        ]
-        this.refresh()
-    }
 
+        if (typeof params.rootLogs$ === 'string') {
+            this.rootLogs$ = new pyYw.PyYouwolClient().admin.system
+                .queryLogs$({
+                    parentId: params.rootLogs$,
+                })
+                .pipe(raiseHTTPErrors())
+        }
+    }
     refresh() {
         this.fetchingLogs$.next(true)
-        this.rootLogs$.subscribe((response) => {
-            this.logs$.next({ logs: response.logs })
-            this.fetchingLogs$.next(false)
-        })
+        this.stack$.value.length == 0 && this.t0$.next(Date.now())
+        this.stack$.value.length == 0
+            ? this.rootLogs$.subscribe((response) => {
+                  this.logs$.next(response)
+                  this.rootLogsResponse = response
+                  this.fetchingLogs$.next(false)
+              })
+            : new pyYw.PyYouwolClient().admin.system
+                  .queryLogs$({
+                      parentId: this.stack$.value.slice(-1)[0].contextId,
+                  })
+                  .pipe(raiseHTTPErrors())
+                  .subscribe((response) => {
+                      this.logs$.next(response)
+                      this.fetchingLogs$.next(false)
+                  })
+    }
+
+    elapsedTime(log: Routers.System.LogResponse): number | undefined {
+        return log.labels.includes('Label.STARTED') && this.delta[log.contextId]
     }
 
     clear() {
+        this.expandLog()
         this.fetchingLogs$.next(true)
         new pyYw.PyYouwolClient().admin.system.clearLogs$().subscribe(() => {
             this.refresh()
         })
     }
-}
 
-/**
- * @category View
- */
-export class TreeView implements VirtualDOM<'div'> {
-    /**
-     * @group Immutable DOM Constants
-     */
-    public readonly tag = 'div'
+    expandLog(log?: Routers.System.LogResponse) {
+        if (!log) {
+            this.stack$.next([])
+            this.logs$.next(this.rootLogsResponse)
+            return
+        }
+        const stack = this.stack$.value
 
-    /**
-     * @group Immutable Constants
-     */
-    static ClassSelector = 'tree-view'
-
-    /**
-     * @group Immutable DOM Constants
-     */
-    public readonly class = `${TreeView.ClassSelector}`
-
-    /**
-     * @group Immutable Constants
-     */
-    public readonly log: pyYw.Routers.System.LogResponse
-
-    /**
-     * @group States
-     */
-    public readonly terminalState: TerminalState
-
-    /**
-     * @group Immutable DOM Constants
-     */
-    public readonly children: ChildrenLike
-
-    constructor(params: {
-        log: pyYw.Routers.System.LogResponse
-        terminalState: TerminalState
-    }) {
-        Object.assign(this, params)
-        const treeState = new ImmutableTree.State({
-            rootNode: this.log.labels.includes('Label.STARTED')
-                ? new LogNode(this.log, getChildren(this.log.contextId))
-                : new LogNode(this.log),
-        })
-        const treeView = new ImmutableTree.View({
-            state: treeState,
-            headerView: (_, node) => {
-                return node.children
-                    ? new NodeView(node)
-                    : new LogView({
-                          state: this.terminalState,
-                          message: node,
-                      })
-            },
-            options: { stepPadding: 30 },
-        })
-        this.children = [treeView]
+        new pyYw.PyYouwolClient().admin.system
+            .queryLogs$({ parentId: log.contextId })
+            .pipe(raiseHTTPErrors())
+            .subscribe((response) => {
+                const end = response.logs.find((l) =>
+                    l.labels.includes('Label.DONE'),
+                )
+                this.delta[log.contextId] = Math.floor(
+                    (end.timestamp - log.timestamp) / 1000,
+                )
+                this.logs$.next(response)
+                if (stack.includes(log)) {
+                    const index = stack.indexOf(log)
+                    this.stack$.next(stack.slice(0, index + 1))
+                } else {
+                    this.stack$.next([...this.stack$.value, log])
+                }
+            })
     }
 }
 
-/**
- * @category View
- */
-export class LogsView implements VirtualDOM<'div'> {
-    /**
-     * @group Immutable DOM Constants
-     */
+export class LogsExplorerView implements VirtualDOM<'div'> {
     public readonly tag = 'div'
 
-    /**
-     * @group Immutable Constants
-     */
-    static ClassSelector = 'logs-view'
+    public readonly class = `w-100 h-100 d-flex flex-column p-2`
 
-    /**
-     * @group Immutable DOM Constants
-     */
-    public readonly class = `${LogsView.ClassSelector} flex-grow-1 w-100`
+    public readonly children: ChildrenLike
 
-    /**
-     * @group Immutable DOM Constants
-     */
+    public readonly state: LogsExplorerState
+
     public readonly style = {
-        minHeight: '0px',
+        fontSize: 'smaller',
     }
-
-    /**
-     * @group Immutable DOM Constants
-     */
-    public readonly children: ChildrenLike
-
-    /**
-     * @group States
-     */
-    public readonly terminalState = new TerminalState()
-
-    /**
-     * @group Observables
-     */
-    public readonly logs$: Observable<pyYw.Routers.System.LogsResponse>
-
     constructor(params: {
-        logs$: Observable<pyYw.Routers.System.LogsResponse>
+        rootLogs$: Observable<Routers.System.QueryLogsResponse> | string
+        title: string
+        showHeaderMenu?: boolean
     }) {
         Object.assign(this, params)
+        this.state = new LogsExplorerState({
+            rootLogs$: params.rootLogs$,
+            title: params.title,
+        })
+        this.children = [
+            params.showHeaderMenu && clearButton(this.state),
+            new StackView({ state: this.state }),
+            new LogsListView({
+                state: this.state,
+            }),
+        ]
+        this.state.refresh()
+    }
+}
+
+const stepIntoIcon = (
+    state: LogsExplorerState,
+    log?: Routers.System.LogResponse,
+): AnyVirtualDOM => ({
+    tag: 'div',
+    class: 'fas fa-sign-in-alt fv-text-focus fv-pointer',
+    onclick: () => {
+        log ? state.expandLog(log) : state.expandLog()
+    },
+})
+
+const refreshButton = (state: LogsExplorerState): AnyVirtualDOM => {
+    return {
+        tag: 'i',
+        class: {
+            source$: state.fetchingLogs$,
+            vdomMap: (isFetching) =>
+                isFetching
+                    ? 'fas fa-spinner fa-spin'
+                    : 'fas fa-sync  fv-pointer',
+            wrapper: (d) => `${d} ml-1`,
+        },
+        onclick: () => state.refresh(),
+    }
+}
+const clearButton = (state: LogsExplorerState): AnyVirtualDOM => {
+    return {
+        tag: 'button',
+        class: `btn btn-danger btn-sm`,
+        children: [
+            {
+                tag: 'i',
+                class: 'fas fa-trash',
+            },
+        ],
+        style: {
+            width: 'fit-content',
+        },
+        onclick: () => state.clear(),
+    }
+}
+
+const dateFormat = {
+    hour: '2-digit' as const,
+    minute: '2-digit' as const,
+    second: '2-digit' as const,
+}
+
+const rootElemStackView = (state: LogsExplorerState) =>
+    new ExpandableGroupView({
+        icon: {
+            tag: 'div',
+            ...labelsStyle,
+            children: [
+                {
+                    tag: 'div',
+                    innerText: {
+                        source$: state.t0$,
+                        vdomMap: (t: number) =>
+                            new Date(t).toLocaleTimeString([], dateFormat),
+                    },
+                },
+                {
+                    tag: 'i',
+                    class: 'fas fa-newspaper px-2',
+                },
+            ],
+        },
+        title: {
+            tag: 'div',
+            class: 'd-flex align-items-center',
+            children: [
+                stepIntoIcon(state),
+                { tag: 'i', class: 'mx-1' },
+                {
+                    tag: 'div',
+                    innerText: state.title,
+                },
+                { tag: 'i', class: 'mx-1' },
+                {
+                    source$: state.stack$,
+                    vdomMap: (stack: unknown[]) =>
+                        stack.length === 0
+                            ? refreshButton(state)
+                            : { tag: 'div' },
+                },
+            ],
+        },
+        content: () => {
+            return { tag: 'div' }
+        },
+    })
+
+class StackView implements VirtualDOM<'div'> {
+    public readonly tag = 'div'
+    public readonly children: ChildrenLike
+    public readonly state: LogsExplorerState
+
+    constructor(params: { state: LogsExplorerState }) {
+        Object.assign(this, params)
+        const items = (stack: Routers.System.LogResponse[]) =>
+            [
+                rootElemStackView(this.state),
+                ...stack.map((log) => {
+                    return new LogView({
+                        state: params.state,
+                        log,
+                    })
+                }),
+            ] as AnyVirtualDOM[]
         this.children = [
             {
                 tag: 'div',
-                class: 'w-100 h-100 overflow-auto',
                 children: {
+                    source$: this.state.stack$,
                     policy: 'replace',
-                    source$: this.logs$,
-                    vdomMap: (response: pyYw.Routers.System.LogsResponse) =>
-                        response.logs.map(
-                            (log) =>
-                                new TreeView({
-                                    log,
-                                    terminalState: this.terminalState,
-                                }),
-                        ),
+                    vdomMap: (stack: Routers.System.LogResponse[]) => {
+                        return items(stack).map((item, i) => {
+                            return {
+                                tag: 'div',
+                                class: i === stack.length ? '' : 'text-muted',
+                                style:
+                                    i === stack.length
+                                        ? { fontWeight: 'bolder' }
+                                        : {},
+                                children: [item],
+                            }
+                        })
+                    },
                 },
             },
         ]
     }
 }
 
-/**
- * @category View
- */
-export class NodeView implements VirtualDOM<'div'> {
-    /**
-     * @group Immutable DOM Constants
-     */
+class LogView implements VirtualDOM<'div'> {
     public readonly tag = 'div'
+    public readonly class = 'w-100'
+    public readonly children: ChildrenLike
+    public readonly state: LogsExplorerState
+    public readonly log: Routers.System.LogResponse
+    constructor(params: {
+        state: LogsExplorerState
+        log: Routers.System.LogResponse
+    }) {
+        Object.assign(this, params)
+        this.children = [
+            new ExpandableGroupView({
+                title: new LogTitleView(params),
+                icon: new LogLabelsView({
+                    log: this.log,
+                    state: this.state,
+                }),
+                content: () => new LogDetailsView({ log: this.log }),
+            }),
+        ]
+    }
+}
 
-    /**
-     * @group Immutable Constants
-     */
-    static ClassSelector = 'node-view'
+const labelsStyle = {
+    class: 'd-flex align-items-center overflow-auto',
+    style: {
+        minHeight: '1.5rem',
+        width: '33%',
+    },
+}
+class LogLabelsView {
+    public readonly tag = 'div'
+    public readonly children: ChildrenLike
+    public readonly connectedCallback: (elem: HTMLElement) => void
+    public readonly state: LogsExplorerState
+    public readonly log: Routers.System.LogResponse
 
-    /**
-     * @group Immutable DOM Constants
-     */
-    public readonly class = `${NodeView.ClassSelector} d-flex align-items-center fv-pointer my-2`
+    constructor(params: {
+        log: Routers.System.LogResponse
+        state: LogsExplorerState
+    }) {
+        Object.assign(this, params, labelsStyle)
+        const labelsView: AnyVirtualDOM[] = this.log.labels
+            .filter((label) => label && labelMethodIcons[label])
+            .map((label) => {
+                return {
+                    tag: 'div' as const,
+                    class: labelMethodIcons[label],
+                }
+            })
+            .reduce((acc, e, index, array) => {
+                acc.push(e)
+                index < array.length - 1 &&
+                    acc.push({ tag: 'i', style: { marginRight: '2px' } })
+                return acc
+            }, [])
 
-    /**
-     * @group Immutable DOM Constants
-     */
+        this.children = [
+            {
+                tag: 'i',
+                innerText: new Date(
+                    this.log.timestamp / 1000,
+                ).toLocaleTimeString([], dateFormat),
+            },
+            {
+                tag: 'div',
+                class: 'd-flex  align-items-center px-2',
+                children: labelsView,
+            },
+        ]
+        this.connectedCallback = (elem: HTMLElement) => {
+            elem.scrollLeft = elem.scrollWidth - elem.clientWidth
+        }
+    }
+}
+class LogTitleView implements VirtualDOM<'div'> {
+    public readonly tag = 'div'
+    public readonly class = 'd-flex align-items-center'
+    public readonly style = {
+        maxWidth: '50%',
+        minWidth: '50%',
+    }
+    public readonly state: LogsExplorerState
+    public readonly log: Routers.System.LogResponse
     public readonly children: ChildrenLike
 
-    constructor(message: pyYw.ContextMessage) {
+    constructor(params: {
+        state: LogsExplorerState
+        log: Routers.System.LogResponse
+    }) {
+        Object.assign(this, params)
+        const isMethodCall = this.log.labels.includes('Label.STARTED')
+        const labelsLogType: AnyVirtualDOM[] = this.log.labels
+            .filter((label: Label) => labelLogIcons[label])
+            .map((label) => {
+                return {
+                    tag: 'div',
+                    class: `${labelLogIcons[label]} mr-1`,
+                }
+            })
+        const stepInto = stepIntoIcon(this.state, this.log)
+        const labelStatus = {
+            Failed: {
+                tag: 'i' as const,
+                class: 'fas fa-times text-danger mr-1',
+            },
+            Unresolved: {
+                tag: 'i' as const,
+                class: 'fas fa-question-circle text-warning mr-1',
+            },
+        }
+        const labels = [
+            this.log.status && labelStatus[this.log.status],
+            ...labelsLogType,
+            isMethodCall && stepInto,
+        ].filter((l) => l !== undefined)
+
+        const timingView: AnyVirtualDOM = this.state.elapsedTime(this.log) &&
+            this.state.delta[this.log.contextId] && {
+                tag: 'div',
+                class: 'mx-2',
+                innerText: `(${this.state.elapsedTime(this.log)}ms)`,
+            }
         this.children = [
             {
                 tag: 'div',
-                class: message['failed']
-                    ? 'fas fa-times fv-text-error mr-2'
-                    : 'fas fa-check fv-text-success mr-2',
+                class: 'd-flex align-items-center',
+                children: labels,
             },
-            new MethodLabelView(message),
-            new AttributesView(message.attributes),
+            { tag: 'i', class: 'mx-1' },
+            {
+                tag: 'div',
+                class: 'overflow-auto',
+                innerText: this.log.text,
+            },
+            timingView,
+            this.log === this.state.stack$.value.slice(-1)[0] &&
+                refreshButton(this.state),
+            { tag: 'i', class: 'flex-grow-1', style: { minWidth: '0px' } },
         ]
+    }
+}
+
+class LogDetailsView implements VirtualDOM<'div'> {
+    public readonly tag = 'div'
+    public readonly class = 'py-2 overflow-auto'
+    public readonly children: ChildrenLike
+    public readonly log: Routers.System.LogResponse
+    public readonly style = {
+        fontSize: 'small',
+        fontWeight: 'normal' as const,
+    }
+    constructor(params: { log: Routers.System.LogResponse }) {
+        Object.assign(this, params)
+        const attributes: AnyVirtualDOM[] = Object.entries(
+            this.log.attributes,
+        ).map(([k, v]) => {
+            return {
+                tag: 'div',
+                class: 'd-flex align-items-center',
+                children: [
+                    {
+                        tag: 'li',
+                        innerText: `${k}:`,
+                        style: {
+                            fontWeight: 'bolder',
+                        },
+                    },
+                    { tag: 'i', class: 'mx-1' },
+                    {
+                        tag: 'div',
+                        innerText: v,
+                    },
+                ],
+            }
+        })
+        const labels: AnyVirtualDOM[] = this.log.labels.map((l) => {
+            return {
+                tag: 'li',
+                innerText: l,
+            }
+        })
+        this.children = [
+            {
+                tag: 'ul',
+                innerText: 'Attributes list:',
+                children: attributes,
+            },
+            {
+                tag: 'ul',
+                innerText: 'Labels list:',
+                children: labels,
+            },
+            {
+                tag: 'ul',
+                children: [new DataView(this.log.data, true)],
+            },
+        ]
+    }
+}
+
+class LogsListView implements VirtualDOM<'div'> {
+    public readonly tag = 'div'
+    public readonly class = 'w-100 pl-3 bg-dark text-light border-left'
+    public readonly children: ChildrenLike
+
+    public readonly state: LogsExplorerState
+
+    constructor(params: { state: LogsExplorerState }) {
+        Object.assign(this, params)
+        this.children = {
+            policy: 'replace',
+            source$: this.state.logs$,
+            vdomMap: (response: pyYw.Routers.System.LogsResponse) =>
+                response.logs.map((log) => {
+                    return new LogView({ state: this.state, log })
+                }),
+        }
     }
 }

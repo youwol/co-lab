@@ -3,11 +3,11 @@ import { State, Method } from './state'
 import { Routers } from '@youwol/local-youwol-client'
 import { BehaviorSubject, from, Observable, of, Subject } from 'rxjs'
 import { AttributeView, DashboardTitle } from '../common'
-import { catchError, mergeMap, withLatestFrom } from 'rxjs/operators'
+import { catchError, map, mergeMap, take, withLatestFrom } from 'rxjs/operators'
 import { ObjectJs } from '@youwol/rx-tree-views'
 import { install } from '@youwol/webpm-client'
 import { ExpandableGroupView } from '../common/expandable-group.view'
-import { TerminalView } from '../common/terminal'
+import { LogsExplorerView } from '../common/logs-explorer.view'
 
 /**
  * @category View
@@ -479,16 +479,18 @@ export class LogsTabView implements VirtualDOM<'div'> {
         Object.assign(this, params)
         this.environmentState.openCommand(this.command)
         const events = this.environmentState.commandsEvent[this.command.name]
-
         this.children = [
             {
-                tag: 'div',
-                class: {
-                    source$: events.log$,
-                    vdomMap: () => 'd-block',
-                    untilFirst: 'd-none',
+                source$: events.log$.pipe(
+                    take(1),
+                    map((d) => d.parentContextId),
+                ),
+                vdomMap: (id: string) => {
+                    return new LogsExplorerView({
+                        rootLogs$: id,
+                        title: this.command.name,
+                    })
                 },
-                children: [new TerminalView(events.log$)],
             },
         ]
     }

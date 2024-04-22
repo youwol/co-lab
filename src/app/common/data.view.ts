@@ -68,9 +68,10 @@ export class DataView implements VirtualDOM<'div'> {
         fontSize: 'small',
     }
 
-    constructor(data) {
+    constructor(data, expandRoot: boolean = false) {
         const rootNode = new LogDataNode({ name: 'data', data })
-        const treeState = new ImmutableTree.State({ rootNode })
+        const expandedNodes = expandRoot ? [rootNode.id] : []
+        const treeState = new ImmutableTree.State({ rootNode, expandedNodes })
         const headerView = (
             _state: ImmutableTree.State<LogDataNode>,
             node: LogDataNode,

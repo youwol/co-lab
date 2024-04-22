@@ -120,7 +120,7 @@ export class ProjectEvents {
                     withAttributes: { projectId: this.project.id },
                 }),
             )
-            .subscribe((message) => {
+            .subscribe((message: ContextMessage) => {
                 const flowId = message.attributes['flowId']
                 const stepId = message.attributes['stepId']
                 this.getStep$(flowId, stepId).log$.next(message)
