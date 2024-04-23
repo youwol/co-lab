@@ -22,7 +22,7 @@ import {
 import { ExpandableGroupView } from '../../common/expandable-group.view'
 import { raiseHTTPErrors, onHTTPErrors } from '@youwol/http-primitives'
 import * as webpmClient from '@youwol/webpm-client'
-import { DataView } from '../../common/terminal'
+import { DataView } from '../../common'
 
 type Mode = 'run' | 'config' | 'manifest'
 

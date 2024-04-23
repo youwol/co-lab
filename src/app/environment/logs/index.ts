@@ -43,6 +43,7 @@ export class PageView implements VirtualDOM<'div'> {
                                 })
                                 .pipe(raiseHTTPErrors()),
                             showHeaderMenu: true,
+                            title: 'Root logs',
                         }),
                 },
             }),
