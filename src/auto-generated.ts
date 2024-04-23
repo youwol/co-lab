@@ -7,7 +7,7 @@ const runTimeDependencies = {
         "@youwol/webpm-client": "^3.0.0",
         "@youwol/http-clients": "^3.0.0",
         "@youwol/http-primitives": "^0.2.3",
-        "@youwol/local-youwol-client": "^0.2.11",
+        "@youwol/local-youwol-client": "^0.2.12",
         "@youwol/os-core": "^0.2.0",
         "@youwol/os-widgets": "^0.2.6",
         "@youwol/rx-tree-views": "^0.3.1",
@@ -36,6 +36,7 @@ const externals = {
     "rxjs": "window['rxjs_APIv7']",
     "d3": "window['d3_APIv7']",
     "rxjs/operators": "window['rxjs_APIv7']['operators']",
+    "@youwol/local-youwol-client/src/lib/interfaces": "window['@youwol/local-youwol-client_APIv02']['src']['lib']['interfaces']",
     "@youwol/local-youwol-client/src/lib/routers/environment/interfaces": "window['@youwol/local-youwol-client_APIv02']['src']['lib']['routers']['environment']['interfaces']"
 }
 const exportedSymbols = {
