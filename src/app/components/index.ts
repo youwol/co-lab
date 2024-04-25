@@ -10,7 +10,6 @@ import { PackageView } from './js-wasm/package.views'
 import { BackendView } from './backends/package.views'
 import { State } from './state'
 import { PyodideView } from './pyodide/package.views'
-import { InfoSectionView } from '../common'
 import { example1 } from './examples'
 export * from './state'
 
@@ -123,14 +122,6 @@ To help you get started, here are a few examples:
 </info>
 `,
                 router: router,
-                views: {
-                    info: (elem: HTMLElement) => {
-                        return new InfoSectionView({
-                            text: elem.innerHTML,
-                            router,
-                        })
-                    },
-                },
             }),
         ]
     }

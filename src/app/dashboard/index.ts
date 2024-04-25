@@ -4,7 +4,6 @@ import { ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
 import { combineLatest } from 'rxjs'
 import { Installer, PreferencesFacade } from '@youwol/os-core'
 import { Routers } from '@youwol/local-youwol-client'
-import { InfoSectionView } from '../common'
 import { NewAppsView, DesktopWidgetsView } from './views'
 
 export const navigation = (appState: AppState): Navigation => ({
@@ -85,12 +84,6 @@ Here are the widgets referenced by the [preferences script](@nav/environment/pro
                             },
                         },
                     }),
-                    info: (elem: HTMLElement) => {
-                        return new InfoSectionView({
-                            text: elem.innerHTML,
-                            router,
-                        })
-                    },
                     appsView: () =>
                         new NewAppsView({
                             state: undefined,

@@ -1,10 +1,29 @@
 import { render } from '@youwol/rx-vdom'
-import { Views } from '@youwol/mkdocs-ts'
+import { GlobalMarkdownViews, Views } from '@youwol/mkdocs-ts'
 
 import { TopBannerView } from './top-banner.view'
 import { AppState } from './app-state'
 import { Observable } from 'rxjs'
 import { DisconnectedView } from './disconnected.view'
+import { InfoSectionView } from './common'
+
+GlobalMarkdownViews.factory = {
+    ...GlobalMarkdownViews.factory,
+    info: (elem: HTMLElement, { router }) => {
+        return new InfoSectionView({
+            text: elem.textContent,
+            router,
+        })
+    },
+    docLink: (elem: HTMLElement) => {
+        return {
+            tag: 'a' as const,
+            href: `/doc?nav=${elem.getAttribute('nav')}`,
+            target: '_blank',
+            innerText: elem.textContent,
+        }
+    },
+}
 
 const appState = new AppState()
 const { router } = appState

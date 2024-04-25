@@ -4,9 +4,8 @@ import { Navigation, parseMd, Router, Views } from '@youwol/mkdocs-ts'
 import { AnyVirtualDOM, ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
 import { map } from 'rxjs/operators'
 import { Routers } from '@youwol/local-youwol-client'
-import { HdPathBookView, InfoSectionView } from '../../common'
+import { HdPathBookView } from '../../common'
 import { BehaviorSubject, Subject } from 'rxjs'
-import { BrowserCacheItem } from '@youwol/local-youwol-client/src/lib/routers/environment/interfaces'
 export * from './state'
 
 export const navigation = (appState: AppState): Navigation => ({
@@ -47,12 +46,6 @@ configuration options, please refer to this
                 `,
                 router,
                 views: {
-                    info: (elem: HTMLElement) => {
-                        return new InfoSectionView({
-                            text: elem.innerHTML,
-                            router,
-                        })
-                    },
                     fileView: () => {
                         return new FileView({ appState })
                     },
@@ -310,7 +303,7 @@ class HierarchicalBrowserCacheItemsView implements VirtualDOM<'div'> {
                         return status.items[index]
                     }),
                 ),
-                vdomMap: (item?: BrowserCacheItem) => {
+                vdomMap: (item?: Routers.Environment.BrowserCacheItem) => {
                     if (!item) {
                         return { tag: 'div' }
                     }

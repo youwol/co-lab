@@ -1,4 +1,4 @@
-import { distinctUntilChanged, Observable, Subject, combineLatest } from 'rxjs'
+import { distinctUntilChanged, Observable, Subject } from 'rxjs'
 import { map, mergeMap, shareReplay, take, tap } from 'rxjs/operators'
 import * as Projects from './projects'
 import * as Components from './components'
@@ -11,17 +11,11 @@ import * as pyYw from '@youwol/local-youwol-client'
 import { WsRouter } from '@youwol/local-youwol-client'
 import { Accounts } from '@youwol/http-clients'
 import { raiseHTTPErrors } from '@youwol/http-primitives'
-import {
-    Navigation,
-    parseMd,
-    Router,
-    Views,
-    GlobalMarkdownViews,
-} from '@youwol/mkdocs-ts'
+import { Navigation, parseMd, Router, Views } from '@youwol/mkdocs-ts'
 import * as Dashboard from './dashboard'
 import * as Mounted from './mounted'
 import { setup } from '../auto-generated'
-import { CoLabBanner, CoLabLogo, globalMdViews } from './common'
+import { CoLabBanner, CoLabLogo } from './common'
 import { pyYwDocLink } from './common/py-yw-references.view'
 
 export type Topic =
@@ -43,7 +37,6 @@ pyYw.PyYouwolClient.ws = new WsRouter({
     autoReconnectDelay: 1000,
 })
 
-GlobalMarkdownViews.factory = globalMdViews
 /**
  * @category State
  */
@@ -130,14 +123,13 @@ export class AppState {
             distinctUntilChanged(),
             tap((path) => console.log('Configuration changed', path)),
         )
-        combineLatest([this.connectedLocal$, this.confChanged$]).subscribe(
-            ([connected]) => {
-                if (connected) {
-                    this.cdnState.refreshPackages()
-                    this.projectsState.refreshProjects()
-                }
-            },
-        )
+        this.connectedLocal$.subscribe((connected) => {
+            if (connected) {
+                this.environmentClient.getStatus$().subscribe()
+                this.cdnState.refreshPackages()
+                this.projectsState.refreshProjects()
+            }
+        })
 
         this.session$ = this.environment$.pipe(
             map((env) => env['youwolEnvironment'].currentConnection),
@@ -166,8 +158,6 @@ export class AppState {
             navigation: this.navigation,
             basePath: `/applications/${setup.name}/${setup.version}`,
         })
-
-        this.environmentClient.getStatus$().subscribe()
     }
 }
 

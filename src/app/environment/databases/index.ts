@@ -2,7 +2,7 @@ import { ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
 import { Navigation, parseMd, Router, Views } from '@youwol/mkdocs-ts'
 import { map } from 'rxjs/operators'
 import { AppState } from '../../app-state'
-import { HdPathBookView, InfoSectionView } from '../../common'
+import { HdPathBookView } from '../../common'
 
 export const navigation = (appState: AppState): Navigation => ({
     name: 'Databases',
@@ -41,12 +41,6 @@ This folder persist the artifacts & manifests created when working with projects
 `,
                 router,
                 views: {
-                    info: (elem: HTMLElement) => {
-                        return new InfoSectionView({
-                            text: elem.innerHTML,
-                            router,
-                        })
-                    },
                     paths: (elem) =>
                         new HdPathBookView({
                             appState,

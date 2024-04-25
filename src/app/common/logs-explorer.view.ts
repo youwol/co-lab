@@ -1,10 +1,9 @@
 import { AnyVirtualDOM, ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
 import { BehaviorSubject, Observable, ReplaySubject } from 'rxjs'
 import * as pyYw from '@youwol/local-youwol-client'
-import { Routers } from '@youwol/local-youwol-client'
+import { Routers, Label } from '@youwol/local-youwol-client'
 import { raiseHTTPErrors } from '@youwol/http-primitives'
 import { ExpandableGroupView } from './expandable-group.view'
-import { Label } from '@youwol/local-youwol-client/src/lib/interfaces'
 import { DataView } from './data.view'
 
 export const labelMethodIcons = {

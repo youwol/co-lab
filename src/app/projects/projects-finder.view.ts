@@ -1,6 +1,6 @@
 import { ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
 import { parseMd, Router } from '@youwol/mkdocs-ts'
-import { HdPathBookView, InfoSectionView } from '../common'
+import { HdPathBookView } from '../common'
 import { AppState } from '../app-state'
 import { FailuresView } from './project.view'
 import { Routers } from '@youwol/local-youwol-client'
@@ -61,11 +61,6 @@ The following projects have failed to load:
 `,
                 router,
                 views: {
-                    info: (elem: HTMLElement) =>
-                        new InfoSectionView({
-                            text: elem.innerHTML,
-                            router,
-                        }),
                     folder: () => {
                         return new HdPathBookView({
                             path: finder.fromPath,

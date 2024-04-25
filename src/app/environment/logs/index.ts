@@ -1,7 +1,6 @@
 import { AppState } from '../../app-state'
 import { Navigation, parseMd, Router, Views } from '@youwol/mkdocs-ts'
 import { ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
-import { InfoSectionView } from '../../common'
 import { LogsExplorerView } from '../../common/logs-explorer.view'
 import { raiseHTTPErrors } from '@youwol/http-primitives'
 import * as pyYw from '@youwol/local-youwol-client'
@@ -28,12 +27,6 @@ export class PageView implements VirtualDOM<'div'> {
 `,
                 router,
                 views: {
-                    info: (elem: HTMLElement) => {
-                        return new InfoSectionView({
-                            text: elem.innerHTML,
-                            router,
-                        })
-                    },
                     logsView: () =>
                         new LogsExplorerView({
                             rootLogs$: new pyYw.PyYouwolClient().admin.system

@@ -5,7 +5,6 @@ import { lazyResolver } from '../index'
 import { debounceTime } from 'rxjs'
 import { map } from 'rxjs/operators'
 import { example1 } from './examples'
-import { InfoSectionView } from '../../common'
 
 export const navigation = (appState: AppState): Navigation => ({
     name: 'Backends',
@@ -58,14 +57,6 @@ following this
 
 `,
                 router: router,
-                views: {
-                    info: (elem: HTMLElement) => {
-                        return new InfoSectionView({
-                            text: elem.innerHTML,
-                            router,
-                        })
-                    },
-                },
             }),
         ]
     }
