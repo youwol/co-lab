@@ -6,7 +6,6 @@ import { map } from 'rxjs/operators'
 import { Routers } from '@youwol/local-youwol-client'
 import { HdPathBookView } from '../../common'
 import { BehaviorSubject, Subject } from 'rxjs'
-import { BrowserCacheItem } from '@youwol/local-youwol-client/src/lib/routers/environment/interfaces'
 export * from './state'
 
 export const navigation = (appState: AppState): Navigation => ({
@@ -304,7 +303,7 @@ class HierarchicalBrowserCacheItemsView implements VirtualDOM<'div'> {
                         return status.items[index]
                     }),
                 ),
-                vdomMap: (item?: BrowserCacheItem) => {
+                vdomMap: (item?: Routers.Environment.BrowserCacheItem) => {
                     if (!item) {
                         return { tag: 'div' }
                     }
