@@ -9,7 +9,6 @@ import * as Browser from './browser'
 import * as Notifications from './notifications'
 import { ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
 import { pyYwDocLink } from '../common/py-yw-references.view'
-import { InfoSectionView } from '../common'
 import { DispatchListView } from './dispatches.view'
 import { CommandsListView } from './commands.view'
 import * as Logs from './logs'
@@ -70,12 +69,6 @@ backends.
                 `,
                 router: router,
                 views: {
-                    info: (elem: HTMLElement) => {
-                        return new InfoSectionView({
-                            text: elem.innerHTML,
-                            router,
-                        })
-                    },
                     dispatches: () =>
                         new DispatchListView({
                             environmentState: appState.environmentState,

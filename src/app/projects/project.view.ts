@@ -4,7 +4,7 @@ import { parseMd, Router } from '@youwol/mkdocs-ts'
 import { DagFlowView } from './dag-flow.view'
 import { State } from './state'
 import { filterCtxMessage, raiseHTTPErrors } from '@youwol/http-primitives'
-import { FilesBrowserView, HdPathBookView, InfoSectionView } from '../common'
+import { FilesBrowserView, HdPathBookView } from '../common'
 import { ExpandableGroupView } from '../common/expandable-group.view'
 import { NewProjectFromTemplateView } from './new-project.view'
 import { debounceTime, merge, mergeMap, of } from 'rxjs'
@@ -66,11 +66,6 @@ Publishing a components means to publish all or a part of those artifacts.
 `,
                 router,
                 views: {
-                    info: (elem: HTMLElement) =>
-                        new InfoSectionView({
-                            text: elem.innerHTML,
-                            router,
-                        }),
                     projectFolder: () => {
                         return new HdPathBookView({
                             path: project.path,

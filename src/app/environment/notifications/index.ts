@@ -1,7 +1,6 @@
 import { AppState } from '../../app-state'
 import { Navigation, parseMd, Router, Views } from '@youwol/mkdocs-ts'
 import { ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
-import { InfoSectionView } from '../../common'
 import {
     AssetDownloadEvent,
     BackendInstallFlow,
@@ -40,12 +39,6 @@ This page gathers notifications about ongoing installations.
                 `,
                 router,
                 views: {
-                    info: (elem: HTMLElement) => {
-                        return new InfoSectionView({
-                            text: elem.innerHTML,
-                            router,
-                        })
-                    },
                     notifications: () => {
                         return new NotificationsView({
                             state: appState.notificationsState,

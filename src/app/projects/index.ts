@@ -3,7 +3,6 @@ import { AppState } from '../app-state'
 import { Navigation, parseMd, Router, Views } from '@youwol/mkdocs-ts'
 import { ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
 import { SearchView } from './search.view'
-import { InfoSectionView } from '../common'
 import { pyYwDocLink } from '../common/py-yw-references.view'
 import { Routers } from '@youwol/local-youwol-client'
 import { BehaviorSubject, combineLatest } from 'rxjs'
@@ -131,12 +130,6 @@ The following projects have failed to load:
 `,
                 router,
                 views: {
-                    info: (elem: HTMLElement) => {
-                        return new InfoSectionView({
-                            text: elem.innerHTML,
-                            router,
-                        })
-                    },
                     newProject: () => {
                         return new NewProjectsCard({
                             projectsState,

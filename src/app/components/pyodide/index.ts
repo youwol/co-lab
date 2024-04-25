@@ -1,5 +1,5 @@
 import { AppState } from '../../app-state'
-import { InfoSectionView, NavIconSvg } from '../../common'
+import { NavIconSvg } from '../../common'
 import { ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
 import { Navigation, parseMd, Router } from '@youwol/mkdocs-ts'
 import { debounceTime, distinctUntilChanged } from 'rxjs'
@@ -71,12 +71,6 @@ await webpm.install({
 `,
                 router: router,
                 views: {
-                    info: (elem: HTMLElement) => {
-                        return new InfoSectionView({
-                            text: elem.innerHTML,
-                            router,
-                        })
-                    },
                     runtimes: () => {
                         return new RuntimesView({ appState })
                     },

@@ -11,17 +11,11 @@ import * as pyYw from '@youwol/local-youwol-client'
 import { WsRouter } from '@youwol/local-youwol-client'
 import { Accounts } from '@youwol/http-clients'
 import { raiseHTTPErrors } from '@youwol/http-primitives'
-import {
-    Navigation,
-    parseMd,
-    Router,
-    Views,
-    GlobalMarkdownViews,
-} from '@youwol/mkdocs-ts'
+import { Navigation, parseMd, Router, Views } from '@youwol/mkdocs-ts'
 import * as Dashboard from './dashboard'
 import * as Mounted from './mounted'
 import { setup } from '../auto-generated'
-import { CoLabBanner, CoLabLogo, globalMdViews } from './common'
+import { CoLabBanner, CoLabLogo } from './common'
 import { pyYwDocLink } from './common/py-yw-references.view'
 
 export type Topic =
@@ -43,7 +37,6 @@ pyYw.PyYouwolClient.ws = new WsRouter({
     autoReconnectDelay: 1000,
 })
 
-GlobalMarkdownViews.factory = globalMdViews
 /**
  * @category State
  */
