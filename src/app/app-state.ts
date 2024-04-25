@@ -1,4 +1,4 @@
-import { distinctUntilChanged, Observable, Subject, combineLatest } from 'rxjs'
+import { distinctUntilChanged, Observable, Subject } from 'rxjs'
 import { map, mergeMap, shareReplay, take, tap } from 'rxjs/operators'
 import * as Projects from './projects'
 import * as Components from './components'
@@ -123,14 +123,13 @@ export class AppState {
             distinctUntilChanged(),
             tap((path) => console.log('Configuration changed', path)),
         )
-        combineLatest([this.connectedLocal$, this.confChanged$]).subscribe(
-            ([connected]) => {
-                if (connected) {
-                    this.cdnState.refreshPackages()
-                    this.projectsState.refreshProjects()
-                }
-            },
-        )
+        this.connectedLocal$.subscribe((connected) => {
+            if (connected) {
+                this.environmentClient.getStatus$().subscribe()
+                this.cdnState.refreshPackages()
+                this.projectsState.refreshProjects()
+            }
+        })
 
         this.session$ = this.environment$.pipe(
             map((env) => env['youwolEnvironment'].currentConnection),
@@ -159,8 +158,6 @@ export class AppState {
             navigation: this.navigation,
             basePath: `/applications/${setup.name}/${setup.version}`,
         })
-
-        this.environmentClient.getStatus$().subscribe()
     }
 }
 
