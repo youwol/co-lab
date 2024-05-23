@@ -52,6 +52,7 @@ export class TopBannerView extends TopBannerBase {
                                         ? { tag: 'div' }
                                         : new Views.ModalNavigationView({
                                               router,
+                                              displayModeToc$: displayMode$,
                                           })
                                 },
                             },
