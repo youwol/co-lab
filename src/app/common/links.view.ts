@@ -101,7 +101,7 @@ export class ExplorerLinkView implements VirtualDOM<'div'> {
                         (acc, e) => `${acc}/folder_${e.folderId}`,
                         `${resp.drive.groupId}/folder_${resp.drive.driveId}`,
                     )
-                    const url = `${folders}/asset_${resp.item.assetId}`
+                    const url = `${folders}/item_${resp.item.itemId}`
                     return parseMd({
                         src: `The project is published in your explorer
                         [here](@nav/explorer/${url}).`,

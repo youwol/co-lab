@@ -55,7 +55,7 @@ export function folderNavNodeInput({
                 }),
             ],
         },
-        leaf: false,
+        leaf: true,
     }
 }
 
@@ -150,6 +150,7 @@ export function groupNavNodeInput({
                     : 'fas fa-users mx-2',
             },
         },
+        leaf: true,
         id: group.id,
     }
 }

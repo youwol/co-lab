@@ -1531,27 +1531,6 @@
     "@youwol/os-core" "^0.2.0"
     "@youwol/rx-vdom" "^1.0.1"
 
-"@youwol/os-widgets@^0.2.6":
-  version "0.2.6"
-  resolved "https://registry.yarnpkg.com/@youwol/os-widgets/-/os-widgets-0.2.6.tgz#37701263154fe4ec4c7da9d3debcd8cd483ed525"
-  integrity sha512-wmh6YaUktO/CdMACRgHR1/E+QAGBABBIdxpOEpl3Of/isq8SJvUgYW8tG6idrpMksuzzf1Mnegi0lc1UC/Spaw==
-  dependencies:
-    "@youwol/http-clients" "^3.0.0"
-    "@youwol/http-primitives" "^0.2.0"
-    "@youwol/os-core" "^0.2.0"
-    "@youwol/rx-button-views" "^0.2.0"
-    "@youwol/rx-context-menu-views" "^0.2.0"
-    "@youwol/rx-group-views" "^0.3.0"
-    "@youwol/rx-input-views" "^0.3.0"
-    "@youwol/rx-tab-views" "^0.3.0"
-    "@youwol/rx-tree-views" "^0.3.3"
-    "@youwol/rx-vdom" "^1.0.1"
-    "@youwol/webpm-client" "^3.0.0"
-    lodash "^4.17.15"
-    marked "^4.2.3"
-    rxjs "^7.5.6"
-    uuid "^8.3.2"
-
 "@youwol/prettier-config@^1.2.1":
   version "1.2.1"
   resolved "https://registry.yarnpkg.com/@youwol/prettier-config/-/prettier-config-1.2.1.tgz#51abbb5a19860169718be749accfd3c32f5e5f3d"
@@ -1559,14 +1538,6 @@
   dependencies:
     prettier "^3.2.5"
     prettier-plugin-properties "^0.3.0"
-
-"@youwol/rx-button-views@^0.2.0":
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/@youwol/rx-button-views/-/rx-button-views-0.2.0.tgz#1df7ff6b6e8cf2747ebf03120bcdc55cf4acc309"
-  integrity sha512-xMrLSEOtjz6nS3+ujAcT1bqb21BFfvsx84S26ThtR8tZiDqgjIDokEAEiH+SJVdFOMS1A96GXVq13PiW/cLKaw==
-  dependencies:
-    "@youwol/rx-vdom" "^1.0.1"
-    rxjs "^7.5.6"
 
 "@youwol/rx-code-mirror-editors@0.5.0":
   version "0.5.0"
@@ -1580,38 +1551,6 @@
     codemirror "^5.52.0"
     rxjs "^7.5.6"
     typescript "5.3.3"
-
-"@youwol/rx-context-menu-views@^0.2.0":
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/@youwol/rx-context-menu-views/-/rx-context-menu-views-0.2.0.tgz#1986287a391fc76371256a532d63aad517b3c09c"
-  integrity sha512-B0wkzA1+yl3fxAP3HcYm2kqkSXxClsGRKW3sBp8uHLrp1TRJuqS7WJQx85Eo+wLLP7/k5yOCPmJLEr9U6rfvMA==
-  dependencies:
-    "@youwol/rx-vdom" "^1.0.1"
-    rxjs "^7.5.6"
-
-"@youwol/rx-group-views@^0.3.0":
-  version "0.3.0"
-  resolved "https://registry.yarnpkg.com/@youwol/rx-group-views/-/rx-group-views-0.3.0.tgz#68ad668dcf5f9677b153d1784c5d5f904dd440b2"
-  integrity sha512-mKripB2QVkh09bavFeJHffLZVeglQT9G0DJYNBo1nguoWtPCsfIZmn5sHvwkwxcY2LCirl/J53mpQ08AvSd/dA==
-  dependencies:
-    "@youwol/rx-vdom" "^1.0.1"
-    rxjs "^7.5.6"
-
-"@youwol/rx-input-views@^0.3.0":
-  version "0.3.0"
-  resolved "https://registry.yarnpkg.com/@youwol/rx-input-views/-/rx-input-views-0.3.0.tgz#6faf163ba200b928abe1b2c8467b406c359101ee"
-  integrity sha512-tFDrZdHDzJgeIduE2FXketZMFsldAWkBGICktFplXuIiKworqHhjsLjqlAgvAu4V8GA3WtWfpg8zUdsRs0swww==
-  dependencies:
-    "@youwol/rx-vdom" "^1.0.1"
-    rxjs "^7.5.6"
-
-"@youwol/rx-tab-views@^0.3.0":
-  version "0.3.0"
-  resolved "https://registry.yarnpkg.com/@youwol/rx-tab-views/-/rx-tab-views-0.3.0.tgz#c41fb29aaade2f77b1cad02c77867c861afffe88"
-  integrity sha512-htFK1jSTE/R+EGR2PiU29r9+ZU2ywTSrxj2O3Xbp4vvkw7Smmz/auW8NaF7M1rx7zfR+ak5zQCsV0ePPdt8R/w==
-  dependencies:
-    "@youwol/rx-vdom" "^1.0.1"
-    rxjs "^7.5.6"
 
 "@youwol/rx-tree-views@^0.3.1", "@youwol/rx-tree-views@^0.3.3":
   version "0.3.3"
@@ -4982,7 +4921,7 @@ lodash.merge@^4.6.2:
   resolved "https://registry.yarnpkg.com/lodash.merge/-/lodash.merge-4.6.2.tgz#558aa53b43b661e1925a0afdfa36a9a1085fe57a"
   integrity sha512-0KpjqXRVvrYyCsX1swR/XTK0va6VQkQM6MNo7PqW77ByjAhoARA8EfrP1N4+KlKj8YS0ZUCtRT/YUuhyYDujIQ==
 
-lodash@^4.17.15, lodash@^4.17.20, lodash@^4.17.21:
+lodash@^4.17.20, lodash@^4.17.21:
   version "4.17.21"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.21.tgz#679591c564c3bffaae8454cf0b3df370c3d6911c"
   integrity sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==

@@ -5,7 +5,7 @@ import {
     RequestEvent,
     send$,
 } from '@youwol/http-primitives'
-import { Observable } from 'rxjs'
+import { BehaviorSubject, Observable } from 'rxjs'
 
 import {
     DriveNode,
@@ -16,14 +16,16 @@ import {
 } from './nodes'
 import { Router } from '@youwol/mkdocs-ts'
 
+export type ItemCut = {
+    cutType: 'borrow' | 'move'
+    node: ItemNode | FolderNode
+    originRefreshPath: string
+}
+
 export class ExplorerState {
     public readonly explorerClient = new AssetsGateway.Client().explorer
     private router: Router
-    public itemCut: {
-        cutType: 'borrow' | 'move'
-        node: ItemNode | FolderNode
-        originRefreshPath: string
-    }
+    public itemCut$ = new BehaviorSubject<ItemCut>(undefined)
 
     public readonly itemData: { [itemId: string]: ItemNode } = {}
 
@@ -46,9 +48,7 @@ export class ExplorerState {
             })
             .pipe(raiseHTTPErrors())
             .subscribe(() => {
-                this.router.refresh({
-                    resolverPath: '/explorer',
-                })
+                this.refresh()
             })
     }
 
@@ -61,9 +61,7 @@ export class ExplorerState {
         pendingName: string
     }) {
         response$.subscribe(() => {
-            this.router.refresh({
-                resolverPath: '/explorer',
-            })
+            this.refresh()
         })
     }
 
@@ -82,20 +80,11 @@ export class ExplorerState {
                   body,
               })
         source$.pipe(raiseHTTPErrors()).subscribe(() => {
-            this.router.refresh({
-                path: this.router.getParentPath(),
-                resolverPath: '/explorer',
-            })
+            this.refresh()
         })
     }
 
     deleteItemOrFolder(node: FolderNode | ItemNode) {
-        const parentPath = this.router.getParentPath()
-
-        node instanceof FolderNode
-            ? this.router.navigateTo({ path: parentPath })
-            : this.getRefreshPathForItemAction()
-
         const source$: HTTPResponse$<unknown> = this.isInstanceFolderNode(node)
             ? this.explorerClient.trashFolder$({
                   folderId: node.folderId,
@@ -103,10 +92,7 @@ export class ExplorerState {
             : this.explorerClient.trashItem$({ itemId: node.itemId })
 
         source$.pipe(raiseHTTPErrors()).subscribe(() => {
-            this.router.refresh({
-                path: parentPath,
-                resolverPath: '/explorer',
-            })
+            this.refresh()
         })
     }
 
@@ -114,9 +100,7 @@ export class ExplorerState {
         this.explorerClient
             .purgeDrive$({ driveId: trashNode.driveId })
             .subscribe(() => {
-                this.router.refresh({
-                    resolverPath: '/explorer',
-                })
+                this.refresh()
             })
     }
 
@@ -125,50 +109,42 @@ export class ExplorerState {
             console.warn('This action is available only for regular folder.')
         }
         node.addStatus({ type: 'cut' })
-        this.itemCut = {
+        this.itemCut$.next({
             cutType: 'move',
             node,
             originRefreshPath: this.isInstanceItemNode(node)
                 ? this.getRefreshPathForItemAction()
                 : this.router.getParentPath(),
-        }
+        })
     }
 
     borrowItem(node: ItemNode) {
         node.addStatus({ type: 'cut' })
-        this.itemCut = {
+        this.itemCut$.next({
             cutType: 'borrow',
             node,
             originRefreshPath: this.getRefreshPathForItemAction(),
-        }
+        })
     }
 
     pasteItem(destination: FolderNode | DriveNode) {
-        if (!this.itemCut) {
+        if (!this.itemCut$.value) {
             return
         }
 
-        const nodeSelected = this.itemCut.node
-        const itemId = this.itemCut.node.id
+        const nodeSelected = this.itemCut$.value.node
+        const itemId = this.itemCut$.value.node.id
         const destinationFolderId = this.isInstanceFolderNode(destination)
             ? destination.folderId
             : destination.driveId
         const refresh = () => {
-            // This is moved into this folder: we refresh it
-            this.router.refresh({
-                resolverPath: '/explorer',
-            })
-            // This is moved from this folder: we refresh it
-            this.router.refresh({
-                resolverPath: '/explorer',
-                path: this.itemCut.originRefreshPath,
-            })
-            this.itemCut = undefined
+            this.refresh()
+            this.itemCut$.next(undefined)
         }
 
         if (
             nodeSelected instanceof ItemNode &&
-            this.itemCut.cutType == 'borrow'
+            this.itemCut$.value.cutType == 'borrow'
         ) {
             this.explorerClient
                 .borrow$({
@@ -183,7 +159,7 @@ export class ExplorerState {
 
         if (
             nodeSelected instanceof ItemNode &&
-            this.itemCut.cutType == 'move'
+            this.itemCut$.value.cutType == 'move'
         ) {
             this.explorerClient
                 .move$({
@@ -198,7 +174,7 @@ export class ExplorerState {
 
         if (
             nodeSelected instanceof FolderNode &&
-            this.itemCut.cutType == 'move'
+            this.itemCut$.value.cutType == 'move'
         ) {
             this.explorerClient
                 .move$({
@@ -214,9 +190,7 @@ export class ExplorerState {
     }
 
     refresh() {
-        this.router.refresh({
-            resolverPath: '/explorer',
-        })
+        this.router.navigateTo({ path: this.router.getCurrentPath() })
     }
 
     uploadAsset(node: ItemNode) {
@@ -227,10 +201,7 @@ export class ExplorerState {
         )
             .pipe(raiseHTTPErrors())
             .subscribe(() => {
-                this.router.refresh({
-                    resolverPath: '/explorer',
-                    path: this.getRefreshPathForItemAction(),
-                })
+                this.refresh()
             })
     }
 
