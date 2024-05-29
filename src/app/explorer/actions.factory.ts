@@ -1,5 +1,5 @@
 import { forkJoin, Observable, of } from 'rxjs'
-import { map, take } from 'rxjs/operators'
+import { map, switchMap, take } from 'rxjs/operators'
 import {
     AssetsGateway,
     AssetsBackend,
@@ -23,10 +23,11 @@ import {
     evaluateMatch,
     evaluateParameters,
     openingApps$,
-    FavoritesFacade,
 } from '@youwol/os-core'
 import { AnyVirtualDOM } from '@youwol/rx-vdom'
 import { ExplorerState } from './explorer.state'
+import { fromFetch } from 'rxjs/fetch'
+import { tryLibScript } from '../components/js-wasm/package.views'
 
 export type Section =
     | 'Modify'
@@ -267,7 +268,9 @@ export const GENERIC_ACTIONS: { [k: string]: ActionConstructor } = {
         section: 'Move',
         enabled: () => hasGroupModifyPermissions(permissions),
         applicable: () => {
-            return node instanceof FolderNode && state.itemCut != undefined
+            return (
+                node instanceof FolderNode && state.itemCut$.value != undefined
+            )
         },
         exe: () => {
             state.pasteItem(node as FolderNode)
@@ -387,74 +390,103 @@ export const GENERIC_ACTIONS: { [k: string]: ActionConstructor } = {
                 .then()
         },
     }),
-    favoriteFolder: (_state: ExplorerState, node: ExplorerNode) => ({
-        sourceEventNode: node,
-        icon: { tag: 'div', class: 'fas fa-map-pin' },
-        name: 'add to favorites',
-        section: 'Disposition',
-        enabled: () => true,
-        applicable: () => {
-            const favorites = FavoritesFacade.getFolders$().getValue()
-            return (
-                node instanceof FolderNode &&
-                favorites.find((f) => f.folderId == node.id) == undefined
-            )
-        },
-        exe: () => {
-            FavoritesFacade.toggleFavoriteFolder(node.id)
-        },
-    }),
-    unFavoriteFolder: (_state: ExplorerState, node: ExplorerNode) => ({
-        sourceEventNode: node,
-        icon: { tag: 'div', class: 'fas fa-unlink' },
-        name: 'un-favorite',
-        section: 'Disposition',
-        enabled: () => true,
-        applicable: () => {
-            const favorites = FavoritesFacade.getFolders$().getValue()
-            return (
-                node instanceof FolderNode &&
-                favorites.find((f) => f.folderId == node.id) != undefined
-            )
-        },
-        exe: () => {
-            FavoritesFacade.toggleFavoriteFolder(node.id)
-        },
-    }),
-    favoriteDesktopItem: (_state: ExplorerState, node: ExplorerNode) => ({
-        sourceEventNode: node,
-        icon: { tag: 'div', class: 'fas fa-map-pin' },
-        name: 'add to desktop',
-        section: 'Disposition',
-        enabled: () => true,
-        applicable: () => {
-            const favorites = FavoritesFacade.getItems$().getValue()
-            return (
-                node instanceof ItemNode &&
-                favorites.find((i) => i.itemId == node.id) == undefined
-            )
-        },
-        exe: () => {
-            FavoritesFacade.toggleFavoriteItem(node.id)
-        },
-    }),
-    unFavoriteDesktopItem: (_state: ExplorerState, node: ExplorerNode) => ({
-        sourceEventNode: node,
-        icon: { tag: 'div', class: 'fas fa-unlink' },
-        name: 'remove from desktop',
-        section: 'Disposition',
-        enabled: () => true,
-        applicable: () => {
-            const favorites = FavoritesFacade.getItems$().getValue()
-            return (
-                node instanceof ItemNode &&
-                favorites.find((i) => i.itemId == node.id) != undefined
-            )
-        },
-        exe: () => {
-            FavoritesFacade.toggleFavoriteItem(node.id)
-        },
-    }),
+    // favoriteFolder: (_state: ExplorerState, node: ExplorerNode) => ({
+    //     sourceEventNode: node,
+    //     icon: { tag: 'div', class: 'fas fa-map-pin' },
+    //     name: 'add to favorites',
+    //     section: 'Disposition',
+    //     enabled: () => true,
+    //     applicable: () => {
+    //         const favorites = FavoritesFacade.getFolders$().getValue()
+    //         return (
+    //             node instanceof FolderNode &&
+    //             favorites.find((f) => f.folderId == node.id) == undefined
+    //         )
+    //     },
+    //     exe: () => {
+    //         FavoritesFacade.toggleFavoriteFolder(node.id)
+    //     },
+    // }),
+    // unFavoriteFolder: (_state: ExplorerState, node: ExplorerNode) => ({
+    //     sourceEventNode: node,
+    //     icon: { tag: 'div', class: 'fas fa-unlink' },
+    //     name: 'un-favorite',
+    //     section: 'Disposition',
+    //     enabled: () => true,
+    //     applicable: () => {
+    //         const favorites = FavoritesFacade.getFolders$().getValue()
+    //         return (
+    //             node instanceof FolderNode &&
+    //             favorites.find((f) => f.folderId == node.id) != undefined
+    //         )
+    //     },
+    //     exe: () => {
+    //         FavoritesFacade.toggleFavoriteFolder(node.id)
+    //     },
+    // }),
+    // favoriteDesktopItem: (_state: ExplorerState, node: ExplorerNode) => ({
+    //     sourceEventNode: node,
+    //     icon: { tag: 'div', class: 'fas fa-map-pin' },
+    //     name: 'add to desktop',
+    //     section: 'Disposition',
+    //     enabled: () => true,
+    //     applicable: () => {
+    //         const favorites = FavoritesFacade.getItems$().getValue()
+    //         return (
+    //             node instanceof ItemNode &&
+    //             favorites.find((i) => i.itemId == node.id) == undefined
+    //         )
+    //     },
+    //     exe: () => {
+    //         FavoritesFacade.toggleFavoriteItem(node.id)
+    //     },
+    // }),
+    // unFavoriteDesktopItem: (_state: ExplorerState, node: ExplorerNode) => ({
+    //     sourceEventNode: node,
+    //     icon: { tag: 'div', class: 'fas fa-unlink' },
+    //     name: 'remove from desktop',
+    //     section: 'Disposition',
+    //     enabled: () => true,
+    //     applicable: () => {
+    //         const favorites = FavoritesFacade.getItems$().getValue()
+    //         return (
+    //             node instanceof ItemNode &&
+    //             favorites.find((i) => i.itemId == node.id) != undefined
+    //         )
+    //     },
+    //     exe: () => {
+    //         FavoritesFacade.toggleFavoriteItem(node.id)
+    //     },
+    // }),
+}
+
+export type LaunchPackageData = {
+    type: 'app' | 'lib'
+    href: string
+}
+export const launchPackage$ = (
+    rawId: string,
+): Observable<LaunchPackageData | undefined> => {
+    return fromFetch(
+        `/api/assets-gateway/cdn-backend/resources/${rawId}/latest/.yw_metadata.json`,
+    ).pipe(
+        switchMap((resp) => resp.json()),
+        map((resp: { family: string; execution?: { standalone: boolean } }) => {
+            const packageName = window.atob(rawId)
+            if (resp.family === 'application' && resp.execution?.standalone) {
+                const href = `/applications/${packageName}/latest`
+                return { type: 'app', href }
+            }
+            if (resp.family === 'library') {
+                const uri = encodeURIComponent(
+                    tryLibScript(packageName, 'latest'),
+                )
+                const href = `/applications/@youwol/js-playground/latest?content=${uri}`
+                return { type: 'lib', href }
+            }
+            return undefined
+        }),
+    )
 }
 
 export function getActions$(
@@ -486,12 +518,18 @@ export function getActions$(
                   }),
               )
 
+    const launch$ =
+        node instanceof ItemNode && node.kind === 'package'
+            ? launchPackage$(node.rawId)
+            : of(undefined)
+
     return forkJoin([
+        launch$,
         permissions$,
         Installer.getInstallManifest$().pipe(take(1)),
         node instanceof ItemNode ? openingApps$(node).pipe(take(1)) : of([]),
     ]).pipe(
-        map(([permissions, installManifest, openingApps]) => {
+        map(([launch, permissions, installManifest, openingApps]) => {
             // following 'node as any' is because of TrashNode; installManifest do not define actions for it anyway
             const customActions: Action[] =
                 node instanceof TrashNode
@@ -512,6 +550,25 @@ export function getActions$(
                                   section: 'CustomActions',
                               }
                           })
+
+            const launchAction: Action = launch && {
+                sourceEventNode: node,
+                icon: {
+                    tag: 'div',
+                    class:
+                        launch.type === 'app' ? 'fas fa-play' : 'fas fa-code',
+                },
+                name: launch.type === 'app' ? 'Launch app.' : 'Try lib.',
+                section: 'Open',
+                enabled: () => true,
+                applicable: () => {
+                    return true
+                },
+                exe: () => {
+                    window.open(launch.href, '_blank')
+                },
+            }
+
             const openWithActions: Action[] = openingApps.map(
                 ({ appInfo, parametrization }) => ({
                     sourceEventNode: node,
@@ -540,11 +597,12 @@ export function getActions$(
                 action(state, node, permissions),
             )
             return [
+                launchAction,
                 ...nativeActions,
                 ...customActions,
                 ...openWithActions,
             ].filter((a) => {
-                return a.applicable()
+                return a?.applicable()
             })
         }),
     )

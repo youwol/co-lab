@@ -7,7 +7,6 @@ const runTimeDependencies = {
         "@youwol/local-youwol-client": "^0.2.12",
         "@youwol/mkdocs-ts": "^0.4.1",
         "@youwol/os-core": "^0.2.0",
-        "@youwol/os-widgets": "^0.2.6",
         "@youwol/rx-code-mirror-editors": "0.5.0",
         "@youwol/rx-tree-views": "^0.3.1",
         "@youwol/rx-vdom": "^1.0.1",
@@ -27,7 +26,6 @@ const externals = {
     "@youwol/local-youwol-client": "window['@youwol/local-youwol-client_APIv02']",
     "@youwol/mkdocs-ts": "window['@youwol/mkdocs-ts_APIv04']",
     "@youwol/os-core": "window['@youwol/os-core_APIv02']",
-    "@youwol/os-widgets": "window['@youwol/os-widgets_APIv02']",
     "@youwol/rx-code-mirror-editors": "window['@youwol/rx-code-mirror-editors_APIv05']",
     "@youwol/rx-tree-views": "window['@youwol/rx-tree-views_APIv03']",
     "@youwol/rx-vdom": "window['@youwol/rx-vdom_APIv1']",
@@ -35,6 +33,7 @@ const externals = {
     "bootstrap": "window['bootstrap_APIv4']",
     "d3": "window['d3_APIv7']",
     "rxjs": "window['rxjs_APIv7']",
+    "rxjs/fetch": "window['rxjs_APIv7']['fetch']",
     "rxjs/operators": "window['rxjs_APIv7']['operators']"
 }
 const exportedSymbols = {
@@ -61,10 +60,6 @@ const exportedSymbols = {
     "@youwol/os-core": {
         "apiKey": "02",
         "exportedSymbol": "@youwol/os-core"
-    },
-    "@youwol/os-widgets": {
-        "apiKey": "02",
-        "exportedSymbol": "@youwol/os-widgets"
     },
     "@youwol/rx-code-mirror-editors": {
         "apiKey": "05",
@@ -107,7 +102,6 @@ const mainEntry : {entryFile: string,loadDependencies:string[]} = {
         "@youwol/http-primitives",
         "@youwol/local-youwol-client",
         "@youwol/os-core",
-        "@youwol/os-widgets",
         "@youwol/rx-tree-views",
         "@youwol/rx-code-mirror-editors",
         "@floating-ui/dom",

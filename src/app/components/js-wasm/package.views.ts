@@ -537,30 +537,15 @@ export class LinkLaunchAppView implements VirtualDOM<'div'> {
                 parseMd({
                     src: `
 The package is an application that can be launched from an asset.      
-Refer to the file \`.yw_metadata.json\` for derails. `,
+Refer to the file \`.yw_metadata.json\` for details. `,
                     router,
                 }),
         ]
     }
 }
+const urlWebpm = '/webpm-client.js'
 
-export class LinkTryLibView implements VirtualDOM<'div'> {
-    public readonly tag = 'div'
-    public readonly children: ChildrenLike
-
-    constructor({
-        version,
-        packageName,
-        router,
-    }: {
-        version: string
-        packageName: string
-        router: Router
-    }) {
-        const urlWebpm =
-            '/api/assets-gateway/cdn-backend/resources/QHlvdXdvbC93ZWJwbS1jbGllbnQ=/^3.0.0/dist/@youwol/webpm-client.js'
-
-        const tryLibScript = `
+export const tryLibScript = (packageName: string, version: string) => `
 <!DOCTYPE html>
 <html lang="en">
     <head><script src="${urlWebpm}"></script></head>
@@ -574,7 +559,21 @@ export class LinkTryLibView implements VirtualDOM<'div'> {
     </script>
 </html>        
         `
+export class LinkTryLibView implements VirtualDOM<'div'> {
+    public readonly tag = 'div'
+    public readonly children: ChildrenLike
 
+    constructor({
+        version,
+        packageName,
+        router,
+    }: {
+        version: string
+        packageName: string
+        router: Router
+    }) {
+        const uri = encodeURIComponent(tryLibScript(packageName, version))
+        const href = `/applications/@youwol/js-playground/latest?content=${uri}`
         this.children = [
             parseMd({
                 src: `
@@ -584,7 +583,7 @@ The package is a library, you can try it from <linkLib></linkLib>.`,
                     linkLib: () => ({
                         tag: 'a',
                         target: '_blank',
-                        href: `/applications/@youwol/js-playground/latest?content=${encodeURIComponent(tryLibScript)}`,
+                        href,
                         innerText: 'here',
                     }),
                 },

@@ -1,31 +1,166 @@
-import { ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
-import { AssetsBackend, ExplorerBackend } from '@youwol/http-clients'
+import { ChildrenLike, RxChild, VirtualDOM } from '@youwol/rx-vdom'
+import {
+    AssetsBackend,
+    AssetsGateway,
+    ExplorerBackend,
+} from '@youwol/http-clients'
 import { parseMd, Router } from '@youwol/mkdocs-ts'
-import { PermissionsViews } from './permissions.views'
-import { TagsViews } from './tags.views'
-import { DescriptionsViews } from './descriptions.views'
-import { ExpandableGroupView } from '../common/expandable-group.view'
-import { BreadcrumbViews } from './breadcrumb.views'
-import { ItemView } from './item.view'
+import {
+    PathView,
+    groupAnchorView,
+    folderAnchorView,
+    separator,
+    classPathAnchors,
+} from './path.views'
+import {
+    FolderView,
+    ItemView,
+    TrashedFolderView,
+    TrashedItemView,
+    TrashView,
+} from './item.view'
 import { ContextMenuHandler } from './nav-context-menu.view'
 import { ExplorerState } from './explorer.state'
+import { raiseHTTPErrors } from '@youwol/http-primitives'
+import { TrashNode } from './nodes'
+import { AccessView, WritePermission } from './asset/access.views'
+import { DescriptionView } from './asset/descriptions.views'
+import { LinksView } from './asset/links.views'
+import { OverViews } from './asset/overviews.views'
+import {
+    LaunchView,
+    OpeningAppsViews,
+    PackageLogoView,
+} from './asset/opening-apps.views'
+
+export class HeaderView implements VirtualDOM<'div'> {
+    public readonly tag = 'div'
+    public readonly class = classPathAnchors
+    public readonly children: ChildrenLike
+    constructor({
+        explorerState,
+        router,
+        path,
+    }: {
+        path: string
+        explorerState: ExplorerState
+        router: Router
+    }) {
+        const groupId = path.split('/')[0]
+        const target = path.split('/').slice(-1)[0]
+        const pathView = (entityId: string): RxChild => {
+            const client = new AssetsGateway.Client().explorer
+            const path$ = target.startsWith('item_')
+                ? client.getPath$({ itemId: entityId }).pipe(raiseHTTPErrors())
+                : client
+                      .getPathFolder$({ folderId: entityId })
+                      .pipe(raiseHTTPErrors())
+
+            return {
+                source$: path$,
+                vdomMap: (path: ExplorerBackend.GetPathFolderResponse) =>
+                    new PathView({
+                        path,
+                        router,
+                        explorerState,
+                        displayCtxMenu: target.startsWith('folder_'),
+                    }),
+                untilFirst: {
+                    tag: 'div',
+                    class: 'fas fa-spinner fa-spin',
+                },
+            }
+        }
+
+        if (target.startsWith('folder_')) {
+            const folderId = target.replace('folder_', '')
+            this.children = [pathView(folderId)]
+            return
+        }
+        if (target.startsWith('item_')) {
+            const folderId = target.replace('item_', '')
+            this.children = [pathView(folderId)]
+            return
+        }
+        if (target.startsWith('trash_')) {
+            const ctxMenu = new ContextMenuHandler({
+                node: new TrashNode({
+                    driveId: target.replace('trash_', ''),
+                    groupId,
+                }),
+                explorerState: explorerState,
+            })
+            this.children = [
+                groupAnchorView({ groupId: groupId, router }),
+                separator,
+                folderAnchorView({
+                    name: 'trash',
+                    nav: path,
+                    icon: 'fas fa-trash',
+                    router,
+                }),
+                ctxMenu,
+            ]
+            return
+        }
+        this.children = [groupAnchorView({ groupId: target, router })]
+    }
+}
 
 export class ExplorerView implements VirtualDOM<'div'> {
     public readonly tag = 'div'
     public readonly class = ''
     public readonly children: ChildrenLike
+    public readonly style = {
+        position: 'relative' as const,
+    }
     constructor({
         response,
         path,
         explorerState,
+        router,
+        groupId,
     }: {
         response: ExplorerBackend.QueryChildrenResponse
         path: string
         explorerState: ExplorerState
+        router: Router
+        groupId: string
     }) {
-        this.children = response.items.map(
-            (item) => new ItemView({ item, path, explorerState }),
-        )
+        const sortFct = (a, b) => a.name.localeCompare(b.name)
+        const isRoot = path.endsWith(groupId)
+        const isTrash = path.split('/').slice(-1)[0].startsWith('trash_')
+
+        this.children = [
+            {
+                tag: 'div',
+                class: 'mkdocs-bg-0',
+                style: { position: 'sticky', top: '0px', zIndex: 1 },
+                children: [
+                    new HeaderView({ explorerState, router, path }),
+                    { tag: 'div', class: 'my-2 border-bottom' },
+                ],
+            },
+            ...response.folders.sort(sortFct).map((folder) =>
+                isTrash
+                    ? new TrashedFolderView({ folder })
+                    : new FolderView({
+                          groupId,
+                          folder,
+                          explorerState,
+                      }),
+            ),
+            ...response.items.sort(sortFct).map((item) =>
+                isTrash
+                    ? new TrashedItemView({ item })
+                    : new ItemView({
+                          groupId,
+                          item,
+                          explorerState,
+                      }),
+            ),
+            isRoot && new TrashView({ groupId, explorerState }),
+        ]
     }
 }
 
@@ -35,64 +170,89 @@ export class AssetView implements VirtualDOM<'div'> {
     public readonly children: ChildrenLike
 
     constructor({
-        assetResponse,
-        itemsResponse,
+        itemResponse,
+        asset,
         explorerState,
         router,
         path,
+        writePermission,
     }: {
-        assetResponse: AssetsBackend.GetAssetResponse
-        itemsResponse: ExplorerBackend.QueryChildrenResponse
+        itemResponse: ExplorerBackend.ItemBase
+        asset: AssetsBackend.GetAssetResponse
         explorerState: ExplorerState
         router: Router
+        writePermission: boolean
         path?: string
     }) {
+        console.log('assetResponse', asset)
         this.children = [
             parseMd({
                 src: `
 <path></path>
 
-# ${assetResponse.name} <ctxMenuActions></ctxMenuActions>         
+<title></title>       
+<logo></logo>
+<launch></launch>
+<writePermission></writePermission>
 
 
-<tags></tags>
+---
+
+**Opening applications:**
+
+<openingApps></openingApps>
+
+---
+
+
+**Description:**
 
 <description></description>
 
 <permissions></permissions>
+
+<links></links>
+
+<overviews></overviews>
                 `,
                 router,
                 views: {
+                    title: () => {
+                        return {
+                            tag: 'div',
+                            class: 'w-100 text-center',
+                            innerText: itemResponse.name,
+                            style: {
+                                fontSize: 'Larger',
+                                fontWeight: 'bolder',
+                            },
+                        }
+                    },
+                    logo: () => new PackageLogoView({ asset }),
+                    writePermission: () => new WritePermission({ asset }),
                     path: () =>
-                        new BreadcrumbViews({
-                            response: assetResponse,
+                        new HeaderView({
+                            explorerState,
                             path: path,
                             router: router,
                         }),
-                    permissions: () =>
-                        new PermissionsViews({ assetResponse, itemsResponse }),
-                    tags: () => new TagsViews({ assetResponse, itemsResponse }),
+                    launch: () => new LaunchView({ asset }),
+                    openingApps: () => new OpeningAppsViews({ asset }),
                     description: () =>
-                        new ExpandableGroupView({
-                            title: 'Description',
-                            icon: 'fas fa-info',
-                            content: () =>
-                                new DescriptionsViews({
-                                    assetResponse,
-                                    itemsResponse,
-                                }),
-                            expanded: true,
+                        new DescriptionView({
+                            asset: asset,
+                            explorerState,
                         }),
-                    ctxMenuActions: () => {
-                        const item = itemsResponse.items.find(
-                            (item) => item.assetId === assetResponse.assetId,
-                        )
-                        const nodeData = explorerState.getItemData(item)
-                        return new ContextMenuHandler({
-                            node: nodeData,
-                            explorerState: explorerState,
-                        })
-                    },
+                    permissions: () =>
+                        writePermission && new AccessView({ asset }),
+                    links: () =>
+                        writePermission &&
+                        new LinksView({
+                            asset: asset,
+                            explorerState,
+                            router,
+                        }),
+                    overviews: () => new OverViews({ asset }),
                 },
             }),
         ]
