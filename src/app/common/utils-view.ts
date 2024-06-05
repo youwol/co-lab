@@ -40,6 +40,10 @@ export class CoLabLogo implements VirtualDOM<'a'> {
     public readonly tag = 'a'
     public readonly href = 'index.html?nav=/'
     public readonly onclick: (ev: MouseEvent) => void
+    public readonly style = {
+        fontSize: '22px',
+        fontWeight: 700,
+    }
     public readonly class = 'ilab d-flex  align-items-baseline fv-pointer'
     public readonly children: ChildrenLike
 
@@ -52,20 +56,24 @@ export class CoLabLogo implements VirtualDOM<'a'> {
             {
                 tag: 'div',
                 class: 'd-flex align-items-center',
+                style: {
+                    fontSize: '18px',
+                    color: '#e63946',
+                },
                 children: [
                     {
                         tag: 'div',
-                        class: 'i',
-                        innerText: 'C',
                         style: {
-                            fontSize: '22px',
+                            fontStyle: 'italic',
                         },
+                        innerText: 'C',
                     },
                     {
                         tag: 'div',
-                        class: 'i mr-1 fas fa-globe',
+                        class: ' mr-1 fas fa-globe',
                         style: {
-                            fontSize: '15px',
+                            fontSize: '12px',
+                            fontStyle: 'italic',
                         },
                     },
                 ],
@@ -73,6 +81,10 @@ export class CoLabLogo implements VirtualDOM<'a'> {
             {
                 tag: 'span',
                 class: 'light',
+                style: {
+                    fontWeight: 'lighter',
+                    color: '#58a4b0',
+                },
                 innerText: 'Lab',
             },
         ]

@@ -1,11 +1,15 @@
 import { render } from '@youwol/rx-vdom'
 import { GlobalMarkdownViews, Views } from '@youwol/mkdocs-ts'
 
-import { TopBannerView } from './top-banner.view'
 import { AppState } from './app-state'
 import { Observable } from 'rxjs'
 import { DisconnectedView } from './disconnected.view'
-import { InfoSectionView } from './common'
+import { CoLabLogo, InfoSectionView } from './common'
+import {
+    BackendServingView,
+    UserBadgeDropdownView,
+    NotificationsView,
+} from './top-banner.view'
 
 GlobalMarkdownViews.factory = {
     ...GlobalMarkdownViews.factory,
@@ -54,12 +58,43 @@ document.getElementById('content').appendChild(
         children: [
             new Views.DefaultLayoutView({
                 router,
-                name: 'iLab',
-                topBanner: ({ displayMode$ }) =>
-                    new TopBannerView({
-                        router,
-                        appState,
-                        displayMode$,
+                name: '',
+                topBanner: (params) =>
+                    new Views.TopBannerClassicView({
+                        ...params,
+                        title: new CoLabLogo({ router }),
+                        logo: {
+                            tag: 'img',
+                            src: '../assets/logo.svg',
+                            style: {
+                                height: '30px',
+                            },
+                        },
+                        badge: {
+                            tag: 'div',
+                            style: {
+                                width: 'fit-content',
+                            },
+                            children: [
+                                new UserBadgeDropdownView({
+                                    state: appState,
+                                }),
+                                {
+                                    tag: 'div',
+                                    class: 'd-flex align-items-center justify-content-left my-1 ',
+                                    children: [
+                                        new NotificationsView({
+                                            state: appState,
+                                            router,
+                                        }),
+                                        new BackendServingView({
+                                            state: appState,
+                                            router,
+                                        }),
+                                    ],
+                                },
+                            ],
+                        },
                     }),
             }),
             new DisconnectedView({ appState }),
