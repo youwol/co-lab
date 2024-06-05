@@ -6,6 +6,7 @@ import * as Backends from './environment/backends'
 import * as Environment from './environment'
 import * as Notification from './environment/notifications'
 import * as Explorer from './explorer'
+import * as Doc from './doc'
 import { AnyVirtualDOM, ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
 import * as pyYw from '@youwol/local-youwol-client'
 import { Routers, WsRouter } from '@youwol/local-youwol-client'
@@ -154,6 +155,7 @@ export class AppState {
                 session$: this.session$,
             }),
             '/mounted': Mounted.navigation(this),
+            '/doc': Doc.navigation(),
         }
         this.router = new Router({
             navigation: this.navigation,
