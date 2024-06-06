@@ -65,6 +65,7 @@ The following projects have failed to load:
                         return new HdPathBookView({
                             path: finder.fromPath,
                             appState,
+                            type: 'folder',
                         })
                     },
                     failedListView: () =>

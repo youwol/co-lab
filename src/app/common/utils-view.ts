@@ -322,9 +322,11 @@ export class HdPathBookView implements VirtualDOM<'div'> {
     constructor({
         path,
         appState,
+        type,
     }: {
         path: string | Observable<string>
         appState: AppState
+        type: 'folder' | 'file'
     }) {
         const path$ = typeof path === 'string' ? of(path) : path
         this.children = [
@@ -362,7 +364,7 @@ export class HdPathBookView implements VirtualDOM<'div'> {
                     return {
                         tag: 'i',
                         class: 'fas fa-folder-open p-1 rounded border fv-pointer fv-hover-text-focus mx-2',
-                        onclick: () => appState.hdFolder$.next(path),
+                        onclick: () => appState.mountHdPath(path, type),
                     }
                 },
             },

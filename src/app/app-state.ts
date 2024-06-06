@@ -1,5 +1,10 @@
-import { combineLatest, distinctUntilChanged, Observable, Subject } from 'rxjs'
-import { map, mergeMap, shareReplay, take, tap } from 'rxjs/operators'
+import {
+    BehaviorSubject,
+    combineLatest,
+    distinctUntilChanged,
+    Observable,
+} from 'rxjs'
+import { filter, map, mergeMap, shareReplay, take, tap } from 'rxjs/operators'
 import * as Projects from './projects'
 import * as Components from './components'
 import * as Backends from './environment/backends'
@@ -17,6 +22,8 @@ import * as Mounted from './mounted'
 import { setup } from '../auto-generated'
 import { Installer, PreferencesFacade } from '@youwol/os-core'
 import { DesktopWidgetsView, NewAppsView } from './home/views'
+import { encodeHdPath } from './mounted'
+import { Patches } from './common'
 
 export type Topic =
     | 'Projects'
@@ -37,6 +44,10 @@ pyYw.PyYouwolClient.ws = new WsRouter({
     autoReconnectDelay: 1000,
 })
 
+export type MountedPath = {
+    path: string
+    type: 'file' | 'folder'
+}
 /**
  * @category State
  */
@@ -99,7 +110,7 @@ export class AppState {
      */
     public readonly connectedLocal$: Observable<boolean>
 
-    public readonly hdFolder$ = new Subject<string>()
+    public readonly mountedHdPaths$ = new BehaviorSubject<MountedPath[]>([])
 
     constructor() {
         pyYw.PyYouwolClient.startWs$()
@@ -163,6 +174,34 @@ export class AppState {
         })
 
         PageView.warmUp()
+    }
+
+    mountHdPath(path: string, type: 'file' | 'folder') {
+        const values = this.mountedHdPaths$.value
+        const redirectNav =
+            type === 'folder'
+                ? `/mounted/${encodeHdPath(path)}`
+                : `/mounted/file_${encodeHdPath(path)}`
+        if (!values.map((p) => p.path).includes(path)) {
+            this.mountedHdPaths$.next([...values, { path, type }])
+            this.router.explorerState.root$
+                .pipe(
+                    filter(() =>
+                        this.router.explorerState.getNode(redirectNav),
+                    ),
+                    take(1),
+                    Patches.patchRequestObjectAlreadyUsed(),
+                )
+                .subscribe(() => {
+                    this.router.navigateTo({
+                        path: redirectNav,
+                    })
+                })
+            return
+        }
+        this.router.navigateTo({
+            path: redirectNav,
+        })
     }
 }
 

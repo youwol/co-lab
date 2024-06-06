@@ -4,6 +4,7 @@ import { raiseHTTPErrors } from '@youwol/http-primitives'
 import { Router } from '@youwol/mkdocs-ts'
 import { ObjectJs } from '@youwol/rx-tree-views'
 import { CodeEditorView, CodeLanguage } from '../common/code-editor.view'
+import { encodeHdPath } from './index'
 export class FilesListView implements VirtualDOM<'div'> {
     public readonly tag = 'div'
     public readonly class = ''
@@ -50,7 +51,7 @@ export class ItemView implements VirtualDOM<'div'> {
         baseUrl: string
         router: Router
     }) {
-        const url = `${baseUrl}/file_${window.btoa(file)}`
+        const url = `${baseUrl}/file_${encodeHdPath(file)}`
 
         this.children = [
             { tag: 'i', class: 'fas fa-file' },

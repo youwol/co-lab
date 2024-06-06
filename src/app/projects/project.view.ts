@@ -70,6 +70,7 @@ Publishing a components means to publish all or a part of those artifacts.
                         return new HdPathBookView({
                             path: project.path,
                             appState,
+                            type: 'folder',
                         })
                     },
                     cdnLink: () => {
@@ -348,6 +349,7 @@ class FailuresCategoryView implements VirtualDOM<'div'> {
                                                 new HdPathBookView({
                                                     path: failure.path,
                                                     appState,
+                                                    type: 'folder',
                                                 }),
                                             ],
                                         },

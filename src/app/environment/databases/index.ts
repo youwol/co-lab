@@ -52,6 +52,7 @@ This folder persist the artifacts & manifests created when working with projects
                                         ],
                                 ),
                             ),
+                            type: 'folder',
                         }),
                 },
             }),

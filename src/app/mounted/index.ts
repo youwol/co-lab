@@ -1,20 +1,27 @@
 import { ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
-import { AppState } from '../app-state'
+import { AppState, MountedPath } from '../app-state'
 import { Navigation, parseMd, Router, Views } from '@youwol/mkdocs-ts'
 import { FileContentView, FilesListView } from './views'
-import { map, scan, take } from 'rxjs/operators'
+import { map, take } from 'rxjs/operators'
 import { PyYouwolClient } from '@youwol/local-youwol-client'
 import { raiseHTTPErrors } from '@youwol/http-primitives'
+
+export function encodeHdPath(str) {
+    return window.btoa(encodeURIComponent(str))
+}
+
+export function decodeHdPath(encodedStr) {
+    return decodeURIComponent(window.atob(encodedStr))
+}
 
 export const navigation = (appState: AppState): Navigation => ({
     name: 'Mounted',
     decoration: { icon: { tag: 'i', class: 'fas fa-laptop mr-2' } },
     tableOfContent: Views.tocView,
     html: ({ router }) => new PageView({ router, appState }),
-    '...': appState.hdFolder$.pipe(
-        scan((acc, f) => [...acc, f], []),
+    '...': appState.mountedHdPaths$.pipe(
         map(
-            (folders: string[]) =>
+            (folders: MountedPath[]) =>
                 ({ path, router }: { path: string; router: Router }) => {
                     return lazyResolver(folders, path, router)
                 },
@@ -48,25 +55,38 @@ your hard drive.
 export function decodeHRef(path) {
     return path
         .split('/')
-        .map((p) => window.atob(p))
+        .map((p) => decodeHdPath(p))
         .join('/')
 }
 //
-function lazyResolver(folders: string[], path: string, router: Router) {
+function lazyResolver(
+    mountedPaths: MountedPath[],
+    path: string,
+    router: Router,
+) {
     const parts = path.split('/').filter((d) => d != '')
 
     if (parts.length === 0) {
         return {
-            children: folders.map((folder) => {
+            children: mountedPaths.map((mountedPath) => {
+                const encodedPath = encodeHdPath(mountedPath.path)
+                const id =
+                    mountedPath.type === 'folder'
+                        ? encodedPath
+                        : `file_${encodedPath}`
                 return {
-                    id: window.btoa(folder),
-                    name: folder.split('/').slice(-1)[0],
+                    id,
+                    name: mountedPath.path.split('/').slice(-1)[0],
                     decoration: {
                         icon: {
                             tag: 'div' as const,
-                            class: 'fas fa-folder mx-2',
+                            class:
+                                mountedPath.type === 'folder'
+                                    ? 'fas fa-folder mx-2'
+                                    : 'fas fa-file mx-2',
                         },
                     },
+                    leaf: mountedPath.type === 'file',
                 }
             }),
             html: undefined,
@@ -80,7 +100,8 @@ function lazyResolver(folders: string[], path: string, router: Router) {
             children: undefined,
             html: () =>
                 new FileContentView({
-                    path,
+                    // remove trailing '/'
+                    path: path.replace(/\/$/, ''),
                 }),
         }
     }
@@ -91,7 +112,7 @@ function lazyResolver(folders: string[], path: string, router: Router) {
 
     return new PyYouwolClient().admin.system
         .queryFolderContent$({
-            path: `${window.atob(origin)}/${fromDecoded}`,
+            path: `${decodeHdPath(origin)}/${fromDecoded}`,
         })
         .pipe(
             raiseHTTPErrors(),
@@ -122,7 +143,7 @@ function lazyResolver(folders: string[], path: string, router: Router) {
                     children: [
                         ...response.folders.map((folder) => {
                             return {
-                                id: window.btoa(folder),
+                                id: encodeHdPath(folder),
                                 name: folder,
                                 decoration: {
                                     icon: {
@@ -134,7 +155,7 @@ function lazyResolver(folders: string[], path: string, router: Router) {
                         }),
                         ...response.files.map((file) => {
                             return {
-                                id: `file_${window.btoa(file)}`,
+                                id: `file_${encodeHdPath(file)}`,
                                 name: file,
                                 leaf: true,
                                 decoration: {
