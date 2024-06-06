@@ -2,6 +2,7 @@ import { combineLatest, from, Observable, of } from 'rxjs'
 import { install } from '@youwol/webpm-client'
 import { shareReplay } from 'rxjs/operators'
 import { ChildrenLike, RxHTMLElement, VirtualDOM } from '@youwol/rx-vdom'
+import { spinnerView } from './utils-view'
 
 export type CodeLanguage =
     | 'python'
@@ -99,6 +100,7 @@ export class CodeEditorView implements VirtualDOM<'div'> {
                         },
                     }
                 },
+                untilFirst: spinnerView,
             },
         ]
     }

@@ -1,4 +1,9 @@
-import { ChildrenLike, VirtualDOM, CSSAttribute } from '@youwol/rx-vdom'
+import {
+    ChildrenLike,
+    VirtualDOM,
+    CSSAttribute,
+    AnyVirtualDOM,
+} from '@youwol/rx-vdom'
 import { fromMarkdown, parseMd, Router } from '@youwol/mkdocs-ts'
 import { BehaviorSubject, Observable, of, Subject, timer } from 'rxjs'
 import { setup } from '../../auto-generated'
@@ -440,4 +445,9 @@ export class CoLabBanner implements VirtualDOM<'div'> {
             },
         ]
     }
+}
+
+export const spinnerView: AnyVirtualDOM = {
+    tag: 'i',
+    class: 'fas fa-spinner fa-spin',
 }
