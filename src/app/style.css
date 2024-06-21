@@ -70,8 +70,8 @@ html {
 .fv-tree-selected .nav-ctx-menu-handler {
     display: block !important;
 }
-.fv-tree-selected{
-    color: red !important
+.fv-tree-selected {
+    color: red !important;
 }
 .fv-tree-selected-only {
     display: none !important;
