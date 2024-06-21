@@ -1,22 +1,29 @@
-import { distinctUntilChanged, Observable, Subject } from 'rxjs'
-import { map, mergeMap, shareReplay, take, tap } from 'rxjs/operators'
+import {
+    BehaviorSubject,
+    combineLatest,
+    distinctUntilChanged,
+    Observable,
+} from 'rxjs'
+import { filter, map, mergeMap, shareReplay, take, tap } from 'rxjs/operators'
 import * as Projects from './projects'
 import * as Components from './components'
 import * as Backends from './environment/backends'
 import * as Environment from './environment'
 import * as Notification from './environment/notifications'
 import * as Explorer from './explorer'
+import * as Doc from './doc'
 import { AnyVirtualDOM, ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
 import * as pyYw from '@youwol/local-youwol-client'
-import { WsRouter } from '@youwol/local-youwol-client'
+import { Routers, WsRouter } from '@youwol/local-youwol-client'
 import { Accounts } from '@youwol/http-clients'
 import { raiseHTTPErrors } from '@youwol/http-primitives'
 import { Navigation, parseMd, Router, Views } from '@youwol/mkdocs-ts'
-import * as Dashboard from './dashboard'
 import * as Mounted from './mounted'
 import { setup } from '../auto-generated'
-import { CoLabBanner, CoLabLogo } from './common'
-import { pyYwDocLink } from './common/py-yw-references.view'
+import { Installer, PreferencesFacade } from '@youwol/os-core'
+import { DesktopWidgetsView, NewAppsView } from './home/views'
+import { encodeHdPath } from './mounted'
+import { Patches } from './common'
 
 export type Topic =
     | 'Projects'
@@ -37,6 +44,10 @@ pyYw.PyYouwolClient.ws = new WsRouter({
     autoReconnectDelay: 1000,
 })
 
+export type MountedPath = {
+    path: string
+    type: 'file' | 'folder'
+}
 /**
  * @category State
  */
@@ -99,7 +110,7 @@ export class AppState {
      */
     public readonly connectedLocal$: Observable<boolean>
 
-    public readonly hdFolder$ = new Subject<string>()
+    public readonly mountedHdPaths$ = new BehaviorSubject<MountedPath[]>([])
 
     constructor() {
         pyYw.PyYouwolClient.startWs$()
@@ -142,10 +153,12 @@ export class AppState {
         )
 
         this.navigation = {
-            name: '',
+            name: 'Home',
+            decoration: {
+                icon: { tag: 'div', class: 'fas fa-home pr-1' },
+            },
             tableOfContent: Views.tocView,
-            html: ({ router }) => new PageView({ router }),
-            '/dashboard': Dashboard.navigation(this),
+            html: ({ router }) => new PageView({ router, appState: this }),
             '/environment': Environment.navigation(this),
             '/components': Components.navigation(this),
             '/projects': Projects.navigation(this),
@@ -153,10 +166,41 @@ export class AppState {
                 session$: this.session$,
             }),
             '/mounted': Mounted.navigation(this),
+            '/doc': Doc.navigation(),
         }
         this.router = new Router({
             navigation: this.navigation,
             basePath: `/applications/${setup.name}/${setup.version}`,
+        })
+
+        PageView.warmUp()
+    }
+
+    mountHdPath(path: string, type: 'file' | 'folder') {
+        const values = this.mountedHdPaths$.value
+        const redirectNav =
+            type === 'folder'
+                ? `/mounted/${encodeHdPath(path)}`
+                : `/mounted/file_${encodeHdPath(path)}`
+        if (!values.map((p) => p.path).includes(path)) {
+            this.mountedHdPaths$.next([...values, { path, type }])
+            this.router.explorerState.root$
+                .pipe(
+                    filter(() =>
+                        this.router.explorerState.getNode(redirectNav),
+                    ),
+                    take(1),
+                    Patches.patchRequestObjectAlreadyUsed(),
+                )
+                .subscribe(() => {
+                    this.router.navigateTo({
+                        path: redirectNav,
+                    })
+                })
+            return
+        }
+        this.router.navigateTo({
+            path: redirectNav,
         })
     }
 }
@@ -165,62 +209,69 @@ export class PageView implements VirtualDOM<'div'> {
     public readonly tag = 'div'
     public readonly children: ChildrenLike
 
-    constructor({ router }: { router: Router }) {
-        const loaded$ = new Subject<boolean>()
+    static warmUp = () => {
+        combineLatest([
+            Installer.getApplicationsInfo$(),
+            PreferencesFacade.getPreferences$(),
+        ]).subscribe()
+    }
+
+    constructor({ router, appState }: { router: Router; appState: AppState }) {
         this.children = [
-            new CoLabBanner({ router, loaded$ }),
-            {
-                source$: loaded$,
-                vdomMap: () =>
-                    parseMd({
-                        src: `
-# Welcome
+            parseMd({
+                src: `
+# Home    
 
-Welcome to the YouWol collaborative lab for consuming or producing web applications. 
-This space (the \`@youwol/co-lab\` application) lets you explore your lab's content.
+The server is running using the configuration file <configFile></configFile>
 
-At its core, the lab collects executable units, or components, treating them as independent entities that dynamically
- assemble during the execution of applications or user scripts. These components range from those interpreted in the
-  browser, like JavaScript, WebAssembly, or Python via the Pyodide wrapper, to those processed on a PC as backends. 
-  Your lab grows as it automatically acquires components encountered during browsing or from your own project 
-  publications. 
+## Launch-pad
 
-Collaboration is seamless in this ecosystem: when components are needed to run an application, 
-the system ensures the most up-to-date, compatible version is used, whether sourced from your ongoing projects
- or the broader YouWol network through updates. New or missing components are efficiently downloaded, 
- enhancing performance for future access.
+<info>
+Here are displayed the applications reference by the [installer script](@nav/environment/profiles.installers), 
+they are similar to 'pined' applications.   
 
-This dual local-cloud approach not only optimizes the development cycle and enhances flexibility but also opens up 
-new possibilities. Everything we've built leverages this innovative framework, and we're excited for you to experience
- its benefits.
+You may want to use this 
+<a href='https://chromewebstore.google.com/detail/auto-tab-groups/nicjeeimgboiijpfcgfkbemiclbhfnio?pli=1'
+target='_blank'>plugin</a> to group YouWol's applications in a tab group (for chrome).
+
+</info>
  
-Explore your lab and its features at your own pace:
+<appsView></appsView>
 
-- The [dashboard](@nav/dashboard) offers a streamlined view for quick access to information you've selected as most
- relevant, providing shortcuts and at-a-glance visualizations tailored to your preferences.
- 
-- The [environment](@nav/environment) section gives you a comprehensive look at your local server's configuration, 
-including which backends are active, the middlewares you've installed, and a tool for exploring logs, among others.
+## Widgets
 
-- In the [components](@nav/components) area, you can review everything that has been utilized and effectively 
-'installed' on your PC up to this point.
+<info>
+Here are the widgets referenced by the [preferences script](@nav/environment/profiles.preferences).
 
-- The [projects](@nav/projects) section is dedicated to your work-in-progress projects, which you are preparing to 
-publish as components—first locally on your PC, and subsequently to the wider online ecosystem for community access.
+</info>
 
- For a deeper insight into the workings of your new laboratory, don't hesitate to click on the info icon
-  <i class="fas fa-info-circle fv-text-focus"></i> during your initial visits. 
- If you're looking for a more comprehensive overview, we invite you to check out our 
-${pyYwDocLink('documentation', '/')}.
 
-  `,
-                        router,
-                        views: {
-                            logo: () => new CoLabLogo({ router }),
+<desktopWidgets></desktopWidgets>
+`,
+                router,
+                views: {
+                    configFile: () => ({
+                        tag: 'a',
+                        href: '@nav/environment/yw-configuration',
+                        innerText: {
+                            source$: appState.environment$,
+                            vdomMap: (
+                                env: Routers.Environment.EnvironmentStatusResponse,
+                            ) => {
+                                return env.configuration.pathsBook.config.match(
+                                    /[^\\/]+$/,
+                                )[0]
+                            },
                         },
-                        emitHtmlUpdated: true,
                     }),
-            },
+                    appsView: () =>
+                        new NewAppsView({
+                            state: undefined,
+                            router,
+                        }),
+                    desktopWidgets: () => new DesktopWidgetsView(),
+                },
+            }),
         ]
     }
 }

@@ -104,6 +104,7 @@ class FileView implements VirtualDOM<'div'> {
                                             return resp.file
                                         }),
                                     ),
+                                    type: 'file',
                                 }),
                             ],
                         }
@@ -436,6 +437,7 @@ Headers:
                         new HdPathBookView({
                             appState,
                             path: item.file,
+                            type: 'file',
                         }),
                     expirationDate: () => ({
                         tag: 'div' as const,

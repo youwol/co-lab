@@ -45,6 +45,7 @@ Below is displayed the current configuration of the local YouWol server:
                                 ),
                             ),
                             appState,
+                            type: 'file',
                         })
                     },
                     fileView: () =>

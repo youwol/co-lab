@@ -4,6 +4,7 @@ import { ProfilesState, Profile } from './profiles.state'
 import { CodeEditorView } from './code-editor.view'
 import { combineLatest } from 'rxjs'
 import { TsCodeEditorModule } from '@youwol/rx-code-mirror-editors'
+import { spinnerView } from '../../common'
 
 export class ProfilesListView implements VirtualDOM<'div'> {
     public readonly tag = 'div'
@@ -42,7 +43,7 @@ export class ProfilesListView implements VirtualDOM<'div'> {
     }
 }
 
-const bottomNavClasses = 'fv-bg-background fv-x-lighter w-100 overflow-auto'
+const bottomNavClasses = 'fv-x-lighter w-100 overflow-auto'
 const bottomNavStyle = {
     maxHeight: '800px',
 }
@@ -98,6 +99,7 @@ export class InstallersView implements VirtualDOM<'div'> {
                         },
                     })
                 },
+                untilFirst: spinnerView,
             },
         ]
     }
@@ -153,6 +155,7 @@ export class PreferencesView implements VirtualDOM<'div'> {
                         },
                     })
                 },
+                untilFirst: spinnerView,
             },
         ]
     }

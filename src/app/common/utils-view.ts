@@ -1,4 +1,9 @@
-import { ChildrenLike, VirtualDOM, CSSAttribute } from '@youwol/rx-vdom'
+import {
+    ChildrenLike,
+    VirtualDOM,
+    CSSAttribute,
+    AnyVirtualDOM,
+} from '@youwol/rx-vdom'
 import { fromMarkdown, parseMd, Router } from '@youwol/mkdocs-ts'
 import { BehaviorSubject, Observable, of, Subject, timer } from 'rxjs'
 import { setup } from '../../auto-generated'
@@ -40,6 +45,10 @@ export class CoLabLogo implements VirtualDOM<'a'> {
     public readonly tag = 'a'
     public readonly href = 'index.html?nav=/'
     public readonly onclick: (ev: MouseEvent) => void
+    public readonly style = {
+        fontSize: '22px',
+        fontWeight: 700,
+    }
     public readonly class = 'ilab d-flex  align-items-baseline fv-pointer'
     public readonly children: ChildrenLike
 
@@ -52,20 +61,24 @@ export class CoLabLogo implements VirtualDOM<'a'> {
             {
                 tag: 'div',
                 class: 'd-flex align-items-center',
+                style: {
+                    fontSize: '18px',
+                    color: '#e63946',
+                },
                 children: [
                     {
                         tag: 'div',
-                        class: 'i',
-                        innerText: 'C',
                         style: {
-                            fontSize: '22px',
+                            fontStyle: 'italic',
                         },
+                        innerText: 'C',
                     },
                     {
                         tag: 'div',
-                        class: 'i mr-1 fas fa-globe',
+                        class: ' mr-1 fas fa-globe',
                         style: {
-                            fontSize: '15px',
+                            fontSize: '12px',
+                            fontStyle: 'italic',
                         },
                     },
                 ],
@@ -73,6 +86,10 @@ export class CoLabLogo implements VirtualDOM<'a'> {
             {
                 tag: 'span',
                 class: 'light',
+                style: {
+                    fontWeight: 'lighter',
+                    color: '#58a4b0',
+                },
                 innerText: 'Lab',
             },
         ]
@@ -310,9 +327,11 @@ export class HdPathBookView implements VirtualDOM<'div'> {
     constructor({
         path,
         appState,
+        type,
     }: {
         path: string | Observable<string>
         appState: AppState
+        type: 'folder' | 'file'
     }) {
         const path$ = typeof path === 'string' ? of(path) : path
         this.children = [
@@ -350,7 +369,7 @@ export class HdPathBookView implements VirtualDOM<'div'> {
                     return {
                         tag: 'i',
                         class: 'fas fa-folder-open p-1 rounded border fv-pointer fv-hover-text-focus mx-2',
-                        onclick: () => appState.hdFolder$.next(path),
+                        onclick: () => appState.mountHdPath(path, type),
                     }
                 },
             },
@@ -426,4 +445,9 @@ export class CoLabBanner implements VirtualDOM<'div'> {
             },
         ]
     }
+}
+
+export const spinnerView: AnyVirtualDOM = {
+    tag: 'i',
+    class: 'fas fa-spinner fa-spin',
 }
