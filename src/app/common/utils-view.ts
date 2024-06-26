@@ -5,10 +5,21 @@ import {
     AnyVirtualDOM,
 } from '@youwol/rx-vdom'
 import { fromMarkdown, parseMd, Router } from '@youwol/mkdocs-ts'
-import { BehaviorSubject, Observable, of, Subject, timer } from 'rxjs'
+import {
+    BehaviorSubject,
+    combineLatest,
+    mergeMap,
+    Observable,
+    of,
+    Subject,
+    timer,
+} from 'rxjs'
 import { setup } from '../../auto-generated'
 import { AppState } from '../app-state'
 import { take } from 'rxjs/operators'
+import { Routers } from '@youwol/local-youwol-client'
+import { onHTTPErrors } from '@youwol/http-primitives'
+import { AssetsGateway, ExplorerBackend } from '@youwol/http-clients'
 
 export const styleShellStdOut = {
     tag: 'pre' as const,
@@ -450,4 +461,162 @@ export class CoLabBanner implements VirtualDOM<'div'> {
 export const spinnerView: AnyVirtualDOM = {
     tag: 'i',
     class: 'fas fa-spinner fa-spin',
+}
+
+export class ComponentCrossLinksView implements VirtualDOM<'div'> {
+    public readonly tag = 'div'
+    public readonly class = 'd-flex align-items-center w-100 rounded p-1'
+    public readonly children: ChildrenLike
+    public readonly appState: AppState
+    public readonly component: string
+    constructor(params: { component: string; appState: AppState }) {
+        Object.assign(this, params)
+        const { component, appState } = params
+        const client = new AssetsGateway.Client().explorer
+        const itemId = window.btoa(window.btoa(component))
+        const sep: AnyVirtualDOM = {
+            tag: 'i',
+            class: 'mx-2',
+        }
+        this.children = [
+            {
+                tag: 'div',
+                class: 'd-flex align-items-center',
+                children: [
+                    {
+                        tag: 'i',
+                        class: 'fas fa-link',
+                        style: {
+                            fontSize: '0.7rem',
+                        },
+                    },
+                ],
+            },
+            sep,
+            {
+                source$: appState.cdnState.status$,
+                vdomMap: (status: Routers.LocalCdn.CdnStatusResponse) => {
+                    const enabled =
+                        status.packages.find((p) => p.name === component) !==
+                        undefined
+                    return this.linkView({
+                        icon: 'fa-microchip',
+                        nav: `components/backends/${window.btoa(component)}`,
+                        enabled,
+                    })
+                },
+            },
+            sep,
+            {
+                source$: client
+                    .getItem$({
+                        itemId,
+                    })
+                    .pipe(
+                        onHTTPErrors(() => undefined),
+                        mergeMap((resp?: ExplorerBackend.ItemBase) => {
+                            if (resp === undefined) {
+                                return of(undefined)
+                            }
+                            return client.getPath$({ itemId })
+                        }),
+                    ),
+                vdomMap: (resp?: ExplorerBackend.PathBase) => {
+                    let nav = ''
+                    if (resp) {
+                        const folders = resp.folders.reduce(
+                            (acc, e) => `${acc}/folder_${e.folderId}`,
+                            `${resp.drive.groupId}/folder_${resp.drive.driveId}`,
+                        )
+                        nav = `/explorer/${folders}/item_${resp.item.itemId}`
+                    }
+                    return this.linkView({
+                        icon: 'fa-folder',
+                        nav,
+                        enabled: resp !== undefined,
+                    })
+                },
+            },
+            sep,
+            {
+                source$: combineLatest([
+                    appState.projectsState.projects$,
+                    appState.environment$,
+                ]),
+                vdomMap: ([projects, env]: [
+                    projects: Routers.Projects.Project[],
+                    env: Routers.Environment.EnvironmentStatusResponse,
+                ]) => {
+                    let nav = ''
+                    const project = projects.find(
+                        (p) => p.name.split('~')[0] === component,
+                    )
+                    if (project) {
+                        const finder =
+                            env.youwolEnvironment.projects.finders.find((f) =>
+                                project.path.startsWith(f.fromPath),
+                            )
+                        nav = `/projects/${window.btoa(finder.fromPath)}/${project.id}`
+                    }
+                    return this.linkView({
+                        icon: 'fa-boxes',
+                        nav,
+                        enabled: project !== undefined,
+                    })
+                },
+            },
+            sep,
+            {
+                source$: appState.projectsState.projects$,
+                vdomMap: (projects: Routers.Projects.Project[]) => {
+                    const project = projects.find(
+                        (p) => p.name.split('~')[0] === component,
+                    )
+                    return this.linkView({
+                        icon: 'fa-laptop',
+                        nav: '',
+                        enabled: project !== undefined,
+                        onclick: (ev) => {
+                            ev.preventDefault()
+                            project &&
+                                appState.mountHdPath(project.path, 'folder')
+                        },
+                    })
+                },
+            },
+        ]
+    }
+
+    private linkView({
+        icon,
+        enabled,
+        nav,
+        onclick,
+    }: {
+        icon: string
+        enabled: boolean
+        nav?: string
+        onclick?: (ev) => void
+    }): AnyVirtualDOM {
+        if (enabled) {
+            return {
+                tag: 'a',
+                href: onclick ? undefined : `@nav/${nav}`,
+                class: `fas ${icon} `,
+                onclick: (ev: MouseEvent) => {
+                    if (onclick) {
+                        return onclick(ev)
+                    }
+                    ev.preventDefault()
+                    this.appState.router.navigateTo({
+                        path: nav,
+                    })
+                },
+            }
+        }
+        return {
+            tag: 'i',
+            class: `fas ${icon} text-muted`,
+        }
+    }
 }
