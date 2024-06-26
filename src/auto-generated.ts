@@ -4,8 +4,8 @@ const runTimeDependencies = {
         "@floating-ui/dom": "^1.6.3",
         "@youwol/http-clients": "^3.0.0",
         "@youwol/http-primitives": "^0.2.3",
-        "@youwol/local-youwol-client": "^0.2.12",
-        "@youwol/mkdocs-ts": "^0.5.0",
+        "@youwol/local-youwol-client": "^0.2.13",
+        "@youwol/mkdocs-ts": "^0.5.2",
         "@youwol/os-core": "^0.2.0",
         "@youwol/rx-code-mirror-editors": "0.5.0",
         "@youwol/rx-tree-views": "^0.3.1",
@@ -119,13 +119,13 @@ const entries = {
 export const setup = {
     name:'@youwol/co-lab',
         assetId:'QHlvdXdvbC9jby1sYWI=',
-    version:'0.3.9-wip',
+    version:'0.4.1-wip',
     shortDescription:"The YouWol's collaborative laboratory application.",
     developerDocumentation:'https://platform.youwol.com/applications/@youwol/cdn-explorer/latest?package=@youwol/co-lab&tab=doc',
     npmPackage:'https://www.npmjs.com/package/@youwol/co-lab',
     sourceGithub:'https://github.com/youwol/co-lab',
     userGuide:'https://l.youwol.com/doc/@youwol/co-lab',
-    apiVersion:'03',
+    apiVersion:'04',
     runTimeDependencies,
     externals,
     exportedSymbols,
@@ -150,7 +150,7 @@ export const setup = {
             modules,
             scripts,
         }).then(() => {
-            return window[`@youwol/co-lab_APIv03`]
+            return window[`@youwol/co-lab_APIv04`]
         })
     },
     installAuxiliaryModule: ({name, cdnClient, installParameters}:{
@@ -165,7 +165,7 @@ export const setup = {
         const parameters = installParameters || {}
         const scripts = [
             ...(parameters.scripts || []),
-            `@youwol/co-lab#0.3.9-wip~dist/@youwol/co-lab/${entry.name}.js`
+            `@youwol/co-lab#0.4.1-wip~dist/@youwol/co-lab/${entry.name}.js`
         ]
         const modules = [
             ...(parameters.modules || []),
@@ -176,7 +176,7 @@ export const setup = {
             modules,
             scripts,
         }).then(() => {
-            return window[`@youwol/co-lab/${entry.name}_APIv03`]
+            return window[`@youwol/co-lab/${entry.name}_APIv04`]
         })
     },
     getCdnDependencies(name?: string){
