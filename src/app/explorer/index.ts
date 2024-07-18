@@ -13,12 +13,7 @@ import { combineLatest, forkJoin, Observable, of } from 'rxjs'
 import { ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
 import { Installer, PreferencesFacade } from '@youwol/os-core'
 import { ExplorerState } from './explorer.state'
-import {
-    folderNavNodeInput,
-    groupNavNodeInput,
-    itemNavNodeInput,
-    trashNavNodeInput,
-} from './utils'
+import { groupNavNodeInput } from './utils'
 
 export { ExplorerState as State } from './explorer.state'
 
@@ -171,19 +166,10 @@ function lazyResolverDrive({
                         map((response) => ({ response, driveId })),
                     )
             }),
-            map(({ response, driveId }) => {
-                const children = [
-                    ...response.folders.map((folder) => {
-                        return folderNavNodeInput({ folder, explorerState })
-                    }),
-                    trashNavNodeInput({
-                        parentId: driveId,
-                        groupId,
-                        explorerState,
-                    }),
-                ]
+            map(({ response }) => {
                 return {
-                    children,
+                    isLeaf: true,
+                    children: [],
                     html: () =>
                         new ExplorerView({
                             response,
@@ -203,7 +189,6 @@ function lazyResolverFolders({
     client,
     explorerState,
     groupId,
-    isDrive,
     router,
 }: {
     path: string
@@ -225,21 +210,9 @@ function lazyResolverFolders({
         raiseHTTPErrors(),
         take(1),
         map((response) => {
-            const children = [
-                ...response.folders.map((folder) => {
-                    return folderNavNodeInput({ folder, explorerState })
-                }),
-                ...response.items.map((item) => {
-                    return itemNavNodeInput({ item, explorerState })
-                }),
-            ]
-            if (isDrive) {
-                children.push(
-                    trashNavNodeInput({ parentId, groupId, explorerState }),
-                )
-            }
             return {
-                children,
+                isLeaf: true,
+                children: [],
                 html: () =>
                     new ExplorerView({
                         response,
