@@ -89,6 +89,7 @@ export class FileContentView implements VirtualDOM<'div'> {
             '.md': 'markdown',
             '.yml': 'yaml',
             '.py': 'python',
+            '.xml': 'xml',
         }
         this.children = [
             {
