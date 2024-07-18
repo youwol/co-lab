@@ -44,7 +44,6 @@ function lazyResolver(
                 (backend) => backend.partitionId,
             ),
         )
-        console.log('Paroches', partitions)
         const children = [...partitions].map((partition) => {
             return {
                 name: partition.split('~')[0],
@@ -66,7 +65,6 @@ function lazyResolver(
         const children = env.youwolEnvironment.proxiedBackends
             .filter((backend) => backend.partitionId == parts[0])
             .map((backend) => {
-                console.log('Backends', backend)
                 return {
                     name: backendName(backend),
                     id: backend.uid,
