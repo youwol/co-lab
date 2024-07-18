@@ -1,10 +1,17 @@
 import { ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
 import { AppState, MountedPath } from '../app-state'
-import { Navigation, parseMd, Router, Views } from '@youwol/mkdocs-ts'
-import { FileContentView, FilesListView } from './views'
+import {
+    CatchAllNav,
+    Navigation,
+    parseMd,
+    Router,
+    Views,
+} from '@youwol/mkdocs-ts'
+import { FileContentView } from './file-content-view'
 import { map, take } from 'rxjs/operators'
 import { PyYouwolClient } from '@youwol/local-youwol-client'
 import { raiseHTTPErrors } from '@youwol/http-primitives'
+import { ExplorerView } from './explorer.view'
 
 export function encodeHdPath(str) {
     return window.btoa(encodeURIComponent(str))
@@ -58,12 +65,19 @@ export function decodeHRef(path) {
         .map((p) => decodeHdPath(p))
         .join('/')
 }
+export function encodeHRef(path) {
+    return path
+        .split('/')
+        .map((p) => encodeHdPath(p))
+        .join('/')
+}
+
 //
 function lazyResolver(
     mountedPaths: MountedPath[],
     path: string,
     router: Router,
-) {
+): CatchAllNav {
     const parts = path.split('/').filter((d) => d != '')
 
     if (parts.length === 0) {
@@ -76,6 +90,7 @@ function lazyResolver(
                         : `file_${encodedPath}`
                 return {
                     id,
+                    leaf: true,
                     name: mountedPath.path.split('/').slice(-1)[0],
                     decoration: {
                         icon: {
@@ -86,7 +101,6 @@ function lazyResolver(
                                     : 'fas fa-file mx-2',
                         },
                     },
-                    leaf: mountedPath.type === 'file',
                 }
             }),
             html: undefined,
@@ -97,11 +111,14 @@ function lazyResolver(
         const path = decodeHRef(`${parts[0]}/${parts.slice(1).join('/')}`)
         return {
             tableOfContent: Views.tocView,
-            children: undefined,
+            children: [],
             html: () =>
                 new FileContentView({
                     // remove trailing '/'
-                    path: path.replace(/\/$/, ''),
+                    full: path.replace(/\/$/, ''),
+                    origin: parts[0], //path.replace(/\/$/, ''),
+                    path: decodeHRef(`${parts.slice(1).join('/')}`),
+                    router,
                 }),
         }
     }
@@ -120,53 +137,15 @@ function lazyResolver(
             map((response) => {
                 return {
                     tableOfContent: Views.tocView,
+                    children: [],
                     html: () => {
-                        if (parts.slice(-1)[0].startsWith('file_')) {
-                            parts[parts.length - 1] = parts[
-                                parts.length - 1
-                            ].replace('file_', '')
-                            const path = decodeHRef(
-                                `${parts[0]}/${parts.slice(1).join('/')}`,
-                            )
-                            return new FileContentView({
-                                path,
-                            })
-                        }
-                        return new FilesListView({
-                            baseUrl: `/mounted${path}`,
-                            path: decodeHRef(
-                                `${parts[0]}/${parts.slice(1).join('/')}`,
-                            ),
+                        return new ExplorerView({
+                            response,
+                            path: fromDecoded,
                             router,
+                            origin,
                         })
                     },
-                    children: [
-                        ...response.folders.map((folder) => {
-                            return {
-                                id: encodeHdPath(folder),
-                                name: folder,
-                                decoration: {
-                                    icon: {
-                                        tag: 'div' as const,
-                                        class: 'fas fa-folder mx-2',
-                                    },
-                                },
-                            }
-                        }),
-                        ...response.files.map((file) => {
-                            return {
-                                id: `file_${encodeHdPath(file)}`,
-                                name: file,
-                                leaf: true,
-                                decoration: {
-                                    icon: {
-                                        tag: 'div' as const,
-                                        class: 'fas fa-file mx-2',
-                                    },
-                                },
-                            }
-                        }),
-                    ],
                 }
             }),
         )

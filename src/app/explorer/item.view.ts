@@ -15,13 +15,13 @@ import { ExplorerState, ItemCut } from './explorer.state'
 import { ContextMenuHandler } from './nav-context-menu.view'
 import { FolderNode, TrashNode } from './nodes'
 
-const classBase =
+export const classFolderFileBase =
     'colab-ExplorerItem mkdocs-text-0 text-decoration-none d-flex align-items-center my-1 px-1 rounded mkdocs-hover-bg-4 mkdocs-hover-text-5 fv-pointer'
 
 export class ItemView implements VirtualDOM<'a'> {
     public readonly tag = 'a'
     public readonly href: string
-    public readonly class = `colab-ItemView ${classBase}`
+    public readonly class = `colab-ItemView ${classFolderFileBase}`
     public readonly style: AttributeLike<CSSAttribute>
     public readonly children: ChildrenLike
 
@@ -87,7 +87,7 @@ export class TrashedItemView implements VirtualDOM<'div'> {
 export class FolderView implements VirtualDOM<'a'> {
     public readonly tag = 'a'
     public readonly href: string
-    public readonly class = `colab-FolderView ${classBase}`
+    public readonly class = `colab-FolderView ${classFolderFileBase}`
     public readonly children: ChildrenLike
     public readonly style: AttributeLike<CSSAttribute>
     constructor({
@@ -264,7 +264,7 @@ export class TrashIconView implements VirtualDOM<'div'> {
 export class TrashView implements VirtualDOM<'a'> {
     public readonly tag = 'a'
     public readonly href: string
-    public readonly class = `colab-TrashView ${classBase}`
+    public readonly class = `colab-TrashView ${classFolderFileBase}`
     public readonly children: ChildrenLike
     public readonly style = {
         fontWeight: 'bolder' as const,
