@@ -11,6 +11,7 @@ export type CodeLanguage =
     | 'html'
     | 'css'
     | 'yaml'
+    | 'xml'
     | 'unknown'
 
 function fetchCodeMirror$(
@@ -22,6 +23,7 @@ function fetchCodeMirror$(
         markdown: ['codemirror#5.52.0~mode/markdown.min.js'],
         html: ['codemirror#5.52.0~mode/htmlmixed.min.js'],
         yaml: ['codemirror#5.52.0~mode/yaml.min.js'],
+        xml: ['codemirror#5.52.0~mode/xml.min.js'],
         css: ['codemirror#5.52.0~mode/css.min.js'],
         unknown: [],
     }

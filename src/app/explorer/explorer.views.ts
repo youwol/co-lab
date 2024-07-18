@@ -1,4 +1,9 @@
-import { ChildrenLike, RxChild, VirtualDOM } from '@youwol/rx-vdom'
+import {
+    AnyVirtualDOM,
+    ChildrenLike,
+    RxChild,
+    VirtualDOM,
+} from '@youwol/rx-vdom'
 import {
     AssetsBackend,
     AssetsGateway,
@@ -33,6 +38,14 @@ import {
     PackageLogoView,
 } from './asset/opening-apps.views'
 
+export function headerViewWrapper(headerView: AnyVirtualDOM): AnyVirtualDOM {
+    return {
+        tag: 'div' as const,
+        class: 'mkdocs-bg-0',
+        style: { position: 'sticky', top: '0px', zIndex: 1 },
+        children: [headerView, { tag: 'div', class: 'my-2 border-bottom' }],
+    }
+}
 export class HeaderView implements VirtualDOM<'div'> {
     public readonly tag = 'div'
     public readonly class = classPathAnchors
@@ -132,15 +145,7 @@ export class ExplorerView implements VirtualDOM<'div'> {
         const isTrash = path.split('/').slice(-1)[0].startsWith('trash_')
 
         this.children = [
-            {
-                tag: 'div',
-                class: 'mkdocs-bg-0',
-                style: { position: 'sticky', top: '0px', zIndex: 1 },
-                children: [
-                    new HeaderView({ explorerState, router, path }),
-                    { tag: 'div', class: 'my-2 border-bottom' },
-                ],
-            },
+            headerViewWrapper(new HeaderView({ explorerState, router, path })),
             ...response.folders.sort(sortFct).map((folder) =>
                 isTrash
                     ? new TrashedFolderView({ folder })

@@ -96,12 +96,14 @@ export class LogsExplorerState {
             .queryLogs$({ parentId: log.contextId })
             .pipe(raiseHTTPErrors())
             .subscribe((response) => {
-                const end = response.logs.find((l) =>
-                    l.labels.includes('Label.DONE'),
-                )
-                this.delta[log.contextId] = Math.floor(
-                    (end.timestamp - log.timestamp) / 1000,
-                )
+                //  `Label.DONE` is not always found (e.g., if an exception has been raised).
+                const end =
+                    response.logs.find((l) =>
+                        l.labels.includes('Label.DONE'),
+                    ) || response.logs.slice(-1)[0]
+                this.delta[log.contextId] = end
+                    ? Math.floor((end.timestamp - log.timestamp) / 1000)
+                    : -1
                 this.logs$.next(response)
                 if (stack.includes(log)) {
                     const index = stack.indexOf(log)
