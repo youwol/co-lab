@@ -4,7 +4,7 @@ const runTimeDependencies = {
         "@floating-ui/dom": "^1.6.3",
         "@youwol/http-clients": "^3.0.0",
         "@youwol/http-primitives": "^0.2.3",
-        "@youwol/local-youwol-client": "^0.2.13",
+        "@youwol/local-youwol-client": "^0.3.0",
         "@youwol/mkdocs-ts": "^0.5.2",
         "@youwol/os-core": "^0.2.0",
         "@youwol/rx-code-mirror-editors": "0.5.0",
@@ -23,7 +23,7 @@ const externals = {
     "@floating-ui/dom": "window['@floating-ui/dom_APIv1']",
     "@youwol/http-clients": "window['@youwol/http-clients_APIv3']",
     "@youwol/http-primitives": "window['@youwol/http-primitives_APIv02']",
-    "@youwol/local-youwol-client": "window['@youwol/local-youwol-client_APIv02']",
+    "@youwol/local-youwol-client": "window['@youwol/local-youwol-client_APIv03']",
     "@youwol/mkdocs-ts": "window['@youwol/mkdocs-ts_APIv05']",
     "@youwol/os-core": "window['@youwol/os-core_APIv02']",
     "@youwol/rx-code-mirror-editors": "window['@youwol/rx-code-mirror-editors_APIv05']",
@@ -50,7 +50,7 @@ const exportedSymbols = {
         "exportedSymbol": "@youwol/http-primitives"
     },
     "@youwol/local-youwol-client": {
-        "apiKey": "02",
+        "apiKey": "03",
         "exportedSymbol": "@youwol/local-youwol-client"
     },
     "@youwol/mkdocs-ts": {

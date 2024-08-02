@@ -78,7 +78,7 @@
             "@youwol/webpm-client": "^3.0.0",
             "@youwol/http-clients": "^3.0.0",
             "@youwol/http-primitives": "^0.2.3",
-            "@youwol/local-youwol-client": "^0.2.13",
+            "@youwol/local-youwol-client": "^0.3.0",
             "@youwol/os-core": "^0.2.0",
             "@youwol/rx-tree-views": "^0.3.1",
             "@youwol/rx-code-mirror-editors": "0.5.0",
