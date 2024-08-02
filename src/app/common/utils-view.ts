@@ -469,7 +469,11 @@ export class ComponentCrossLinksView implements VirtualDOM<'div'> {
     public readonly children: ChildrenLike
     public readonly appState: AppState
     public readonly component: string
-    constructor(params: { component: string; appState: AppState }) {
+    constructor(params: {
+        component: string
+        type: 'backend' | 'js-wasm' | 'pyodide'
+        appState: AppState
+    }) {
         Object.assign(this, params)
         const { component, appState } = params
         const client = new AssetsGateway.Client().explorer
@@ -501,7 +505,7 @@ export class ComponentCrossLinksView implements VirtualDOM<'div'> {
                         undefined
                     return this.linkView({
                         icon: 'fa-microchip',
-                        nav: `components/backends/${window.btoa(component)}`,
+                        nav: `components/${params.type}/${window.btoa(component)}`,
                         enabled,
                     })
                 },

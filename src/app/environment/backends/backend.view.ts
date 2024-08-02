@@ -75,6 +75,7 @@ You can find the associated component in your database [here](@nav/components/ba
                     header: () => {
                         return new ComponentCrossLinksView({
                             appState,
+                            type: 'backend',
                             component: backend.name,
                         })
                     },
