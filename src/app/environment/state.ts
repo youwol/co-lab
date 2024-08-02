@@ -9,6 +9,7 @@ import { Observable } from 'rxjs'
 import { map, mergeMap, shareReplay } from 'rxjs/operators'
 
 import * as Browser from './browser'
+import { Label } from '@youwol/local-youwol-client'
 
 export type Method = 'GET' | 'POST' | 'PUT' | 'DELETE'
 
@@ -19,7 +20,7 @@ export class CommandEvents {
     /**
      * @group Observables
      */
-    log$: WebSocketResponse$<unknown>
+    log$: WebSocketResponse$<unknown, Label>
 
     constructor(public readonly command: pyYw.Routers.Environment.Command) {
         this.log$ =

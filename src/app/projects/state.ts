@@ -4,6 +4,7 @@ import { AppState } from '../app-state'
 import { filterCtxMessage, WebSocketResponse$ } from '@youwol/http-primitives'
 import {
     ContextMessage,
+    Label,
     PyYouwolClient,
     Routers,
 } from '@youwol/local-youwol-client'
@@ -40,7 +41,7 @@ export class ProjectEvents {
     /**
      * @group Observables
      */
-    public readonly messages$: WebSocketResponse$<unknown>
+    public readonly messages$: WebSocketResponse$<unknown, Label>
 
     /**
      * @group Observables
@@ -79,7 +80,10 @@ export class ProjectEvents {
     /**
      * @group Observables
      */
-    public readonly projectStatusResponse$: WebSocketResponse$<Routers.Projects.ProjectStatus>
+    public readonly projectStatusResponse$: WebSocketResponse$<
+        Routers.Projects.ProjectStatus,
+        Label
+    >
 
     constructor(public readonly project: Routers.Projects.Project) {
         this.messages$ = PyYouwolClient.ws.log$.pipe(
