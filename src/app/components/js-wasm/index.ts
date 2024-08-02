@@ -7,7 +7,7 @@ import { map } from 'rxjs/operators'
 import { lazyResolver } from '../index'
 
 export const navigation = (appState: AppState): Navigation => ({
-    name: 'Js/WASM',
+    name: 'ESM',
     decoration: { icon: new NavIconSvg({ filename: 'icon-js.svg' }) },
     html: ({ router }) => new PageView({ router, appState }),
     '...': appState.cdnState.status$
