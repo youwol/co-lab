@@ -54,7 +54,7 @@ export class NotificationsView implements VirtualDOM<'div'> {
                             source$: notifState.backendEvents.installing$,
                             vdomMap: (installing: unknown[]) => {
                                 return installing.length > 0
-                                    ? 'fas fa-plug text-success fv-blink'
+                                    ? 'fas fa-plug text-success fv-blink mr-1'
                                     : 'd-none'
                             },
                         },
@@ -370,7 +370,51 @@ export class BackendServingView implements VirtualDOM<'a'> {
                 vdomMap: (proxieds: Routers.Environment.ProxiedBackend[]) => {
                     return proxieds.length == 0
                         ? { tag: 'i' }
-                        : { tag: 'i', class: 'fas fa-network-wired' }
+                        : { tag: 'i', class: 'fas fa-network-wired mr-1' }
+                },
+            },
+        ]
+    }
+}
+
+export class EsmServingView implements VirtualDOM<'a'> {
+    /**
+     * @group Immutable DOM Constants
+     */
+    public readonly tag = 'a'
+
+    /**
+     * @group Immutable DOM Constants
+     */
+    public readonly class = ''
+
+    /**
+     * @group Immutable DOM Constants
+     */
+    public readonly customAttributes = {
+        dataToggle: 'tooltip',
+        title: 'ESM server(s) serving',
+    }
+
+    /**
+     * @group Immutable DOM Constants
+     */
+    public readonly children: ChildrenLike
+
+    constructor({ state, router }: { state: AppState; router: Router }) {
+        Object.assign(
+            this,
+            internalAnchor({ path: '/environment/esm-servers', router }),
+        )
+        this.children = [
+            {
+                source$: state.environment$.pipe(
+                    map((env) => env.youwolEnvironment.proxiedEsmServers),
+                ),
+                vdomMap: (proxieds: Routers.Environment.ProxiedBackend[]) => {
+                    return proxieds.length == 0
+                        ? { tag: 'i' }
+                        : { tag: 'i', class: 'fas fa-laptop-code mr-1' }
                 },
             },
         ]
