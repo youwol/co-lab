@@ -119,13 +119,13 @@ const entries = {
 export const setup = {
     name:'@youwol/co-lab',
         assetId:'QHlvdXdvbC9jby1sYWI=',
-    version:'0.4.2-wip',
+    version:'0.5.0-wip',
     shortDescription:"The YouWol's collaborative laboratory application.",
     developerDocumentation:'https://platform.youwol.com/applications/@youwol/cdn-explorer/latest?package=@youwol/co-lab&tab=doc',
     npmPackage:'https://www.npmjs.com/package/@youwol/co-lab',
     sourceGithub:'https://github.com/youwol/co-lab',
     userGuide:'https://l.youwol.com/doc/@youwol/co-lab',
-    apiVersion:'04',
+    apiVersion:'05',
     runTimeDependencies,
     externals,
     exportedSymbols,
@@ -150,7 +150,7 @@ export const setup = {
             modules,
             scripts,
         }).then(() => {
-            return window[`@youwol/co-lab_APIv04`]
+            return window[`@youwol/co-lab_APIv05`]
         })
     },
     installAuxiliaryModule: ({name, cdnClient, installParameters}:{
@@ -165,7 +165,7 @@ export const setup = {
         const parameters = installParameters || {}
         const scripts = [
             ...(parameters.scripts || []),
-            `@youwol/co-lab#0.4.2-wip~dist/@youwol/co-lab/${entry.name}.js`
+            `@youwol/co-lab#0.5.0-wip~dist/@youwol/co-lab/${entry.name}.js`
         ]
         const modules = [
             ...(parameters.modules || []),
@@ -176,7 +176,7 @@ export const setup = {
             modules,
             scripts,
         }).then(() => {
-            return window[`@youwol/co-lab/${entry.name}_APIv04`]
+            return window[`@youwol/co-lab/${entry.name}_APIv05`]
         })
     },
     getCdnDependencies(name?: string){
