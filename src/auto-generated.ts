@@ -3,8 +3,8 @@ const runTimeDependencies = {
     "externals": {
         "@floating-ui/dom": "^1.6.3",
         "@youwol/http-clients": "^3.0.0",
-        "@youwol/http-primitives": "^0.2.3",
-        "@youwol/local-youwol-client": "^0.3.0",
+        "@youwol/http-primitives": "^0.2.5",
+        "@youwol/local-youwol-client": "^0.3.1",
         "@youwol/mkdocs-ts": "^0.5.2",
         "@youwol/os-core": "^0.2.0",
         "@youwol/rx-code-mirror-editors": "0.5.0",
