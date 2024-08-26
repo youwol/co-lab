@@ -154,7 +154,7 @@ export class DagFlowView implements VirtualDOM<'div'> {
         },
         menuActions: {
             attributes: {
-                class: 'menu-actions  d-none',
+                class: 'menu-actions',
                 transform: (d) =>
                     `translate( -${d.data.hasView ? 5 : 0}, ${
                         DagFlowView.nodeRadius + 15
@@ -334,10 +334,13 @@ export class DagFlowView implements VirtualDOM<'div'> {
             this.defaultStyle.title,
         )
 
-        const nodesMenuActions = withDefaultStyleAttributes(
-            nodes.append('g'),
-            this.defaultStyle.menuActions,
-        )
+        const nodesMenuActions = withDefaultStyleAttributes(nodes.append('g'), {
+            attributes: {
+                ...this.defaultStyle.menuActions.attributes,
+                class: 'menu-actions d-none',
+            },
+        })
+
         withDefaultStyleAttributes(
             nodesMenuActions.append('text').text('\uf04b'),
             this.defaultStyle.run,
@@ -372,7 +375,7 @@ export class DagFlowView implements VirtualDOM<'div'> {
             'class',
             isSelected
                 ? `${this.defaultStyle.menuActions.attributes.class} d-block`
-                : `${this.defaultStyle.menuActions.attributes.class}`,
+                : `${this.defaultStyle.menuActions.attributes.class} d-none`,
         )
 
         event.circle.attr(

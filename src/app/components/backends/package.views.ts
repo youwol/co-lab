@@ -220,7 +220,7 @@ class UninstallButton implements VirtualDOM<'div'> {
         this.children = [
             {
                 tag: 'i',
-                class: 'fas fa-ban mr-1',
+                class: 'fas fa-ban me-1',
             },
             {
                 tag: 'div',

@@ -241,7 +241,7 @@ export class GenerateButton implements VirtualDOM<'div'> {
                 class: {
                     source$: creating$,
                     vdomMap: (creating) =>
-                        creating ? 'fas fa-spinner fa-spin ml-1' : '',
+                        creating ? 'fas fa-spinner fa-spin ms-1' : '',
                 },
             },
         ]

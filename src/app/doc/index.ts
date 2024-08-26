@@ -4,7 +4,7 @@ import { pyYwDocLink } from '../common/py-yw-references.view'
 
 export const navigation = (): Navigation => ({
     name: 'Doc',
-    decoration: { icon: { tag: 'i', class: 'fas fa-book mr-2' } },
+    decoration: { icon: { tag: 'i', class: 'fas fa-book me-2' } },
     tableOfContent: Views.tocView,
     html: ({ router }) => new PageView({ router }),
 })

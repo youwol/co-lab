@@ -11,7 +11,7 @@ const runTimeDependencies = {
         "@youwol/rx-tree-views": "^0.3.1",
         "@youwol/rx-vdom": "^1.0.1",
         "@youwol/webpm-client": "^3.0.0",
-        "bootstrap": "^4.4.1",
+        "bootstrap": "^5.3.0",
         "d3": "^7.7.0",
         "rxjs": "^7.5.6"
     },
@@ -30,7 +30,7 @@ const externals = {
     "@youwol/rx-tree-views": "window['@youwol/rx-tree-views_APIv03']",
     "@youwol/rx-vdom": "window['@youwol/rx-vdom_APIv1']",
     "@youwol/webpm-client": "window['@youwol/webpm-client_APIv3']",
-    "bootstrap": "window['bootstrap_APIv4']",
+    "bootstrap": "window['bootstrap_APIv5']",
     "d3": "window['d3_APIv7']",
     "rxjs": "window['rxjs_APIv7']",
     "rxjs/fetch": "window['rxjs_APIv7']['fetch']",
@@ -78,7 +78,7 @@ const exportedSymbols = {
         "exportedSymbol": "@youwol/webpm-client"
     },
     "bootstrap": {
-        "apiKey": "4",
+        "apiKey": "5",
         "exportedSymbol": "bootstrap"
     },
     "d3": {

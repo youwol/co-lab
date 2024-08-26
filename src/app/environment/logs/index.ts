@@ -7,7 +7,7 @@ import * as pyYw from '@youwol/local-youwol-client'
 
 export const navigation = (appState: AppState): Navigation => ({
     name: 'Logs',
-    decoration: { icon: { tag: 'i', class: 'fas fa-bug mr-2' } },
+    decoration: { icon: { tag: 'i', class: 'fas fa-bug me-2' } },
     tableOfContent: Views.tocView,
     html: ({ router }) => new PageView({ router, appState }),
 })

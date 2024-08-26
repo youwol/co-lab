@@ -38,7 +38,7 @@ export const classesButton =
 
 export class NavIconSvg implements VirtualDOM<'div'> {
     public readonly tag = 'div'
-    public readonly class = 'mr-2'
+    public readonly class = 'me-2'
     public readonly style: CSSAttribute
     constructor({ filename }: { filename: string }) {
         const basePath = `/api/assets-gateway/cdn-backend/resources/${setup.assetId}/${setup.version}`
@@ -86,7 +86,7 @@ export class CoLabLogo implements VirtualDOM<'a'> {
                     },
                     {
                         tag: 'div',
-                        class: ' mr-1 fas fa-globe',
+                        class: ' me-1 fas fa-globe',
                         style: {
                             fontSize: '12px',
                             fontStyle: 'italic',

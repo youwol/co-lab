@@ -11,7 +11,7 @@ export const navigation = (appState: AppState): Navigation => ({
     decoration: {
         icon: {
             tag: 'div',
-            class: 'fas fa-server mr-2',
+            class: 'fas fa-server me-2',
         },
     },
     html: ({ router }) => new PageView({ router, appState }),

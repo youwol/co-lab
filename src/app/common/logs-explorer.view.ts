@@ -168,7 +168,7 @@ const refreshButton = (state: LogsExplorerState): AnyVirtualDOM => {
                 isFetching
                     ? 'fas fa-spinner fa-spin'
                     : 'fas fa-sync  fv-pointer',
-            wrapper: (d) => `${d} ml-1`,
+            wrapper: (d) => `${d} ms-1`,
         },
         onclick: () => state.refresh(),
     }
@@ -381,18 +381,18 @@ class LogTitleView implements VirtualDOM<'div'> {
             .map((label) => {
                 return {
                     tag: 'div',
-                    class: `${labelLogIcons[label]} mr-1`,
+                    class: `${labelLogIcons[label]} me-1`,
                 }
             })
         const stepInto = stepIntoIcon(this.state, this.log)
         const labelStatus = {
             Failed: {
                 tag: 'i' as const,
-                class: 'fas fa-times text-danger mr-1',
+                class: 'fas fa-times text-danger me-1',
             },
             Unresolved: {
                 tag: 'i' as const,
-                class: 'fas fa-question-circle text-warning mr-1',
+                class: 'fas fa-question-circle text-warning me-1',
             },
         }
         const labels = [

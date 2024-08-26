@@ -54,7 +54,7 @@ export class NotificationsView implements VirtualDOM<'div'> {
                             source$: notifState.backendEvents.installing$,
                             vdomMap: (installing: unknown[]) => {
                                 return installing.length > 0
-                                    ? 'fas fa-plug text-success fv-blink mr-1'
+                                    ? 'fas fa-plug text-success fv-blink me-1'
                                     : 'd-none'
                             },
                         },
@@ -135,12 +135,8 @@ export class UserBadgeDropdownView implements VirtualDOM<'div'> {
             style: {
                 backgroundColor: '#58a4b0',
             },
-            id: 'dropdownMenuButton',
             customAttributes: {
-                dataToggle: 'dropdown',
-                dataAutoClose: 'outside',
-                ariaExpanded: false,
-                ariaHaspopup: 'true',
+                dataBsToggle: 'dropdown',
             },
             children: [new RegisteredBadgeView(sessionInfo)],
         }
@@ -197,7 +193,7 @@ export class CloudEnvironmentView implements VirtualDOM<'div'> {
                         class: `fas fa-cloud ${
                             remote.envId === connection.envId
                                 ? 'text-success'
-                                : 'text-muted'
+                                : 'text-secondary'
                         }`,
                     },
                     {
@@ -370,7 +366,7 @@ export class BackendServingView implements VirtualDOM<'a'> {
                 vdomMap: (proxieds: Routers.Environment.ProxiedBackend[]) => {
                     return proxieds.length == 0
                         ? { tag: 'i' }
-                        : { tag: 'i', class: 'fas fa-network-wired mr-1' }
+                        : { tag: 'i', class: 'fas fa-network-wired me-1' }
                 },
             },
         ]
@@ -414,7 +410,7 @@ export class EsmServingView implements VirtualDOM<'a'> {
                 vdomMap: (proxieds: Routers.Environment.ProxiedBackend[]) => {
                     return proxieds.length == 0
                         ? { tag: 'i' }
-                        : { tag: 'i', class: 'fas fa-laptop-code mr-1' }
+                        : { tag: 'i', class: 'fas fa-laptop-code me-1' }
                 },
             },
         ]

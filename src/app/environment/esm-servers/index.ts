@@ -8,7 +8,7 @@ export { State } from './state'
 
 export const navigation = (appState: AppState): Navigation => ({
     name: 'ESM',
-    decoration: { icon: { tag: 'i', class: 'fas fa-server mr-2' } },
+    decoration: { icon: { tag: 'i', class: 'fas fa-server me-2' } },
     tableOfContent: Views.tocView,
     html: ({ router }) => new PageView({ router, appState }),
     '...': appState.environment$.pipe(
@@ -34,7 +34,7 @@ function lazyResolver(
                     decoration: {
                         icon: {
                             tag: 'i' as const,
-                            class: 'fas fa-laptop-code mr-2',
+                            class: 'fas fa-laptop-code me-2',
                         },
                     },
                     leaf: true,
