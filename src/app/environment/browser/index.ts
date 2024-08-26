@@ -12,7 +12,7 @@ export const navigation = (appState: AppState): Navigation => ({
     name: 'Browser',
     html: ({ router }) => new PageView({ router, appState }),
     tableOfContent: Views.tocView,
-    decoration: { icon: { tag: 'i', class: 'fas fa-window-maximize mr-2' } },
+    decoration: { icon: { tag: 'i', class: 'fas fa-window-maximize me-2' } },
 })
 
 export class PageView implements VirtualDOM<'div'> {
@@ -350,13 +350,10 @@ class DropDownPathsView implements VirtualDOM<'div'> {
                     {
                         tag: 'div',
                         class: 'dropdown-menu p-0',
-                        customAttributes: {
-                            ariaLabelledby: 'dropdownMenuButton',
-                        },
                         children: Object.keys(data).map((key) => {
                             return {
                                 tag: 'button' as const,
-                                class: 'btn btn-sm btn-info w-100',
+                                class: 'btn btn-sm btn-light w-100 border',
                                 innerText: key,
                                 style: {
                                     display: 'block',
@@ -393,13 +390,9 @@ class DropDownPathsView implements VirtualDOM<'div'> {
     private headerButton(title: string): AnyVirtualDOM {
         return {
             tag: 'button',
-            class: 'btn btn-secondary dropdown-toggle d-flex align-items-center bg-info',
-            id: 'dropdownMenuButton',
+            class: 'btn btn-sm dropdown-toggle d-flex align-items-center bg-light',
             customAttributes: {
-                dataToggle: 'dropdown',
-                dataAutoClose: 'outside',
-                ariaExpanded: false,
-                ariaHaspopup: 'true',
+                dataBsToggle: 'dropdown',
             },
             children: [{ tag: 'div', innerText: title }],
         }

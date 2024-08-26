@@ -288,7 +288,7 @@ export class ManifestView implements VirtualDOM<'div'> {
                     tag: 'div',
                     style: { width: 'fit-content' },
                     innerText: 'Fingerprint',
-                    class: 'mr-3 mb-2 border-bottom',
+                    class: 'me-3 mb-2 border-bottom',
                 },
                 {
                     tag: 'div',
@@ -306,7 +306,7 @@ export class ManifestView implements VirtualDOM<'div'> {
                     tag: 'div',
                     style: { width: 'fit-content' },
                     innerText: 'Source files',
-                    class: 'mr-3 mb-2 border-bottom',
+                    class: 'me-3 mb-2 border-bottom',
                 },
                 new DataView(
                     manifest.files.map((f) => f.replace(project.path, '')),
@@ -323,7 +323,7 @@ export class ManifestView implements VirtualDOM<'div'> {
                     tag: 'div',
                     style: { width: 'fit-content' },
                     innerText: 'Outputs',
-                    class: 'mr-3 mb-2  border-bottom',
+                    class: 'me-3 mb-2  border-bottom',
                 },
                 {
                     tag: 'div',

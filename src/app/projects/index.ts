@@ -19,7 +19,7 @@ const refresh$ = new BehaviorSubject(false)
 export const navigation = (appState: AppState): Navigation => ({
     name: 'Projects',
     decoration: {
-        icon: { tag: 'i', class: 'fas  fa-boxes mr-2' },
+        icon: { tag: 'i', class: 'fas  fa-boxes me-2' },
         actions: [refreshAction(appState)],
     },
     tableOfContent: Views.tocView,

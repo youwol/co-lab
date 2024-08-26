@@ -8,7 +8,7 @@ export const installIcon: (statusIcon: AnyVirtualDOM) => AnyVirtualDOM = (
     children: [
         {
             tag: 'i',
-            class: 'fas fa-plug mr-1',
+            class: 'fas fa-plug me-1',
         },
         {
             tag: 'div',
@@ -28,7 +28,7 @@ export const downloadIcon: (statusIcon: AnyVirtualDOM) => AnyVirtualDOM = (
     children: [
         {
             tag: 'i',
-            class: 'fas fa-download mr-1',
+            class: 'fas fa-download me-1',
         },
         {
             tag: 'div',

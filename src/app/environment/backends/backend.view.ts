@@ -75,6 +75,7 @@ You can find the associated component in your database [here](@nav/components/ba
                     header: () => {
                         return new ComponentCrossLinksView({
                             appState,
+                            type: 'backend',
                             component: backend.name,
                         })
                     },
@@ -149,7 +150,7 @@ export class TerminateButton implements VirtualDOM<'button'> {
         this.children = [
             {
                 tag: 'i',
-                class: 'fas fa-ban mr-1',
+                class: 'fas fa-ban me-1',
             },
             {
                 tag: 'div',

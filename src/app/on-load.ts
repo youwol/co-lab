@@ -9,6 +9,7 @@ import {
     BackendServingView,
     UserBadgeDropdownView,
     NotificationsView,
+    EsmServingView,
 } from './top-banner.view'
 
 GlobalMarkdownViews.factory = {
@@ -88,6 +89,10 @@ document.getElementById('content').appendChild(
                                             router,
                                         }),
                                         new BackendServingView({
+                                            state: appState,
+                                            router,
+                                        }),
+                                        new EsmServingView({
                                             state: appState,
                                             router,
                                         }),

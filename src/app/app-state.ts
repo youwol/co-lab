@@ -8,6 +8,7 @@ import { filter, map, mergeMap, shareReplay, take, tap } from 'rxjs/operators'
 import * as Projects from './projects'
 import * as Components from './components'
 import * as Backends from './environment/backends'
+import * as EsmServers from './environment/esm-servers'
 import * as Environment from './environment'
 import * as Notification from './environment/notifications'
 import * as Explorer from './explorer'
@@ -98,6 +99,11 @@ export class AppState {
     /**
      * @group State
      */
+    public readonly esmServersState: EsmServers.State
+
+    /**
+     * @group State
+     */
     public readonly environmentState: Environment.State
 
     /**
@@ -126,6 +132,7 @@ export class AppState {
 
         this.projectsState = new Projects.State({ appState: this })
         this.cdnState = new Components.State({ appState: this })
+        this.esmServersState = new EsmServers.State({ appState: this })
         this.environmentState = new Environment.State({ appState: this })
 
         this.projectsState.projects$.subscribe(() => {})

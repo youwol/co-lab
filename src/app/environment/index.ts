@@ -5,6 +5,7 @@ import * as YwConfiguration from './yw-configuration'
 import * as Profiles from './profiles'
 import * as Databases from './databases'
 import * as Backends from './backends'
+import * as EsmServers from './esm-servers'
 import * as Browser from './browser'
 import * as Notifications from './notifications'
 import { ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
@@ -17,7 +18,7 @@ export * from './state'
 export const navigation = (appState: AppState): Navigation => ({
     name: 'Environment',
     tableOfContent: Views.tocView,
-    decoration: { icon: { tag: 'i', class: 'fas fa-tasks mr-2' } },
+    decoration: { icon: { tag: 'i', class: 'fas fa-tasks me-2' } },
     html: ({ router }) => new PageView({ appState, router }),
     '/yw-configuration': YwConfiguration.navigation(appState),
     '/profiles': Profiles.navigation(appState),
@@ -25,6 +26,7 @@ export const navigation = (appState: AppState): Navigation => ({
     '/browser': Browser.navigation(appState),
     '/logs': Logs.navigation(appState),
     '/backends': Backends.navigation(appState),
+    '/esm-servers': EsmServers.navigation(appState),
     '/notifications': Notifications.navigation(appState),
 })
 

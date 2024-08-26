@@ -38,7 +38,7 @@ export const classesButton =
 
 export class NavIconSvg implements VirtualDOM<'div'> {
     public readonly tag = 'div'
-    public readonly class = 'mr-2'
+    public readonly class = 'me-2'
     public readonly style: CSSAttribute
     constructor({ filename }: { filename: string }) {
         const basePath = `/api/assets-gateway/cdn-backend/resources/${setup.assetId}/${setup.version}`
@@ -86,7 +86,7 @@ export class CoLabLogo implements VirtualDOM<'a'> {
                     },
                     {
                         tag: 'div',
-                        class: ' mr-1 fas fa-globe',
+                        class: ' me-1 fas fa-globe',
                         style: {
                             fontSize: '12px',
                             fontStyle: 'italic',
@@ -469,7 +469,11 @@ export class ComponentCrossLinksView implements VirtualDOM<'div'> {
     public readonly children: ChildrenLike
     public readonly appState: AppState
     public readonly component: string
-    constructor(params: { component: string; appState: AppState }) {
+    constructor(params: {
+        component: string
+        type: 'backend' | 'js-wasm' | 'pyodide'
+        appState: AppState
+    }) {
         Object.assign(this, params)
         const { component, appState } = params
         const client = new AssetsGateway.Client().explorer
@@ -501,7 +505,7 @@ export class ComponentCrossLinksView implements VirtualDOM<'div'> {
                         undefined
                     return this.linkView({
                         icon: 'fa-microchip',
-                        nav: `components/backends/${window.btoa(component)}`,
+                        nav: `components/${params.type}/${window.btoa(component)}`,
                         enabled,
                     })
                 },

@@ -184,7 +184,7 @@ export const example1 = `
                 left: '10px'
             },
             children:[
-                { tag: 'div', class: 'fas fa-cog fa-spin mr-2'},
+                { tag: 'div', class: 'fas fa-cog fa-spin me-2'},
                 { tag: 'div', innerText: message },
             ]
         })

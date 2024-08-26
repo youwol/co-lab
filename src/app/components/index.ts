@@ -16,7 +16,7 @@ export * from './state'
 type Target = 'js/wasm' | 'backend' | 'pyodide'
 export const navigation = (appState: AppState): Navigation => ({
     name: 'Components',
-    decoration: { icon: { tag: 'i', class: 'fas  fa-microchip mr-2' } },
+    decoration: { icon: { tag: 'i', class: 'fas  fa-microchip me-2' } },
     html: ({ router }) => new PageView({ router, appState }),
     '/js-wasm': JsWasm.navigation(appState),
     '/pyodide': Pyodide.navigation(appState),
