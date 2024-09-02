@@ -45,8 +45,8 @@ installed before they can be utilized.
 Since the majority of custom backends provide a \`/docs\` endpoint (though it's not mandatory, it's highly recommended), 
 you can easily access the API documentation for any backends within the YouWol ecosystem that you have permission to 
 access. Simply open a URL in the format \`/backends/$NAME/$VERSION/docs\`.
-For example, you can view the documentation for a backend named \`demo_yw_backend\` at version \`0.1.0\` by clicking 
-on this <a target="_blank" href="/backends/demo_yw_backend/0.1.0/docs">link</a>.
+For example, you can view the documentation for a backend named \`demo_yw_backend\` at its latest version
+by clicking on this <a target="_blank" href="/backends/demo_yw_backend/*/docs">link</a>.
 
 When consuming a backend from JavaScript, a default client is provided to streamline the process of accessing its API.
 You can explore an interactive example showcasing the installation and usage of custom backends from JavaScript by 

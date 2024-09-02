@@ -552,7 +552,7 @@ export const tryLibScript = (packageName: string, version: string) => `
     <body id="content"></body>    
     <script type="module">
         const {lib} = await webpm.install({
-            modules:['${packageName}#${version} as lib'],
+            esm:['${packageName}#${version} as lib'],
             displayLoadingScreen: true,
         })
         console.log(lib)
