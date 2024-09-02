@@ -103,7 +103,7 @@ export const example3 = `
         const WPool = await webpm.installWorkersPoolModule()
         
         const {rxVDOM, rxjs} = await webpm.install({
-            modules: ['@youwol/rx-vdom#^1.0.0 as rxVDOM', 'rxjs#^7.5.6 as rxjs'],
+            esm: ['@youwol/rx-vdom#^1.0.0 as rxVDOM', 'rxjs#^7.5.6 as rxjs'],
             css: [
                 'bootstrap#^4.4.0~bootstrap.min.css',                
                 'fontawesome#5.12.1~css/all.min.css', 
@@ -113,7 +113,6 @@ export const example3 = `
         })
         const pool = new WPool.WorkersPool({
             install:{
-                modules:[],
                 pyodide:{
                     version: "0.25.0",
                     modules: [ "numpy" ],
