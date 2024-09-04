@@ -216,7 +216,7 @@ export class PageView implements VirtualDOM<'div'> {
     public readonly tag = 'div'
     public readonly children: ChildrenLike
 
-    static warmUp = () => {
+    static readonly warmUp = () => {
         combineLatest([
             Installer.getApplicationsInfo$(),
             PreferencesFacade.getPreferences$(),
