@@ -58,7 +58,6 @@ ${srcConsoleOutputs}
                     header: () => {
                         return new ComponentCrossLinksView({
                             appState,
-                            type: 'js-wasm',
                             component: esmServer.package,
                         })
                     },

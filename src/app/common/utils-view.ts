@@ -465,15 +465,12 @@ export const spinnerView: AnyVirtualDOM = {
 
 export class ComponentCrossLinksView implements VirtualDOM<'div'> {
     public readonly tag = 'div'
-    public readonly class = 'd-flex align-items-center w-100 rounded p-1'
+    public readonly class =
+        'colab-ComponentCrossLinksView d-flex align-items-center w-100 rounded p-1'
     public readonly children: ChildrenLike
     public readonly appState: AppState
     public readonly component: string
-    constructor(params: {
-        component: string
-        type: 'backend' | 'js-wasm' | 'pyodide'
-        appState: AppState
-    }) {
+    constructor(params: { component: string; appState: AppState }) {
         Object.assign(this, params)
         const { component, appState } = params
         const client = new AssetsGateway.Client().explorer
@@ -500,31 +497,45 @@ export class ComponentCrossLinksView implements VirtualDOM<'div'> {
             {
                 source$: appState.cdnState.status$,
                 vdomMap: (status: Routers.LocalCdn.CdnStatusResponse) => {
-                    const enabled =
-                        status.packages.find((p) => p.name === component) !==
-                        undefined
+                    const target = status.packages.find(
+                        (p) => p.name === component,
+                    )
+                    if (!target) {
+                        return this.linkView({
+                            icon: 'fa-microchip',
+                            nav: '',
+                            enabled: component !== undefined,
+                        })
+                    }
+                    const latest = target.versions.slice(-1)[0]
+                    const type = {
+                        'js/wasm': 'js-wasm',
+                        pyodide: 'pyodide',
+                        backend: 'backends',
+                    }[latest.type]
                     return this.linkView({
                         icon: 'fa-microchip',
-                        nav: `components/${params.type}/${window.btoa(component)}`,
-                        enabled,
+                        nav: `components/${type}/${window.btoa(component)}`,
+                        enabled: true,
                     })
                 },
             },
             sep,
             {
-                source$: client
-                    .getItem$({
-                        itemId,
-                    })
-                    .pipe(
-                        onHTTPErrors(() => undefined),
-                        mergeMap((resp?: ExplorerBackend.ItemBase) => {
-                            if (resp === undefined) {
-                                return of(undefined)
-                            }
-                            return client.getPath$({ itemId })
+                source$: appState.cdnState.status$.pipe(
+                    mergeMap(() =>
+                        client.getItem$({
+                            itemId,
                         }),
                     ),
+                    onHTTPErrors(() => undefined),
+                    mergeMap((resp?: ExplorerBackend.ItemBase) => {
+                        if (resp === undefined) {
+                            return of(undefined)
+                        }
+                        return client.getPath$({ itemId })
+                    }),
+                ),
                 vdomMap: (resp?: ExplorerBackend.PathBase) => {
                     let nav = ''
                     if (resp) {
@@ -540,6 +551,7 @@ export class ComponentCrossLinksView implements VirtualDOM<'div'> {
                         enabled: resp !== undefined,
                     })
                 },
+                untilFirst: { tag: 'div', class: 'fas fa-spinner fa-spin' },
             },
             sep,
             {

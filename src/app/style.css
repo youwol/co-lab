@@ -164,3 +164,7 @@ circle.pending {
 .page-explorer-item-view:hover .ctx-menu-handler {
     opacity: 1;
 }
+
+.colab-ComponentCrossLinksView a {
+    text-decoration: none;
+}
