@@ -4,13 +4,68 @@ import { parseMd, Router } from '@youwol/mkdocs-ts'
 import { DagFlowView } from './dag-flow.view'
 import { State } from './state'
 import { filterCtxMessage, raiseHTTPErrors } from '@youwol/http-primitives'
-import { FilesBrowserView, HdPathBookView } from '../common'
+import {
+    ComponentCrossLinksView,
+    FilesBrowserView,
+    HdPathBookView,
+} from '../common'
 import { ExpandableGroupView } from '../common/expandable-group.view'
 import { NewProjectFromTemplateView } from './new-project.view'
 import { debounceTime, merge, mergeMap, of } from 'rxjs'
 import { AppState } from '../app-state'
 import { SelectedStepView } from './project/selected-step.view'
 import { CdnLinkView, ExplorerLinkView } from '../common/links.view'
+import { map } from 'rxjs/operators'
+import { tryLibScript } from '../components/js-wasm/package.views'
+
+function extraProjectLinks(
+    appState: AppState,
+    project: Routers.Projects.Project,
+) {
+    if (!['application', 'library'].includes(project.pipeline.target.family)) {
+        return []
+    }
+    if (
+        project.pipeline.target.family === 'application' &&
+        !project.pipeline.target['execution']?.standalone
+    ) {
+        return []
+    }
+
+    return [
+        appState.cdnState.status$.pipe(
+            map((status) => {
+                const target = status.packages.find(
+                    (p) => p.name === project.name,
+                )
+                const version =
+                    target &&
+                    target.versions.find((v) => v.version === project.version)
+                if (!version) {
+                    return { icon: 'fas fa-play', enabled: false, nav: `` }
+                }
+                if (project.pipeline.target.family === 'application') {
+                    return {
+                        icon: 'fas fa-play',
+                        enabled: true,
+                        nav: `/applications/${project.name}/${project.version}`,
+                        hrefKind: 'external' as const,
+                    }
+                }
+                // it is a library
+                const uri = encodeURIComponent(
+                    tryLibScript(project.name, project.version),
+                )
+                return {
+                    icon: 'fas fa-play',
+                    enabled: true,
+                    nav: `/applications/@youwol/js-playground/latest?content=${uri}`,
+                    hrefKind: 'external' as const,
+                }
+            }),
+        ),
+    ]
+}
 
 export class ProjectView implements VirtualDOM<'div'> {
     public readonly tag = 'div'
@@ -32,20 +87,16 @@ export class ProjectView implements VirtualDOM<'div'> {
                 src: `
 # ${project.name}
 
+<header></header>
+
+---
+
 **Version**: ${project.version}
 
 <info>
 A project is a folder on your computer featuring a \`yw_pipeline.py\` file.
 
 </info>
-
-
-*  The project is located in your computer at:
-<projectFolder></projectFolder>
-
-*  <cdnLink></cdnLink>
-
-*  <explorerLink></explorerLink>
 
 ## Flow
 
@@ -66,6 +117,13 @@ Publishing a components means to publish all or a part of those artifacts.
 `,
                 router,
                 views: {
+                    header: () => {
+                        return new ComponentCrossLinksView({
+                            appState,
+                            component: project.name,
+                            withLinks: extraProjectLinks(appState, project),
+                        })
+                    },
                     projectFolder: () => {
                         return new HdPathBookView({
                             path: project.path,
