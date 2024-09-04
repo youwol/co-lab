@@ -1469,10 +1469,10 @@
     "@youwol/rx-vdom" "^1.0.1"
     rxjs "^7.5.6"
 
-"@youwol/mkdocs-ts@^0.5.2":
-  version "0.5.6"
-  resolved "https://registry.yarnpkg.com/@youwol/mkdocs-ts/-/mkdocs-ts-0.5.6.tgz#fa29016f34b61e89540eb8c206c08cf0313fd410"
-  integrity sha512-w4NJfPAVX+PGHxKEjk71zfd2msLp/2ZBIqCyc4KbhdN3+85FP3/sTmnmieNSsGrnLYtiURr5sV3Z/9Uf5uvxuQ==
+"@youwol/mkdocs-ts@^0.6.0":
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/@youwol/mkdocs-ts/-/mkdocs-ts-0.6.0.tgz#bc1a54b01328c3cec5f5a8c673e8f894796e3122"
+  integrity sha512-LDROLf0CY98CHzFBzOTi8gZckEdTAbUKUjn0IXNv44t5by2EJCWQjfF7ieYvgYgfE5VhEKWzUab/gRCMUp7J5A==
   dependencies:
     "@youwol/http-primitives" "^0.2.3"
     "@youwol/os-top-banner" "^0.2.0"
@@ -1513,7 +1513,7 @@
     prettier "^3.2.5"
     prettier-plugin-properties "^0.3.0"
 
-"@youwol/rx-code-mirror-editors@0.5.0":
+"@youwol/rx-code-mirror-editors@^0.5.0":
   version "0.5.0"
   resolved "https://registry.yarnpkg.com/@youwol/rx-code-mirror-editors/-/rx-code-mirror-editors-0.5.0.tgz#9435177a2caa4d4746131db579aef6bb46b8c6cd"
   integrity sha512-64JpkgJy7JhSVwFCtX79FTgKSjuvntf/QDVadDdSh/mHJXFipBHEbquTxFfFKxbYiAph2Zz6my0z1oXBKCinIw==
