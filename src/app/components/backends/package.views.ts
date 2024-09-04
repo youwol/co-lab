@@ -30,7 +30,7 @@ export class BackendView extends PackageView {
         router: Router
         packageId: string
     }) {
-        super({ ...params, cdnState: params.appState.cdnState })
+        super({ ...params, appState: params.appState })
         this.children.push(
             parseMd({
                 src: `

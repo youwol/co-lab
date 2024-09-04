@@ -21,7 +21,8 @@ import { AssetLightDescription } from '@youwol/os-core'
 import { parseMd, Router } from '@youwol/mkdocs-ts'
 import { ExplorerView } from '../package-explorer.view'
 import { map, mergeMap } from 'rxjs/operators'
-import { ExplorerLinkView } from '../../common/links.view'
+import { ComponentCrossLinksView } from '../../common'
+import { AppState } from '../../app-state'
 
 /**
  * @category View
@@ -30,7 +31,7 @@ export class PackageView implements VirtualDOM<'div'> {
     /**
      * @group States
      */
-    public readonly cdnState: State
+    public readonly appState: AppState
 
     /**
      * @group Immutable DOM Constants
@@ -53,22 +54,23 @@ export class PackageView implements VirtualDOM<'div'> {
 
     public readonly selectedVersion$ = new ReplaySubject<string>(1)
     constructor(params: {
-        cdnState: State
+        appState: AppState
         router: Router
         packageId: string
     }) {
         Object.assign(this, params)
-        this.cdnState.openPackage(this.packageId)
+        this.appState.cdnState.openPackage(this.packageId)
+        const packageName = window.atob(this.packageId)
         this.children = [
             parseMd({
                 src: `
-# ${window.atob(this.packageId)}          
+# ${packageName}          
 
-<linkExplorer></linkExplorer>
+<header></header>
+
+---
 
 ## Versions      
-
-**Select the version** from the table below:
 
 <versions></versions>
 
@@ -78,10 +80,10 @@ export class PackageView implements VirtualDOM<'div'> {
                 `,
                 router: params.router,
                 views: {
-                    linkExplorer: () => {
-                        return new ExplorerLinkView({
-                            router: params.router,
-                            name: window.atob(this.packageId),
+                    header: () => {
+                        return new ComponentCrossLinksView({
+                            appState: params.appState,
+                            component: packageName,
                         })
                     },
                     versions: () => ({
@@ -89,8 +91,9 @@ export class PackageView implements VirtualDOM<'div'> {
                         children: [
                             {
                                 source$:
-                                    this.cdnState.packagesEvent[this.packageId]
-                                        .info$,
+                                    this.appState.cdnState.packagesEvent[
+                                        this.packageId
+                                    ].info$,
                                 vdomMap: (
                                     packageInfo: pyYw.Routers.LocalCdn.CdnPackage,
                                 ) => {
@@ -99,7 +102,7 @@ export class PackageView implements VirtualDOM<'div'> {
                                             .version,
                                     )
                                     return new VersionsView({
-                                        cdnState: this.cdnState,
+                                        cdnState: this.appState.cdnState,
                                         package: packageInfo,
                                         selectedVersion$: this.selectedVersion$,
                                     })
@@ -231,115 +234,27 @@ export class VersionsView implements VirtualDOM<'div'> {
 
         this.children = [
             {
-                tag: 'div',
-                class: 'd-flex justify-content-around w-100',
-                children: [
-                    {
-                        tag: 'div',
-                        class: 'd-flex flex-column h-100 px-2 w-100',
-                        children: [
-                            this.packageDetails(this.package),
-                            {
-                                tag: 'br',
-                            },
-                        ],
-                    },
-                ],
+                tag: 'select',
+                class: 'form-select',
+                customAttributes: {
+                    ariaLabel: 'Default select example',
+                },
+                children: params.package.versions.reverse().map((p) => {
+                    return {
+                        tag: 'option',
+                        innerText: p.version,
+                        value: p.version,
+                        selected: {
+                            source$: params.selectedVersion$,
+                            vdomMap: (v) => v === p.version,
+                        },
+                    }
+                }),
+                onchange: (ev) => {
+                    params.selectedVersion$.next(ev.target['value'])
+                },
             },
         ]
-    }
-
-    packageDetails(pack: pyYw.Routers.LocalCdn.CdnPackage): VirtualDOM<'div'> {
-        return {
-            tag: 'div' as const,
-            class: 'overflow-auto',
-            style: {
-                maxHeight: '50%',
-                width: 'fit-content',
-            },
-            children: [
-                {
-                    tag: 'table',
-                    class: 'w-100 text-center',
-                    style: { maxHeight: '100%' },
-                    children: [
-                        {
-                            tag: 'thead',
-                            children: [
-                                {
-                                    tag: 'tr',
-                                    class: '',
-                                    children: [
-                                        {
-                                            tag: 'td',
-                                            innerText: 'Version',
-                                            class: 'px-2',
-                                        },
-                                        {
-                                            tag: 'td',
-                                            innerText: 'files count',
-                                            class: 'px-2',
-                                        },
-                                        {
-                                            tag: 'td',
-                                            innerText: 'Entry-point size (kB)',
-                                            class: 'px-2',
-                                        },
-                                    ],
-                                },
-                            ],
-                        },
-                        {
-                            tag: 'tbody',
-                            children: pack.versions.map(
-                                (
-                                    packVersion: pyYw.Routers.LocalCdn.CdnVersion,
-                                ): AnyVirtualDOM => {
-                                    return {
-                                        tag: 'tr',
-                                        class: {
-                                            source$: this.selectedVersion$,
-                                            vdomMap: (s): string =>
-                                                s == packVersion.version
-                                                    ? 'fv-text-focus'
-                                                    : '',
-                                            wrapper: (d) =>
-                                                `${d} fv-hover-bg-background-alt fv-pointer fv-hover-text-primary`,
-                                        },
-                                        onclick: () => {
-                                            this.selectedVersion$.next(
-                                                packVersion.version,
-                                            )
-                                        },
-                                        children: [
-                                            {
-                                                tag: 'td',
-                                                innerText: packVersion.version,
-                                                class: 'px-2',
-                                            },
-                                            {
-                                                tag: 'td',
-                                                innerText: `${packVersion.filesCount}`,
-                                                class: 'px-2',
-                                            },
-                                            {
-                                                tag: 'td',
-                                                innerText: `${
-                                                    Math.floor(
-                                                        packVersion.entryPointSize,
-                                                    ) / 1000
-                                                }`,
-                                                class: 'px-2',
-                                            },
-                                        ],
-                                    }
-                                },
-                            ),
-                        },
-                    ],
-                },
-            ],
-        }
     }
 }
 
@@ -464,7 +379,7 @@ export class LinkLaunchAppLib implements VirtualDOM<'div'> {
                     switchMap((version) => {
                         return from(
                             fetch(
-                                `/api/assets-gateway/raw/package/${packageId}/${version}/.yw_metadata.json`,
+                                `/api/assets-gateway/cdn-backend/resources/${packageId}/${version}/.yw_metadata.json`,
                             )
                                 .then((resp) => resp.json())
                                 .then((resp) => ({
