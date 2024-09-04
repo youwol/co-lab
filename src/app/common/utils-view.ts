@@ -463,6 +463,13 @@ export const spinnerView: AnyVirtualDOM = {
     class: 'fas fa-spinner fa-spin',
 }
 
+export type LinkInput = {
+    icon: string
+    enabled: boolean
+    nav: string
+    hrefKind?: 'internal' | 'external'
+}
+
 export class ComponentCrossLinksView implements VirtualDOM<'div'> {
     public readonly tag = 'div'
     public readonly class =
@@ -470,7 +477,13 @@ export class ComponentCrossLinksView implements VirtualDOM<'div'> {
     public readonly children: ChildrenLike
     public readonly appState: AppState
     public readonly component: string
-    constructor(params: { component: string; appState: AppState }) {
+    public readonly withLinks: Observable<LinkInput>[] = []
+
+    constructor(params: {
+        component: string
+        appState: AppState
+        withLinks?: Observable<LinkInput>[]
+    }) {
         Object.assign(this, params)
         const { component, appState } = params
         const client = new AssetsGateway.Client().explorer
@@ -478,6 +491,10 @@ export class ComponentCrossLinksView implements VirtualDOM<'div'> {
         const sep: AnyVirtualDOM = {
             tag: 'i',
             class: 'mx-2',
+        }
+        const untilFirst: AnyVirtualDOM = {
+            tag: 'div',
+            class: 'fas fa-spinner fa-spin',
         }
         this.children = [
             {
@@ -551,7 +568,7 @@ export class ComponentCrossLinksView implements VirtualDOM<'div'> {
                         enabled: resp !== undefined,
                     })
                 },
-                untilFirst: { tag: 'div', class: 'fas fa-spinner fa-spin' },
+                untilFirst,
             },
             sep,
             {
@@ -600,6 +617,19 @@ export class ComponentCrossLinksView implements VirtualDOM<'div'> {
                     })
                 },
             },
+            ...this.withLinks
+                .map((linkInput$) => {
+                    return [
+                        sep,
+                        {
+                            source$: linkInput$,
+                            vdomMap: (linkInput: LinkInput): AnyVirtualDOM =>
+                                this.linkView(linkInput),
+                            untilFirst,
+                        },
+                    ]
+                })
+                .flat(),
         ]
     }
 
@@ -608,22 +638,29 @@ export class ComponentCrossLinksView implements VirtualDOM<'div'> {
         enabled,
         nav,
         onclick,
+        hrefKind,
     }: {
         icon: string
         enabled: boolean
         nav?: string
         onclick?: (ev) => void
+        hrefKind?: 'internal' | 'external'
     }): AnyVirtualDOM {
+        const href = hrefKind && hrefKind === 'external' ? nav : `@nav/${nav}`
         if (enabled) {
             return {
                 tag: 'a',
-                href: onclick ? undefined : `@nav/${nav}`,
+                href: onclick ? undefined : href,
                 class: `fas ${icon} `,
                 onclick: (ev: MouseEvent) => {
+                    ev.preventDefault()
                     if (onclick) {
                         return onclick(ev)
                     }
-                    ev.preventDefault()
+                    if (hrefKind === 'external') {
+                        window.open(href, '_blank')
+                        return
+                    }
                     this.appState.router.navigateTo({
                         path: nav,
                     })
