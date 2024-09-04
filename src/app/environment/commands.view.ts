@@ -20,7 +20,7 @@ export class CommandsListView implements VirtualDOM<'div'> {
     /**
      * @group Immutable DOM Constants
      */
-    public readonly class = 'pl-4 flex-grow-1 overflow-auto'
+    public readonly class = 'ps-4 flex-grow-1 overflow-auto'
 
     /**
      * @group Immutable DOM Constants

@@ -290,7 +290,7 @@ export class NewProjectsCard implements VirtualDOM<'div'> {
         this.children = [
             {
                 tag: 'div',
-                class: 'pl-4 flex-grow-1 overflow-auto',
+                class: 'ps-4 flex-grow-1 overflow-auto',
                 children: {
                     policy: 'replace',
                     source$: projectsState.appState.environment$,

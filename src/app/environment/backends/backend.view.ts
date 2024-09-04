@@ -265,7 +265,7 @@ export class ConfigView implements VirtualDOM<'div'> {
                                 },
                                 {
                                     tag: 'div',
-                                    class: 'pl-2 mkdocs-text-2',
+                                    class: 'ps-2 mkdocs-text-2',
                                     innerText: `'${v}'`,
                                 },
                             ],

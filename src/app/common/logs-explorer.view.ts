@@ -487,7 +487,7 @@ class LogDetailsView implements VirtualDOM<'div'> {
 
 class LogsListView implements VirtualDOM<'div'> {
     public readonly tag = 'div'
-    public readonly class = 'w-100 pl-3 bg-dark text-light border-left'
+    public readonly class = 'w-100 ps-3 bg-dark text-light border-left'
     public readonly children: ChildrenLike
 
     public readonly state: LogsExplorerState
