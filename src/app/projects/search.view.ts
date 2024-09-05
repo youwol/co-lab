@@ -86,7 +86,6 @@ export class SearchView implements VirtualDOM<'div'> {
                                             const f = this.tags$.value.filter(
                                                 (t) => t != tag,
                                             )
-                                            console.log(ev)
                                             this.tags$.next(
                                                 ev.target['checked']
                                                     ? [...f, tag]
@@ -112,7 +111,6 @@ export class SearchView implements VirtualDOM<'div'> {
                     policy: 'replace',
                     source$: selected$,
                     vdomMap: (projects: Routers.Projects.Project[]) => {
-                        console.log('Projects', projects)
                         return projects.map((p) => ({
                             tag: 'a',
                             class: 'd-flex align-items-center m-2',

@@ -15,7 +15,6 @@ export class ProfilesListView implements VirtualDOM<'div'> {
                 tag: 'select',
 
                 onchange: (ev) => {
-                    console.log('Select profile', ev.target['value'])
                     profilesState.selectProfile(ev.target['value'])
                 },
                 children: {

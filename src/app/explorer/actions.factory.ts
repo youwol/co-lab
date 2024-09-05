@@ -250,7 +250,6 @@ export const GENERIC_ACTIONS: { [k: string]: ActionConstructor } = {
         section: 'Modify',
         enabled: () => hasGroupModifyPermissions(permissions),
         applicable: () => {
-            console.log('clearTrash', { node, ok: node instanceof TrashNode })
             return node instanceof TrashNode
         },
         exe: () => {
