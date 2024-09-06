@@ -75,7 +75,6 @@ You can find the associated component in your database [here](@nav/components/ba
                     header: () => {
                         return new ComponentCrossLinksView({
                             appState,
-                            type: 'backend',
                             component: backend.name,
                         })
                     },
@@ -266,7 +265,7 @@ export class ConfigView implements VirtualDOM<'div'> {
                                 },
                                 {
                                     tag: 'div',
-                                    class: 'pl-2 mkdocs-text-2',
+                                    class: 'ps-2 mkdocs-text-2',
                                     innerText: `'${v}'`,
                                 },
                             ],

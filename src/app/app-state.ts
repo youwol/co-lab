@@ -162,7 +162,7 @@ export class AppState {
         this.navigation = {
             name: 'Home',
             decoration: {
-                icon: { tag: 'div', class: 'fas fa-home pr-1' },
+                icon: { tag: 'div', class: 'fas fa-home pe-1' },
             },
             tableOfContent: Views.tocView,
             html: ({ router }) => new PageView({ router, appState: this }),
@@ -216,7 +216,7 @@ export class PageView implements VirtualDOM<'div'> {
     public readonly tag = 'div'
     public readonly children: ChildrenLike
 
-    static warmUp = () => {
+    static readonly warmUp = () => {
         combineLatest([
             Installer.getApplicationsInfo$(),
             PreferencesFacade.getPreferences$(),

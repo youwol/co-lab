@@ -10,7 +10,7 @@ import {
     RxHTMLElement,
     VirtualDOM,
 } from '@youwol/rx-vdom'
-import { ExplorerNode, ItemNode } from './nodes'
+import { ExplorerNode } from './nodes'
 import { Action, getActions$ } from './actions.factory'
 import { ExplorerState } from './explorer.state'
 
@@ -110,10 +110,6 @@ export class ContextMenuView implements VirtualDOM<'div'> {
                     policy: 'replace',
                     source$: getActions$(explorerState, node),
                     vdomMap: (actions: Action[]) => {
-                        console.log('Actions', {
-                            actions,
-                            isItem: node instanceof ItemNode,
-                        })
                         return actions.map(
                             (action: Action) =>
                                 new ContexMenuItemView({ action }),

@@ -70,7 +70,7 @@ export function lazyResolver(
                 html: ({ router }) => {
                     return new PackageView({
                         router,
-                        cdnState: appState.cdnState,
+                        appState,
                         packageId: parts.slice(-1)[0],
                     })
                 },

@@ -6,6 +6,7 @@ import { BehaviorSubject, from, Observable, Subject } from 'rxjs'
 import { install } from '@youwol/webpm-client'
 import { delay, map, shareReplay, tap } from 'rxjs/operators'
 import { classesButton } from '../common'
+import { setup } from '../../auto-generated'
 
 declare type CodeEditorModule = typeof import('@youwol/rx-code-mirror-editors')
 
@@ -18,15 +19,14 @@ export const loadFvCodeEditorsModule$: () => Observable<CodeEditorModule> =
     () =>
         from(
             install({
-                modules: ['@youwol/rx-code-mirror-editors#^0.4.1'],
+                modules: [
+                    `@youwol/rx-code-mirror-editors#${setup.runTimeDependencies.externals['@youwol/rx-code-mirror-editors']} as codeMirrorEditors`,
+                ],
                 scripts: ['codemirror#5.52.0~mode/javascript.min.js'],
                 css: [
                     'codemirror#5.52.0~codemirror.min.css',
                     'codemirror#5.52.0~theme/blackboard.min.css',
                 ],
-                aliases: {
-                    codeMirrorEditors: '@youwol/rx-code-mirror-editors',
-                },
             }),
         ).pipe(
             map((window) => window['codeMirrorEditors']),

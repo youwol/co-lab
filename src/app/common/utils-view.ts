@@ -463,16 +463,26 @@ export const spinnerView: AnyVirtualDOM = {
     class: 'fas fa-spinner fa-spin',
 }
 
+export type LinkInput = {
+    icon: string
+    enabled: boolean
+    nav: string
+    hrefKind?: 'internal' | 'external'
+}
+
 export class ComponentCrossLinksView implements VirtualDOM<'div'> {
     public readonly tag = 'div'
-    public readonly class = 'd-flex align-items-center w-100 rounded p-1'
+    public readonly class =
+        'colab-ComponentCrossLinksView d-flex align-items-center w-100 rounded p-1'
     public readonly children: ChildrenLike
     public readonly appState: AppState
     public readonly component: string
+    public readonly withLinks: Observable<LinkInput>[] = []
+
     constructor(params: {
         component: string
-        type: 'backend' | 'js-wasm' | 'pyodide'
         appState: AppState
+        withLinks?: Observable<LinkInput>[]
     }) {
         Object.assign(this, params)
         const { component, appState } = params
@@ -481,6 +491,10 @@ export class ComponentCrossLinksView implements VirtualDOM<'div'> {
         const sep: AnyVirtualDOM = {
             tag: 'i',
             class: 'mx-2',
+        }
+        const untilFirst: AnyVirtualDOM = {
+            tag: 'div',
+            class: 'fas fa-spinner fa-spin',
         }
         this.children = [
             {
@@ -500,31 +514,45 @@ export class ComponentCrossLinksView implements VirtualDOM<'div'> {
             {
                 source$: appState.cdnState.status$,
                 vdomMap: (status: Routers.LocalCdn.CdnStatusResponse) => {
-                    const enabled =
-                        status.packages.find((p) => p.name === component) !==
-                        undefined
+                    const target = status.packages.find(
+                        (p) => p.name === component,
+                    )
+                    if (!target) {
+                        return this.linkView({
+                            icon: 'fa-microchip',
+                            nav: '',
+                            enabled: component !== undefined,
+                        })
+                    }
+                    const latest = target.versions.slice(-1)[0]
+                    const type = {
+                        'js/wasm': 'js-wasm',
+                        pyodide: 'pyodide',
+                        backend: 'backends',
+                    }[latest.type]
                     return this.linkView({
                         icon: 'fa-microchip',
-                        nav: `components/${params.type}/${window.btoa(component)}`,
-                        enabled,
+                        nav: `components/${type}/${window.btoa(component)}`,
+                        enabled: true,
                     })
                 },
             },
             sep,
             {
-                source$: client
-                    .getItem$({
-                        itemId,
-                    })
-                    .pipe(
-                        onHTTPErrors(() => undefined),
-                        mergeMap((resp?: ExplorerBackend.ItemBase) => {
-                            if (resp === undefined) {
-                                return of(undefined)
-                            }
-                            return client.getPath$({ itemId })
+                source$: appState.cdnState.status$.pipe(
+                    mergeMap(() =>
+                        client.getItem$({
+                            itemId,
                         }),
                     ),
+                    onHTTPErrors(() => undefined),
+                    mergeMap((resp?: ExplorerBackend.ItemBase) => {
+                        if (resp === undefined) {
+                            return of(undefined)
+                        }
+                        return client.getPath$({ itemId })
+                    }),
+                ),
                 vdomMap: (resp?: ExplorerBackend.PathBase) => {
                     let nav = ''
                     if (resp) {
@@ -540,6 +568,7 @@ export class ComponentCrossLinksView implements VirtualDOM<'div'> {
                         enabled: resp !== undefined,
                     })
                 },
+                untilFirst,
             },
             sep,
             {
@@ -588,6 +617,19 @@ export class ComponentCrossLinksView implements VirtualDOM<'div'> {
                     })
                 },
             },
+            ...this.withLinks
+                .map((linkInput$) => {
+                    return [
+                        sep,
+                        {
+                            source$: linkInput$,
+                            vdomMap: (linkInput: LinkInput): AnyVirtualDOM =>
+                                this.linkView(linkInput),
+                            untilFirst,
+                        },
+                    ]
+                })
+                .flat(),
         ]
     }
 
@@ -596,22 +638,29 @@ export class ComponentCrossLinksView implements VirtualDOM<'div'> {
         enabled,
         nav,
         onclick,
+        hrefKind,
     }: {
         icon: string
         enabled: boolean
         nav?: string
         onclick?: (ev) => void
+        hrefKind?: 'internal' | 'external'
     }): AnyVirtualDOM {
+        const href = hrefKind && hrefKind === 'external' ? nav : `@nav/${nav}`
         if (enabled) {
             return {
                 tag: 'a',
-                href: onclick ? undefined : `@nav/${nav}`,
+                href: onclick ? undefined : href,
                 class: `fas ${icon} `,
                 onclick: (ev: MouseEvent) => {
+                    ev.preventDefault()
                     if (onclick) {
                         return onclick(ev)
                     }
-                    ev.preventDefault()
+                    if (hrefKind === 'external') {
+                        window.open(href, '_blank')
+                        return
+                    }
                     this.appState.router.navigateTo({
                         path: nav,
                     })

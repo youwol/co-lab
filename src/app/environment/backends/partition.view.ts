@@ -57,7 +57,7 @@ export class InstancesListView implements VirtualDOM<'div'> {
                     .map((backend) => {
                         return {
                             tag: 'li',
-                            class: 'w-100 d-flex pl-3 align-items-center',
+                            class: 'w-100 d-flex ps-3 align-items-center',
                             children: [
                                 {
                                     tag: 'i',

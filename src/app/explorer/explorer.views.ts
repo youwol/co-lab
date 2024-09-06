@@ -189,7 +189,6 @@ export class AssetView implements VirtualDOM<'div'> {
         writePermission: boolean
         path?: string
     }) {
-        console.log('assetResponse', asset)
         this.children = [
             parseMd({
                 src: `
