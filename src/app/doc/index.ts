@@ -1,8 +1,28 @@
 import { ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
-import { Router, parseMd, Navigation, Views } from '@youwol/mkdocs-ts'
+import {
+    Router,
+    parseMd,
+    Navigation,
+    Views,
+    fromMarkdown,
+    installCodeApiModule,
+} from '@youwol/mkdocs-ts'
 import { pyYwDocLink } from '../common/py-yw-references.view'
 import { AppMode, AppState } from '../app-state'
 import { getCompanionDocHref } from '../app-view'
+import { setup } from '../../auto-generated'
+
+const CodeApiModule = await installCodeApiModule()
+const configuration = {
+    ...CodeApiModule.configurationPython,
+    codeUrl: ({ path, startLine }: { path: string; startLine: number }) => {
+        const baseUrl = 'https://github.com/youwol/py-youwol/tree'
+        const target = setup.version.endsWith('-wip')
+            ? 'main'
+            : `v${setup.version}`
+        return `${baseUrl}/${target}/src/youwol/${path}#L${startLine}`
+    },
+}
 
 export const navigation = (appState: AppState): Navigation => ({
     name: 'Doc',
@@ -16,6 +36,30 @@ export const navigation = (appState: AppState): Navigation => ({
     },
     tableOfContent: Views.tocView,
     html: ({ router }) => new PageView({ router }),
+    '/api': {
+        name: 'API',
+        decoration: decoration('fa-code', appState),
+        tableOfContent: Views.tocView,
+        html: fromMarkdown({
+            url: `/applications/@youwol/py-youwol-doc/0.1.13-wip/assets/api.md`,
+        }),
+        '/youwol': CodeApiModule.codeApiEntryNode({
+            name: 'youwol',
+            decoration: decoration('fa-box-open', appState),
+            entryModule: 'youwol',
+            docBasePath:
+                '/applications/@youwol/py-youwol-doc/0.1.13-wip/assets/api',
+            configuration: configuration,
+        }),
+        '/yw-clients': CodeApiModule.codeApiEntryNode({
+            name: 'yw_clients',
+            decoration: decoration('fa-box-open', appState),
+            entryModule: 'yw_clients',
+            docBasePath:
+                '/applications/@youwol/py-youwol-doc/0.1.13-wip/assets/api',
+            configuration: configuration,
+        }),
+    },
 })
 
 const decoration = (icon: string, appState: AppState) => {
