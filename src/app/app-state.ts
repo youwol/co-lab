@@ -49,6 +49,13 @@ export type MountedPath = {
     path: string
     type: 'file' | 'folder'
 }
+
+export type AppMode =
+    | 'normal'
+    | 'docRemoteBelow'
+    | 'docRemoteInTab'
+    | 'docCompanion'
+
 /**
  * @category State
  */
@@ -118,7 +125,25 @@ export class AppState {
 
     public readonly mountedHdPaths$ = new BehaviorSubject<MountedPath[]>([])
 
+    public readonly appMode$ = new BehaviorSubject<AppMode>('normal')
+
+    public readonly navBroadcastChannel = new BroadcastChannel(
+        `colab-${Math.floor(Math.random() * 1e6)}`,
+    )
+
     constructor() {
+        const queryString = window.location.search
+        const urlParams = new URLSearchParams(queryString)
+
+        if (urlParams.get('appMode') === 'docCompanion') {
+            this.appMode$ = new BehaviorSubject('docCompanion')
+        }
+        if (urlParams.get('channelId')) {
+            this.navBroadcastChannel = new BroadcastChannel(
+                urlParams.get('channelId'),
+            )
+        }
+
         pyYw.PyYouwolClient.startWs$()
             .pipe(take(1))
             .subscribe(() => {
@@ -158,28 +183,25 @@ export class AppState {
             raiseHTTPErrors(),
             shareReplay(1),
         )
+        this.navigation = this.getNav()
 
-        this.navigation = {
-            name: 'Home',
-            decoration: {
-                icon: { tag: 'div', class: 'fas fa-home pe-1' },
-            },
-            tableOfContent: Views.tocView,
-            html: ({ router }) => new PageView({ router, appState: this }),
-            '/environment': Environment.navigation(this),
-            '/components': Components.navigation(this),
-            '/projects': Projects.navigation(this),
-            '/explorer': Explorer.navigation({
-                session$: this.session$,
-            }),
-            '/mounted': Mounted.navigation(this),
-            '/doc': Doc.navigation(),
-        }
         this.router = new Router({
             navigation: this.navigation,
             basePath: `/applications/${setup.name}/${setup.version}`,
+            redirects: (target) => this.getRedirects(target),
         })
-
+        this.navBroadcastChannel.onmessage = (e) => {
+            e.data.path && this.router.navigateTo({ path: e.data.path })
+            e.data === 'done' && this.appMode$.next('normal')
+        }
+        if (
+            this.appMode$.value === 'docCompanion' &&
+            parent.document === document
+        ) {
+            window.addEventListener('beforeunload', () => {
+                this.navBroadcastChannel.postMessage('done')
+            })
+        }
         PageView.warmUp()
     }
 
@@ -209,6 +231,64 @@ export class AppState {
         this.router.navigateTo({
             path: redirectNav,
         })
+    }
+
+    private getNav() {
+        const navs: Record<
+            Exclude<AppMode, 'docRemoteBelow' | 'docRemoteInTab'>,
+            Navigation
+        > = {
+            normal: {
+                name: 'Home',
+                decoration: {
+                    icon: { tag: 'div', class: 'fas fa-home pe-1' },
+                },
+                tableOfContent: Views.tocView,
+                html: ({ router }) => new PageView({ router, appState: this }),
+                '/environment': Environment.navigation(this),
+                '/components': Components.navigation(this),
+                '/projects': Projects.navigation(this),
+                '/explorer': Explorer.navigation({
+                    session$: this.session$,
+                }),
+                '/mounted': Mounted.navigation(this),
+                '/doc': Doc.navigation(this),
+            },
+            docCompanion: {
+                name: 'Home',
+                decoration: {
+                    icon: { tag: 'div', class: 'fas fa-home pe-1' },
+                    wrapperClass: 'd-none',
+                },
+                tableOfContent: Views.tocView,
+                html: ({ router }) => new PageView({ router, appState: this }),
+                '/doc': Doc.navigation(this),
+            },
+        }
+        return navs[this.appMode$.value]
+    }
+
+    getRedirects(target: string) {
+        let to = target
+        if (target.startsWith('/api/youwol')) {
+            to = target.replace('/api/youwol', '/doc/api/youwol')
+        }
+        if (target.startsWith('/api/yw_utils')) {
+            to = target.replace('/api/yw_utils', '/doc/api/yw_utils')
+        }
+        if (this.appMode$.value === 'docCompanion' && !to.startsWith('/doc')) {
+            this.navBroadcastChannel.postMessage({
+                path: to,
+            })
+            return
+        }
+        if (this.appMode$.value == 'docRemoteBelow' && to.startsWith('/doc')) {
+            this.navBroadcastChannel.postMessage({
+                path: to,
+            })
+            return
+        }
+        return to
     }
 }
 

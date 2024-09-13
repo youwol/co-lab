@@ -1,12 +1,78 @@
 import { ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
 import { Router, parseMd, Navigation, Views } from '@youwol/mkdocs-ts'
 import { pyYwDocLink } from '../common/py-yw-references.view'
+import { AppMode, AppState } from '../app-state'
+import { getCompanionDocHref } from '../app-view'
 
-export const navigation = (): Navigation => ({
+export const navigation = (appState: AppState): Navigation => ({
     name: 'Doc',
-    decoration: { icon: { tag: 'i', class: 'fas fa-book me-2' } },
+    decoration: {
+        ...decoration('fa-book', appState),
+        actions: [
+            splitDocBelow(appState),
+            splitDocInTab(appState),
+            closeDocBelow(appState),
+        ],
+    },
     tableOfContent: Views.tocView,
     html: ({ router }) => new PageView({ router }),
+})
+
+const decoration = (icon: string, appState: AppState) => {
+    return {
+        icon: { tag: 'i' as const, class: `fas ${icon} me-2` },
+        wrapperClass: {
+            source$: appState.appMode$,
+            vdomMap: (mode: AppMode) =>
+                ['normal', 'docCompanion'].includes(mode)
+                    ? Views.NavigationHeader.DefaultWrapperClass
+                    : 'd-none',
+        },
+    }
+}
+
+const splitDocBelow = (appState: AppState): VirtualDOM<'i'> => ({
+    tag: 'i' as const,
+    class:
+        appState.appMode$.value === 'normal'
+            ? 'mx-1 fas fa-object-ungroup fv-pointer'
+            : 'd-none',
+    style: {
+        padding: '0px',
+    },
+    onclick: () => {
+        appState.appMode$.next('docRemoteBelow')
+    },
+})
+
+const splitDocInTab = (appState: AppState): VirtualDOM<'i'> => ({
+    tag: 'i' as const,
+    class:
+        appState.appMode$.value === 'normal'
+            ? 'mx-1 fas fa-external-link-alt fv-pointer'
+            : 'd-none',
+    style: {
+        padding: '0px',
+    },
+    onclick: () => {
+        window.open(getCompanionDocHref(appState), '_blank')
+        appState.appMode$.next('docRemoteInTab')
+    },
+})
+
+const closeDocBelow = (appState: AppState): VirtualDOM<'i'> => ({
+    tag: 'i' as const,
+    class:
+        appState.appMode$.value === 'docCompanion' &&
+        parent.document !== document
+            ? 'mx-1 fas fa-object-group fv-pointer'
+            : 'd-none',
+    style: {
+        padding: '0px',
+    },
+    onclick: () => {
+        appState.navBroadcastChannel.postMessage('done')
+    },
 })
 
 export class PageView implements VirtualDOM<'div'> {
