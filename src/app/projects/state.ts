@@ -8,6 +8,7 @@ import {
     PyYouwolClient,
     Routers,
 } from '@youwol/local-youwol-client'
+import { getProjectNav$ } from '../common/utils-nav'
 
 function projectLoadingIsSuccess(
     result: unknown,
@@ -281,6 +282,15 @@ export class State {
         ) {
             this.openProjects$.next([...openProjects, project])
         }
+        getProjectNav$({
+            projectName: project.name,
+            appState: this.appState,
+            timeout: 3000,
+        }).subscribe((nav) => {
+            if (this.appState.router.getCurrentPath() !== nav) {
+                this.appState.router.navigateTo({ path: nav })
+            }
+        })
     }
 
     selectStep(

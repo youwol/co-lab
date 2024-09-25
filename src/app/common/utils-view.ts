@@ -5,21 +5,14 @@ import {
     AnyVirtualDOM,
 } from '@youwol/rx-vdom'
 import { fromMarkdown, parseMd, Router } from '@youwol/mkdocs-ts'
-import {
-    BehaviorSubject,
-    combineLatest,
-    mergeMap,
-    Observable,
-    of,
-    Subject,
-    timer,
-} from 'rxjs'
+import { BehaviorSubject, mergeMap, Observable, of, Subject, timer } from 'rxjs'
 import { setup } from '../../auto-generated'
 import { AppState } from '../app-state'
 import { take } from 'rxjs/operators'
 import { Routers } from '@youwol/local-youwol-client'
 import { onHTTPErrors } from '@youwol/http-primitives'
 import { AssetsGateway, ExplorerBackend } from '@youwol/http-clients'
+import { getProjectNav$ } from './utils-nav'
 
 export const styleShellStdOut = {
     tag: 'pre' as const,
@@ -572,29 +565,15 @@ export class ComponentCrossLinksView implements VirtualDOM<'div'> {
             },
             sep,
             {
-                source$: combineLatest([
-                    appState.projectsState.projects$,
-                    appState.environment$,
-                ]),
-                vdomMap: ([projects, env]: [
-                    projects: Routers.Projects.Project[],
-                    env: Routers.Environment.EnvironmentStatusResponse,
-                ]) => {
-                    let nav = ''
-                    const project = projects.find(
-                        (p) => p.name.split('~')[0] === component,
-                    )
-                    if (project) {
-                        const finder =
-                            env.youwolEnvironment.projects.finders.find((f) =>
-                                project.path.startsWith(f.fromPath),
-                            )
-                        nav = `/projects/${window.btoa(finder.fromPath)}/${project.id}`
-                    }
+                source$: getProjectNav$({
+                    projectName: component,
+                    appState,
+                }).pipe(take(1)),
+                vdomMap: (nav: string | undefined) => {
                     return this.linkView({
                         icon: 'fa-boxes',
-                        nav,
-                        enabled: project !== undefined,
+                        nav: nav || '',
+                        enabled: nav !== undefined,
                     })
                 },
             },
