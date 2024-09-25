@@ -12,6 +12,19 @@ import { AppMode, AppState } from '../app-state'
 import { getCompanionDocHref } from '../app-view'
 import { setup } from '../../auto-generated'
 
+function fromMd({
+    file,
+    placeholders,
+}: {
+    file: string
+    placeholders?: { [_: string]: string }
+}) {
+    return fromMarkdown({
+        url: `/api/assets-gateway/cdn-backend/resources/${setup.assetId}/${setup.version}/assets/${file}`,
+        placeholders,
+    })
+}
+
 const CodeApiModule = await installCodeApiModule()
 const configuration = {
     ...CodeApiModule.configurationPython,
@@ -35,28 +48,75 @@ export const navigation = (appState: AppState): Navigation => ({
         ],
     },
     tableOfContent: Views.tocView,
-    html: ({ router }) => new PageView({ router }),
+    html: fromMd({
+        file: 'doc.md',
+    }),
+    '/tutorials': {
+        name: 'Tutorials',
+        decoration: decoration('fa-graduation-cap', appState),
+        tableOfContent: Views.tocView,
+        html: fromMd({
+            file: 'doc.tutorials.md',
+        }),
+        '/quick-tour': {
+            name: 'Quick Tour',
+            decoration: decoration('', appState),
+            tableOfContent: Views.tocView,
+            html: fromMd({
+                file: 'doc.tutorials.quick-tour.md',
+            }),
+        },
+    },
+
+    '/how-to': {
+        name: 'How-To',
+        decoration: decoration('fa-question-circle', appState),
+        tableOfContent: Views.tocView,
+        html: fromMd({
+            file: 'doc.how-to.md',
+        }),
+        '/start-yw': {
+            name: 'Start YouWol',
+            tableOfContent: Views.tocView,
+            html: fromMarkdown({
+                url: `/applications/@youwol/py-youwol-doc/*/assets/how-to.start-youwol.md`,
+            }),
+        },
+        '/config': {
+            name: 'Configuration',
+            tableOfContent: Views.tocView,
+            html: fromMd({
+                file: 'doc.how-to.config.md',
+            }),
+            '/projects': {
+                name: 'Projects',
+                decoration: decoration('', appState),
+                tableOfContent: Views.tocView,
+                html: fromMd({
+                    file: 'doc.how-to.config.projects.md',
+                }),
+            },
+        },
+    },
     '/api': {
         name: 'API',
         decoration: decoration('fa-code', appState),
         tableOfContent: Views.tocView,
         html: fromMarkdown({
-            url: `/applications/@youwol/py-youwol-doc/0.1.13-wip/assets/api.md`,
+            url: `/applications/@youwol/py-youwol-doc/*/assets/api.md`,
         }),
         '/youwol': CodeApiModule.codeApiEntryNode({
             name: 'youwol',
             decoration: decoration('fa-box-open', appState),
             entryModule: 'youwol',
-            docBasePath:
-                '/applications/@youwol/py-youwol-doc/0.1.13-wip/assets/api',
+            docBasePath: '/applications/@youwol/py-youwol-doc/*/assets/api',
             configuration: configuration,
         }),
         '/yw-clients': CodeApiModule.codeApiEntryNode({
             name: 'yw_clients',
             decoration: decoration('fa-box-open', appState),
             entryModule: 'yw_clients',
-            docBasePath:
-                '/applications/@youwol/py-youwol-doc/0.1.13-wip/assets/api',
+            docBasePath: '/applications/@youwol/py-youwol-doc/*/assets/api',
             configuration: configuration,
         }),
     },

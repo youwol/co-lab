@@ -2,6 +2,7 @@ import {
     BehaviorSubject,
     combineLatest,
     distinctUntilChanged,
+    firstValueFrom,
     Observable,
 } from 'rxjs'
 import { filter, map, mergeMap, shareReplay, take, tap } from 'rxjs/operators'
@@ -18,7 +19,13 @@ import * as pyYw from '@youwol/local-youwol-client'
 import { Routers, WsRouter } from '@youwol/local-youwol-client'
 import { Accounts } from '@youwol/http-clients'
 import { raiseHTTPErrors } from '@youwol/http-primitives'
-import { Navigation, parseMd, Router, Views } from '@youwol/mkdocs-ts'
+import {
+    MdWidgets,
+    Navigation,
+    parseMd,
+    Router,
+    Views,
+} from '@youwol/mkdocs-ts'
 import * as Mounted from './mounted'
 import { setup } from '../auto-generated'
 import { Installer, PreferencesFacade } from '@youwol/os-core'
@@ -268,8 +275,18 @@ export class AppState {
         return navs[this.appMode$.value]
     }
 
-    getRedirects(target: string) {
+    async getRedirects(target: string) {
         let to = target
+        if (target.startsWith('/doc')) {
+            // Documentation features examples using code snippets in python.
+            // We await installing the dependencies such that the snippets are displayed right away,
+            // and navigation to a given part of the page actually land at the right place.
+            // If not done, the code snippet views update after the navigation is done, translating the location of the
+            // elements and result in discrepancy with the expected location.
+            await firstValueFrom(
+                MdWidgets.CodeSnippetView.fetchCmDependencies$('python'),
+            )
+        }
         if (target.startsWith('/api/youwol')) {
             to = target.replace('/api/youwol', '/doc/api/youwol')
         }
