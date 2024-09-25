@@ -5,7 +5,7 @@ const runTimeDependencies = {
         "@youwol/http-clients": "^3.0.0",
         "@youwol/http-primitives": "^0.2.5",
         "@youwol/local-youwol-client": "^0.3.1",
-        "@youwol/mkdocs-ts": "^0.6.1",
+        "@youwol/mkdocs-ts": "^0.6.2",
         "@youwol/os-core": "^0.2.0",
         "@youwol/rx-code-mirror-editors": "^0.5.0",
         "@youwol/rx-tree-views": "^0.3.1",
