@@ -3,6 +3,7 @@ import { AppMode, AppState } from './app-state'
 import { Router, Views } from '@youwol/mkdocs-ts'
 import { TopBannerView } from './top-banner.view'
 import { Subject } from 'rxjs'
+import { DisconnectedView } from './disconnected.view'
 
 export class AppView implements VirtualDOM<'div'> {
     public readonly tag = 'div'
@@ -62,6 +63,7 @@ export class AppView implements VirtualDOM<'div'> {
                     }
                 },
             },
+            new DisconnectedView({ appState: this.appState }),
         ]
     }
 }
