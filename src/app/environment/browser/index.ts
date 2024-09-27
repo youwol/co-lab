@@ -33,9 +33,6 @@ cache system of browsers, particularly concerning side-effects when requesting r
 This section compiles the elements stored in the cache, which you can clear as needed. Apart from a slight performance
  impact, there is no risk of causing harm.
 
-The default configuration of this layer is designed to suit most scenarios. For more details on its workings and 
-configuration options, please refer to this
-<docLink nav='/references/youwol/app/environment/models.models_config.BrowserCache'>page</docLink>.
 </info>
 
 <fileView></fileView>

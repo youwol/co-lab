@@ -14,14 +14,6 @@ GlobalMarkdownViews.factory = {
             router,
         })
     },
-    docLink: (elem: HTMLElement) => {
-        return {
-            tag: 'a' as const,
-            href: `/doc?nav=${elem.getAttribute('nav')}`,
-            target: '_blank',
-            innerText: elem.textContent,
-        }
-    },
 }
 
 const appState = new AppState()

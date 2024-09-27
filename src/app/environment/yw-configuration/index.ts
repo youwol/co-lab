@@ -3,7 +3,6 @@ import { CodeEditorView } from '../../common/code-editor.view'
 import { Navigation, parseMd, Router, Views } from '@youwol/mkdocs-ts'
 import { ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
 import { HdPathBookView } from '../../common'
-import { PyYwReferencesView } from '../../common/py-yw-references.view'
 import { map, mergeMap } from 'rxjs/operators'
 import { raiseHTTPErrors } from '@youwol/http-primitives'
 import { PyYouwolClient } from '@youwol/local-youwol-client'
@@ -32,8 +31,6 @@ The server configuration is located at:
 Below is displayed the current configuration of the local YouWol server:
  
 <fileView></fileView>
-
-<refDoc></refDoc>
                 `,
                 router: params.router,
                 views: {
@@ -59,19 +56,6 @@ Below is displayed the current configuration of the local YouWol server:
                                 ),
                             ),
                         }),
-                    refDoc: () => {
-                        return new PyYwReferencesView({
-                            router: params.router,
-                            items: [
-                                {
-                                    title: 'Configuration API',
-                                    path: '/references/youwol/app/environment/models.models_config.Configuration',
-                                    description:
-                                        'The API of the configuration object.',
-                                },
-                            ],
-                        })
-                    },
                 },
             }),
         ]
