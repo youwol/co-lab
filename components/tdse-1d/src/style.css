@@ -1,0 +1,28 @@
+body{
+  height: 95vh;
+  width: 95vw;
+}
+
+.line {
+  fill: none;
+  stroke: blue;
+  stroke-width: 2;
+}
+
+.psi {
+  fill: rgba(70, 130, 180, 0.86);
+  stroke: steelblue;
+  stroke-width: 2;
+}
+
+.eigenstate {
+  fill: rgba(70, 130, 180, 0.1);
+  stroke: rgba(70, 130, 180, 0.3);
+  stroke-width: 2;
+}
+
+.classical{
+  radius:10;
+  fill: #ff8a5f;
+  stroke: #fa4500
+}
