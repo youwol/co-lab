@@ -1,15 +1,13 @@
-# [Projects Configuration](@nav/doc/api/youwol/app/environment/models.models_project.Projects)
+# <apiLink target="Projects">Projects Configuration</apiLink>
 
-Projects configuration is managed using an instance of
-[Projects](@nav/doc/api/youwol/app/environment/models.models_project.Projects). 
+Projects configuration is managed using an instance of <apiLink target="Projects"></apiLink>. 
 This configuration encompasses:
-*  the definition of one or more 
-   [ProjectsFinder](@nav/doc/api/youwol/app/environment/models.models_project.ProjectsFinder). 
+*  The definition of one or more <apiLink target="ProjectsFinder"></apiLink>
    These are used to locate projects on your computer. Each project finder is displayed as a node under 
-   the [Projects](@nav/projects) page (using the <i class='fas fa-object-group'></i> icon).
-*  A list of [ProjectsTemplate](@nav/doc/api/youwol/app/environment/models.models_project.ProjectsTemplate).
+   <navNode target="Projects"></navNode> (using <i class='fas fa-object-group'></i> icon).
+*  A list of <apiLink target="ProjectsTemplate"></apiLink>.
    A project template provides a starter project and is accessible from the **New project** section of the
-   [Projects page](@nav/projects).
+   <navNode target="Projects"></navNode> page.
 
 <note level="hint">
  If no custom configuration for the `Projects` attribute is provided in the configuration file, 
@@ -19,7 +17,7 @@ a default setup is applied:
 *  A few project templates are made available as starters.
 </note>
 
-## [Projects Finder](@nav/doc/api/youwol/app/environment/models.models_project.ProjectsFinder)
+## <apiLink target="ProjectsFinder"></apiLink>
 
 Below is an example showcasing various configuration options for `ProjectsFinder`.
 
@@ -27,10 +25,10 @@ Below is an example showcasing various configuration options for `ProjectsFinder
 from pathlib import Path
 
 from youwol.app.environment import (
-        Configuration,
-        Projects,
-        ProjectsFinder
-    )
+    Configuration,
+    Projects,
+    ProjectsFinder
+)
 
 folder_js = Path.home() / 'Projects-JS'
 folder_ts = Path.home() / 'Projects-TS'
@@ -58,15 +56,15 @@ Configuration(
 )
 </code-snippet>
 
-## [Projects Template](@nav/doc/api/youwol/app/environment/models.models_project.ProjectsTemplate)
+## <apiLink target="ProjectsTemplate"></apiLink>
 
 A project template is essentially a Python function that generates a starter project in a specified folder.
 These templates are typically part of a Python package that also defines the pipeline associated with that type of 
 project.
 
-For example, YouWol provides the [pipeline raw app](@nav/doc/api/youwol/pipelines/pipeline_raw_app) - a basic pipeline
+For example, YouWol provides the <apiLink target="pipeline_raw_app"></apiLink> - a basic pipeline
 for packaging and publishing JavaScript applications. This package also exposes the
-[template](@nav/doc/api/youwol/pipelines/pipeline_raw_app.template.template) function.
+<apiLink target="pipeline_raw_app.template"></apiLink> function.
 
 
 To include this project starter in your configuration:
@@ -101,10 +99,11 @@ Configuration(
 
 By doing so:
 *  A `Raw JS Application` option will be available under the **New project** section 
-   of the [Projects](@nav/projects) page.
+   of the <navNode target="Projects"></navNode> page.
 *  When a project is created, it will be placed in the `projects_folder`.
 *  Since a `ProjectsFinder` is set to watch this folder, CoLab will automatically update and display the newly
-   created project under a <i class='fas fa-object-group'>raw_apps</i> node in the [Projects](@nav/projects) node. 
+   created project under a <label icon='fas fa-object-group'>raw_apps</label> node within
+   <navNode target="Projects"></navNode>. 
 
 <note level="hint">
 Defining a custom pipeline and project template is generally straightforward.
