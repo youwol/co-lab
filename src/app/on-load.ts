@@ -5,6 +5,7 @@ import { AppState } from './app-state'
 import { Observable } from 'rxjs'
 import { InfoSectionView } from './common'
 import { AppView } from './app-view'
+import { apiLink, label, navNode } from './doc/md-widgets'
 
 GlobalMarkdownViews.factory = {
     ...GlobalMarkdownViews.factory,
@@ -14,6 +15,9 @@ GlobalMarkdownViews.factory = {
             router,
         })
     },
+    apiLink,
+    label,
+    navNode,
 }
 
 const appState = new AppState()
