@@ -8,7 +8,10 @@ import {
     folderAnchorView,
     separator,
 } from '../explorer/path.views'
-import { headerViewWrapper } from '../explorer/explorer.views'
+import {
+    headerViewWrapper,
+    OpenFolderInHostView,
+} from '../explorer/explorer.views'
 
 export class HeaderView implements VirtualDOM<'div'> {
     public readonly tag = 'div'
@@ -65,7 +68,11 @@ export class HeaderView implements VirtualDOM<'div'> {
                       path: decodeHdPath(origin),
                   }
         const parents = getRec(folderPath)
-        this.children = [originEntity, ...parents.reverse(), file]
+
+        const openView = new OpenFolderInHostView({
+            folder: decodeURIComponent(`${window.atob(origin)}/${path}`),
+        })
+        const pathItems = [originEntity, ...parents.reverse(), file]
             .filter((e) => e != undefined)
             .map((entity) => {
                 return [
@@ -79,6 +86,11 @@ export class HeaderView implements VirtualDOM<'div'> {
             })
             .flat()
             .slice(0, -1)
+        this.children = [
+            ...pathItems,
+            { tag: 'div', class: 'flex-grow-1' },
+            file === undefined && openView,
+        ]
     }
 }
 
