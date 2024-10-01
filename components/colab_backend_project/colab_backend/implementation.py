@@ -18,7 +18,7 @@ Type alias for array of complex.
 """
 
 
-def initial_wave_function(x: FloatArray, x0: float, sigma: float, k0: float):
+def initial_wave_function(x: FloatArray, x0: float, sigma: float, k0: float) -> ComplexArray:
     """
     Construct a Gaussian wave packets.
 
