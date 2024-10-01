@@ -11,13 +11,13 @@ folder_path = Path(__file__).parent
 pkg_json = parse_json(folder_path / 'package.json')
 
 externals_deps = {
-    "@youwol/mkdocs-ts": "^0.6.1",
+    "@youwol/mkdocs-ts": "^0.6.3",
     "@youwol/rx-vdom": "^1.0.1",
     "bootstrap": "^5.3.0",
     "@youwol/webpm-client": "^3.0.0",
     '@youwol/http-clients': '^3.0.0',
     '@youwol/http-primitives': '^0.2.5',
-    '@youwol/local-youwol-client': '^0.3.1',
+    '@youwol/local-youwol-client': '^0.3.2',
     '@youwol/os-core': '^0.2.0',
     "@youwol/rx-tree-views": "^0.3.1",
     "@youwol/rx-code-mirror-editors": "^0.5.0",
@@ -64,7 +64,11 @@ shutil.copyfile(
     src=folder_path / '.template' / 'src' / 'auto-generated.ts',
     dst=folder_path / 'src' / 'auto-generated.ts'
 )
-for file in ['README.md', '.gitignore', '.npmignore', '.prettierignore', 'LICENSE', 'package.json',
+for file in ['README.md',
+             # '.gitignore',
+             # '.npmignore',
+             # '.prettierignore',
+             'LICENSE', 'package.json',
              'tsconfig.json', 'webpack.config.ts']:
     shutil.copyfile(
         src=folder_path / '.template' / file,

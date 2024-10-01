@@ -8,4 +8,6 @@ __pycache__
 *.iml
 .template
 .env
+.venv
 /src/tests/**/result.zip
+*.egg-info

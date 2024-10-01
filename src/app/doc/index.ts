@@ -1,12 +1,182 @@
 import { ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
-import { Router, parseMd, Navigation, Views } from '@youwol/mkdocs-ts'
+import {
+    Router,
+    parseMd,
+    Navigation,
+    Views,
+    fromMarkdown,
+    installCodeApiModule,
+} from '@youwol/mkdocs-ts'
 import { pyYwDocLink } from '../common/py-yw-references.view'
+import { AppMode, AppState } from '../app-state'
+import { getCompanionDocHref } from '../app-view'
+import { setup } from '../../auto-generated'
 
-export const navigation = (): Navigation => ({
+function fromMd({
+    file,
+    placeholders,
+}: {
+    file: string
+    placeholders?: { [_: string]: string }
+}) {
+    return fromMarkdown({
+        url: `/api/assets-gateway/cdn-backend/resources/${setup.assetId}/${setup.version}/assets/${file}`,
+        placeholders,
+    })
+}
+
+const CodeApiModule = await installCodeApiModule()
+const configuration = {
+    ...CodeApiModule.configurationPython,
+    codeUrl: ({ path, startLine }: { path: string; startLine: number }) => {
+        const baseUrl = 'https://github.com/youwol/py-youwol/tree'
+        const target = setup.version.endsWith('-wip')
+            ? 'main'
+            : `v${setup.version}`
+        return `${baseUrl}/${target}/src/youwol/${path}#L${startLine}`
+    },
+}
+
+export const navigation = (appState: AppState): Navigation => ({
     name: 'Doc',
-    decoration: { icon: { tag: 'i', class: 'fas fa-book me-2' } },
+    decoration: {
+        ...decoration('fa-book', appState),
+        actions: [
+            splitDocBelow(appState),
+            splitDocInTab(appState),
+            closeDocBelow(appState),
+        ],
+    },
     tableOfContent: Views.tocView,
-    html: ({ router }) => new PageView({ router }),
+    html: fromMd({
+        file: 'doc.md',
+    }),
+    '/tutorials': {
+        name: 'Tutorials',
+        decoration: decoration('fa-graduation-cap', appState),
+        tableOfContent: Views.tocView,
+        html: fromMd({
+            file: 'doc.tutorials.md',
+        }),
+        '/quick-tour': {
+            name: 'Quick Tour',
+            decoration: decoration('', appState),
+            tableOfContent: Views.tocView,
+            html: fromMd({
+                file: 'doc.tutorials.quick-tour.md',
+            }),
+        },
+    },
+
+    '/how-to': {
+        name: 'How-To',
+        decoration: decoration('fa-question-circle', appState),
+        tableOfContent: Views.tocView,
+        html: fromMd({
+            file: 'doc.how-to.md',
+        }),
+        '/start-yw': {
+            name: 'Start YouWol',
+            tableOfContent: Views.tocView,
+            html: fromMarkdown({
+                url: `/applications/@youwol/py-youwol-doc/*/assets/how-to.start-youwol.md`,
+            }),
+        },
+        '/config': {
+            name: 'Configuration',
+            tableOfContent: Views.tocView,
+            html: fromMd({
+                file: 'doc.how-to.config.md',
+            }),
+            '/projects': {
+                name: 'Projects',
+                decoration: decoration('', appState),
+                tableOfContent: Views.tocView,
+                html: fromMd({
+                    file: 'doc.how-to.config.projects.md',
+                }),
+            },
+        },
+    },
+    '/api': {
+        name: 'API',
+        decoration: decoration('fa-code', appState),
+        tableOfContent: Views.tocView,
+        html: fromMarkdown({
+            url: `/applications/@youwol/py-youwol-doc/*/assets/api.md`,
+        }),
+        '/youwol': CodeApiModule.codeApiEntryNode({
+            name: 'youwol',
+            decoration: decoration('fa-box-open', appState),
+            entryModule: 'youwol',
+            docBasePath: '/applications/@youwol/py-youwol-doc/*/assets/api',
+            configuration: configuration,
+        }),
+        '/yw-clients': CodeApiModule.codeApiEntryNode({
+            name: 'yw_clients',
+            decoration: decoration('fa-box-open', appState),
+            entryModule: 'yw_clients',
+            docBasePath: '/applications/@youwol/py-youwol-doc/*/assets/api',
+            configuration: configuration,
+        }),
+    },
+})
+
+const decoration = (icon: string, appState: AppState) => {
+    return {
+        icon: { tag: 'i' as const, class: `fas ${icon} me-2` },
+        wrapperClass: {
+            source$: appState.appMode$,
+            vdomMap: (mode: AppMode) =>
+                ['normal', 'docCompanion'].includes(mode)
+                    ? Views.NavigationHeader.DefaultWrapperClass
+                    : 'd-none',
+        },
+    }
+}
+
+const splitDocBelow = (appState: AppState): VirtualDOM<'i'> => ({
+    tag: 'i' as const,
+    class:
+        appState.appMode$.value === 'normal'
+            ? 'mx-1 fas fa-object-ungroup fv-pointer'
+            : 'd-none',
+    style: {
+        padding: '0px',
+    },
+    onclick: () => {
+        appState.appMode$.next('docRemoteBelow')
+    },
+})
+
+const splitDocInTab = (appState: AppState): VirtualDOM<'i'> => ({
+    tag: 'i' as const,
+    class:
+        appState.appMode$.value === 'normal'
+            ? 'mx-1 fas fa-external-link-alt fv-pointer'
+            : 'd-none',
+    style: {
+        padding: '0px',
+    },
+    onclick: () => {
+        window.open(getCompanionDocHref(appState), '_blank')
+        appState.appMode$.next('docRemoteInTab')
+    },
+})
+
+const closeDocBelow = (appState: AppState): VirtualDOM<'i'> => ({
+    tag: 'i' as const,
+    class:
+        appState.appMode$.value === 'docCompanion' &&
+        parent.document !== document
+            ? 'mx-1 fas fa-object-group fv-pointer'
+            : 'd-none',
+    style: {
+        padding: '0px',
+    },
+    onclick: () => {
+        appState.navBroadcastChannel.postMessage('done')
+    },
 })
 
 export class PageView implements VirtualDOM<'div'> {

@@ -37,6 +37,7 @@ import {
     OpeningAppsViews,
     PackageLogoView,
 } from './asset/opening-apps.views'
+import { PyYouwolClient } from '@youwol/local-youwol-client'
 
 export function headerViewWrapper(headerView: AnyVirtualDOM): AnyVirtualDOM {
     return {
@@ -117,6 +118,21 @@ export class HeaderView implements VirtualDOM<'div'> {
             return
         }
         this.children = [groupAnchorView({ groupId: target, router })]
+    }
+}
+
+export class OpenFolderInHostView implements VirtualDOM<'button'> {
+    public readonly tag = 'button'
+    public readonly class = 'btn btn-sm btn-light fas fa-folder-open'
+    public readonly onclick: () => undefined
+    constructor(params: { folder: string }) {
+        this.onclick = () => {
+            const client = new PyYouwolClient().admin.system
+            console.log('Open folder in explorer', params.folder)
+            client
+                .openFolder$({ body: { path: params.folder } })
+                .subscribe(() => {})
+        }
     }
 }
 

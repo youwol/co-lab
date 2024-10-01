@@ -1,4 +1,4 @@
-import { Router } from '@youwol/mkdocs-ts'
+import { Router, Views } from '@youwol/mkdocs-ts'
 import {
     AnyVirtualDOM,
     ChildrenLike,
@@ -12,6 +12,52 @@ import { Accounts } from '@youwol/http-clients'
 import { internalAnchor } from './common/links.view'
 import { map, mergeMap } from 'rxjs/operators'
 import { combineLatest } from 'rxjs'
+import { CoLabLogo } from './common'
+
+export class TopBannerView extends Views.TopBannerClassicView {
+    constructor(params, appState: AppState) {
+        super({
+            ...params,
+            title: new CoLabLogo({ router: appState.router }),
+            logo: {
+                tag: 'img',
+                src: '../assets/logo.svg',
+                style: {
+                    height: '30px',
+                },
+            },
+            badge: {
+                tag: 'div',
+                style: {
+                    width: 'fit-content',
+                },
+                children: [
+                    new UserBadgeDropdownView({
+                        state: appState,
+                    }),
+                    {
+                        tag: 'div',
+                        class: 'd-flex align-items-center justify-content-left my-1 ',
+                        children: [
+                            new NotificationsView({
+                                state: appState,
+                                router: appState.router,
+                            }),
+                            new BackendServingView({
+                                state: appState,
+                                router: appState.router,
+                            }),
+                            new EsmServingView({
+                                state: appState,
+                                router: appState.router,
+                            }),
+                        ],
+                    },
+                ],
+            },
+        })
+    }
+}
 
 export class NotificationsView implements VirtualDOM<'div'> {
     /**

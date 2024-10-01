@@ -1,16 +1,18 @@
 import { render } from '@youwol/rx-vdom'
-import { GlobalMarkdownViews, Views } from '@youwol/mkdocs-ts'
+import { GlobalMarkdownViews } from '@youwol/mkdocs-ts'
 
 import { AppState } from './app-state'
 import { Observable } from 'rxjs'
-import { DisconnectedView } from './disconnected.view'
-import { CoLabLogo, InfoSectionView } from './common'
+import { InfoSectionView } from './common'
+import { AppView } from './app-view'
 import {
-    BackendServingView,
-    UserBadgeDropdownView,
-    NotificationsView,
-    EsmServingView,
-} from './top-banner.view'
+    apiLink,
+    copyClipboard,
+    defaultUserDrive,
+    label,
+    navNode,
+    projectNav,
+} from './doc/md-widgets'
 
 GlobalMarkdownViews.factory = {
     ...GlobalMarkdownViews.factory,
@@ -20,14 +22,12 @@ GlobalMarkdownViews.factory = {
             router,
         })
     },
-    docLink: (elem: HTMLElement) => {
-        return {
-            tag: 'a' as const,
-            href: `/doc?nav=${elem.getAttribute('nav')}`,
-            target: '_blank',
-            innerText: elem.textContent,
-        }
-    },
+    apiLink,
+    label,
+    navNode,
+    copyClipboard,
+    projectNav,
+    defaultUserDrive,
 }
 
 const appState = new AppState()
@@ -49,60 +49,6 @@ if (parent['@youwol/co-lab-controller']) {
     })
 }
 
-document.getElementById('content').appendChild(
-    render({
-        tag: 'div',
-        class: 'h-100 w-100',
-        style: {
-            position: 'relative',
-        },
-        children: [
-            new Views.DefaultLayoutView({
-                router,
-                name: '',
-                topBanner: (params) =>
-                    new Views.TopBannerClassicView({
-                        ...params,
-                        title: new CoLabLogo({ router }),
-                        logo: {
-                            tag: 'img',
-                            src: '../assets/logo.svg',
-                            style: {
-                                height: '30px',
-                            },
-                        },
-                        badge: {
-                            tag: 'div',
-                            style: {
-                                width: 'fit-content',
-                            },
-                            children: [
-                                new UserBadgeDropdownView({
-                                    state: appState,
-                                }),
-                                {
-                                    tag: 'div',
-                                    class: 'd-flex align-items-center justify-content-left my-1 ',
-                                    children: [
-                                        new NotificationsView({
-                                            state: appState,
-                                            router,
-                                        }),
-                                        new BackendServingView({
-                                            state: appState,
-                                            router,
-                                        }),
-                                        new EsmServingView({
-                                            state: appState,
-                                            router,
-                                        }),
-                                    ],
-                                },
-                            ],
-                        },
-                    }),
-            }),
-            new DisconnectedView({ appState }),
-        ],
-    }),
-)
+document
+    .getElementById('content')
+    .appendChild(render(new AppView({ appState })))

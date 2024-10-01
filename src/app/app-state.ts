@@ -2,6 +2,7 @@ import {
     BehaviorSubject,
     combineLatest,
     distinctUntilChanged,
+    firstValueFrom,
     Observable,
 } from 'rxjs'
 import { filter, map, mergeMap, shareReplay, take, tap } from 'rxjs/operators'
@@ -18,7 +19,13 @@ import * as pyYw from '@youwol/local-youwol-client'
 import { Routers, WsRouter } from '@youwol/local-youwol-client'
 import { Accounts } from '@youwol/http-clients'
 import { raiseHTTPErrors } from '@youwol/http-primitives'
-import { Navigation, parseMd, Router, Views } from '@youwol/mkdocs-ts'
+import {
+    MdWidgets,
+    Navigation,
+    parseMd,
+    Router,
+    Views,
+} from '@youwol/mkdocs-ts'
 import * as Mounted from './mounted'
 import { setup } from '../auto-generated'
 import { Installer, PreferencesFacade } from '@youwol/os-core'
@@ -49,6 +56,13 @@ export type MountedPath = {
     path: string
     type: 'file' | 'folder'
 }
+
+export type AppMode =
+    | 'normal'
+    | 'docRemoteBelow'
+    | 'docRemoteInTab'
+    | 'docCompanion'
+
 /**
  * @category State
  */
@@ -118,7 +132,25 @@ export class AppState {
 
     public readonly mountedHdPaths$ = new BehaviorSubject<MountedPath[]>([])
 
+    public readonly appMode$ = new BehaviorSubject<AppMode>('normal')
+
+    public readonly navBroadcastChannel = new BroadcastChannel(
+        `colab-${Math.floor(Math.random() * 1e6)}`,
+    )
+
     constructor() {
+        const queryString = window.location.search
+        const urlParams = new URLSearchParams(queryString)
+
+        if (urlParams.get('appMode') === 'docCompanion') {
+            this.appMode$ = new BehaviorSubject('docCompanion')
+        }
+        if (urlParams.get('channelId')) {
+            this.navBroadcastChannel = new BroadcastChannel(
+                urlParams.get('channelId'),
+            )
+        }
+
         pyYw.PyYouwolClient.startWs$()
             .pipe(take(1))
             .subscribe(() => {
@@ -158,28 +190,27 @@ export class AppState {
             raiseHTTPErrors(),
             shareReplay(1),
         )
+        this.navigation = this.getNav()
 
-        this.navigation = {
-            name: 'Home',
-            decoration: {
-                icon: { tag: 'div', class: 'fas fa-home pe-1' },
-            },
-            tableOfContent: Views.tocView,
-            html: ({ router }) => new PageView({ router, appState: this }),
-            '/environment': Environment.navigation(this),
-            '/components': Components.navigation(this),
-            '/projects': Projects.navigation(this),
-            '/explorer': Explorer.navigation({
-                session$: this.session$,
-            }),
-            '/mounted': Mounted.navigation(this),
-            '/doc': Doc.navigation(),
-        }
         this.router = new Router({
             navigation: this.navigation,
             basePath: `/applications/${setup.name}/${setup.version}`,
+            redirects: (target) => this.getRedirects(target),
         })
-
+        // A workaround for now, it simplifies e.g. defining MD widgets where only the router is known
+        this.router['appState'] = this
+        this.navBroadcastChannel.onmessage = (e) => {
+            e.data.path && this.router.navigateTo({ path: e.data.path })
+            e.data === 'done' && this.appMode$.next('normal')
+        }
+        if (
+            this.appMode$.value === 'docCompanion' &&
+            parent.document === document
+        ) {
+            window.addEventListener('beforeunload', () => {
+                this.navBroadcastChannel.postMessage('done')
+            })
+        }
         PageView.warmUp()
     }
 
@@ -209,6 +240,74 @@ export class AppState {
         this.router.navigateTo({
             path: redirectNav,
         })
+    }
+
+    private getNav() {
+        const navs: Record<
+            Exclude<AppMode, 'docRemoteBelow' | 'docRemoteInTab'>,
+            Navigation
+        > = {
+            normal: {
+                name: 'Home',
+                decoration: {
+                    icon: { tag: 'div', class: 'fas fa-home pe-1' },
+                },
+                tableOfContent: Views.tocView,
+                html: ({ router }) => new PageView({ router, appState: this }),
+                '/environment': Environment.navigation(this),
+                '/components': Components.navigation(this),
+                '/projects': Projects.navigation(this),
+                '/explorer': Explorer.navigation({
+                    session$: this.session$,
+                }),
+                '/mounted': Mounted.navigation(this),
+                '/doc': Doc.navigation(this),
+            },
+            docCompanion: {
+                name: 'Home',
+                decoration: {
+                    icon: { tag: 'div', class: 'fas fa-home pe-1' },
+                    wrapperClass: 'd-none',
+                },
+                tableOfContent: Views.tocView,
+                html: ({ router }) => new PageView({ router, appState: this }),
+                '/doc': Doc.navigation(this),
+            },
+        }
+        return navs[this.appMode$.value]
+    }
+
+    async getRedirects(target: string) {
+        let to = target
+        if (target.startsWith('/doc')) {
+            // Documentation features examples using code snippets in python.
+            // We await installing the dependencies such that the snippets are displayed right away,
+            // and navigation to a given part of the page actually land at the right place.
+            // If not done, the code snippet views update after the navigation is done, translating the location of the
+            // elements and result in discrepancy with the expected location.
+            await firstValueFrom(
+                MdWidgets.CodeSnippetView.fetchCmDependencies$('python'),
+            )
+        }
+        if (target.startsWith('/api/youwol')) {
+            to = target.replace('/api/youwol', '/doc/api/youwol')
+        }
+        if (target.startsWith('/api/yw_utils')) {
+            to = target.replace('/api/yw_utils', '/doc/api/yw_utils')
+        }
+        if (this.appMode$.value === 'docCompanion' && !to.startsWith('/doc')) {
+            this.navBroadcastChannel.postMessage({
+                path: to,
+            })
+            return
+        }
+        if (this.appMode$.value == 'docRemoteBelow' && to.startsWith('/doc')) {
+            this.navBroadcastChannel.postMessage({
+                path: to,
+            })
+            return
+        }
+        return to
     }
 }
 
