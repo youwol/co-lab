@@ -11,4 +11,5 @@ LICENSE
 yarn-error.log
 /*.iml
 src/auto-generated.ts
-
+components/
+assets/*.md
