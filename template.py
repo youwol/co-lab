@@ -66,7 +66,7 @@ shutil.copyfile(
 )
 for file in ['README.md',
              # '.gitignore',
-             '.npmignore',
+             # '.npmignore',
              # '.prettierignore',
              'LICENSE', 'package.json',
              'tsconfig.json', 'webpack.config.ts']:
