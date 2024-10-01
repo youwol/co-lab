@@ -24,7 +24,7 @@ Let's create a simple JavaScript project starter:
 *  Navigate to <navNode target="Projects"></navNode>.
 *  Under the section **New project**:
    *  expand the **Raw JS Application** group
-   *  provide a name
+   *  provide the name <copyClipboard>tdse-1d</copyClipboard>
    *  click **Generate**.
 
 The project should open with its pipeline displayed.
@@ -87,24 +87,29 @@ performance. Since these versions are cached, they should be published only once
 release.
 </expandable>
 
+---
+
 ## Dynamic Resources Linking
 
 One of the key features provided by the YouWol environment is its ability to dynamically install and link the necessary
 dependencies for your application. These dependencies come in three forms: 
-(i) JavaScript or WebAssembly (ESM) packages, 
-(ii) Python packages ported by Pyodide to run in the browser, and 
-(iii) backend services running locally on your machine (usually in containers). 
+*  JavaScript or WebAssembly (ESM) packages.
+*  Python packages ported by Pyodide to run in the browser. 
+*  Backend services running locally on your machine (usually in containers). 
 
 To illustrate this:
-*  Click <button class='btn btn-light btn-sm'>Open your project</button> and copy/paste the content of 
-   the `script.js` and `style.css` files found 
-   <a target="_blank" href="https://github.com/youwol/co-lab/tree/main/components/tdse-1d/src">here</a>.
-*  On the project page, rerun the `package` and `cdn-local` steps.
+*  Update the code:
+    *  In the <projectNav project="tdse-1d"></projectNav> page's header, 
+       click the <i class='fas fa-laptop text-primary'></i> icon to browse your project.
+    *  In the top ribbon bar, click the <i class='fas fa-folder-open text-primary'></i> icon. 
+       It opens your platform's files explorer.
+    *  Copy/paste the content of the `script.js` and `style.css` files found 
+     <a target="_blank" href="https://github.com/youwol/co-lab/tree/main/components/tdse-1d/src">here</a>.
+*  Back on <projectNav project="tdse-1d"></projectNav>, re-run the `package` and `cdn-local` steps.
 *  Refresh the tab running your application and return here while the required backend is installing.
 
 <note level="hint" label="TDSE-1D">
-This application solves the 1D Time-Dependent Schrödinger Equation (TDSE) for a custom potential energy. 
-By default, a double well potential is used to demonstrate the tunneling effect.
+The updated application's code solves the 1D Time-Dependent Schrödinger Equation (TDSE) for a custom potential energy. 
 As mentioned below, the app requires 
 [this backend](https://github.com/youwol/co-lab/tree/main/components/colab-backend-project), which will need to be 
 installed on first use (likely right now).
@@ -128,23 +133,28 @@ const { backend, rxjs, d3 } = await webpm.install({
 </code-snippet>
 
 The `webpm` (Web Packages Manager) variable serves as the client for YouWol's components service. 
-It provides real-time resolution of the dependency tree. When the `install` function is invoked:
+It provides real-time resolution of dependency trees. When the `install` function is invoked:
 *  It resolves the dependency tree for the requested components according to the **semantic versioning query**.
 *  It installs and links the resolved dependencies (**both direct and indirect**) in your browser,
    **skipping those already available** in your browser's tab.
    The resolution considers packages from **both local & remote databases**.
-*  It returns the requested resources under the alias names you provided.
+*  It returns the requested resources under the alias names provided.
 
 
 <expandable title="Additional info" icon="fas fa-question-circle text-success">
 *  For more details about the WebPM client and its installation options, refer to the
-<a target="_blank" href="applications/@youwol/webpm-client-doc/latest?nav=/">documentation</a>.
+<a target="_blank" href="/applications/@youwol/webpm-client-doc/latest?nav=/">WebPM's documentation</a>.
 
 *  To learn more about the resolution of the TDSE 1D equation and the plotting implementation, visit the interactive
-   notebook available <a target="_blank" href="applications/@youwol/webpm-client-doc/latest?nav=/">here</a>.
+   notebook available 
+   <a target="_blank" href="/applications/@youwol/gallery/latest?nav=/sciences/tdse-1d">here</a>.
+   It uses the ability of WebPM to install and run python modules. 
 
+*  If you are interested in some details on how backend installation is working, refer to
+   <apiLink target="Backends"></apiLink>.
 </expandable>
 
+---
 
 ## Cloud Deployment
 
@@ -173,13 +183,16 @@ server installed and running.
 ### Permissions
 
 By default, when an application is first published, it has private access. 
-To change this, click the <i class="fas fa-folder text-primary"></i> icon in the project’s header page and adjust 
+To change this, click the <i class="fas fa-folder text-primary"></i> icon in the
+<projectNav project="tdse-1d"></projectNav> page's header and adjust 
 the permissions under the **Access** section. Set the read policy for **Default access** to `Authorized`,
-and then re-run the cdn_prod step.
+and then re-run the `cdn_prod` step.
 
 Additionally, your component will be stored within YouWol’s file system in a `Download` folder, 
-which you can browse from <driveFloder path="">here</driveFolder>. 
-You have the option to move the asset by cut/pasting it to a different location.
+which you can browse from <defaultUserDrive target="download"></defaultUserDrive>. 
+You have the option to move the asset by cutting/pasting it to a different location.
+
+---
 
 ## Key Takeaways
 
@@ -188,8 +201,8 @@ You have the option to move the asset by cut/pasting it to a different location.
 *  Projects are the foundation for components, which are transformed through a pipeline. 
    Pipelines are implemented using Python modules, and we demonstrated a generic one capable of publishing any type
    of web application.
-*  Projects can utilize the WebPM client to install dependencies dynamically. This client not only enables backends to 
-   be seamlessly integrated into your applications—opening up vast possibilities—but also offers a significant 
+*  Projects can utilize the WebPM client to install dependencies dynamically. It enables backends to 
+   be seamlessly integrated into your applications—opening up vast possibilities. Also, it offers a significant 
    advantage in scenarios where dependencies are unknown in advance, such as in applications like
    <a href="/applications/@youwol/mkdocs-ts-doc/latest?nav=/tutorials/notebook" target="_blank">notebooks</a> or 
    <a href="/applications/@youwol/gallery/latest?nav=/vs-flow" target="_blank">low-code environments</a>.

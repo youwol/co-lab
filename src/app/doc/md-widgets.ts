@@ -1,4 +1,10 @@
 import { AnyVirtualDOM } from '@youwol/rx-vdom'
+import { Router } from '@youwol/mkdocs-ts'
+import { AppState } from '../app-state'
+import { filter, map, switchMap } from 'rxjs/operators'
+import { icon } from '../projects/icons'
+import { AssetsGateway } from '@youwol/http-clients'
+import { raiseHTTPErrors } from '@youwol/http-primitives'
 
 const inlineBlock = {
     style: {
@@ -94,6 +100,159 @@ export function label(elem: HTMLElement): AnyVirtualDOM {
     }
 }
 
+export function copyClipboard(elem: HTMLElement): AnyVirtualDOM {
+    return {
+        tag: 'div',
+        style: {
+            display: 'inline-block',
+        },
+        children: [
+            {
+                tag: 'i',
+                class: 'd-flex align-items-center',
+                children: [
+                    {
+                        tag: 'div',
+                        style: { fontWeight: 'bolder' },
+                        innerText: elem.innerText,
+                    },
+                    {
+                        tag: 'i',
+                        class: 'mx-1',
+                    },
+                    {
+                        tag: 'button',
+                        class: 'btn btn-sm btn-light p-1',
+                        children: [
+                            {
+                                tag: 'i',
+                                class: `fas fa-copy`,
+                            },
+                        ],
+                        onclick: () => {
+                            navigator.clipboard.writeText(elem.innerText)
+                        },
+                    },
+                ],
+            },
+        ],
+    }
+}
+
+export function projectNav(
+    elem: HTMLElement,
+    { router }: { router: Router },
+): AnyVirtualDOM {
+    const appState: AppState = router['appState']
+    const project = elem.getAttribute('project')
+    const projectId = window.btoa(project)
+    const nav$ = appState.projectsState.projects$.pipe(
+        map((projects) => projects.find((p) => p.id == projectId)),
+        filter((p) => p !== undefined),
+        switchMap((p) => {
+            return appState.environment$.pipe(
+                map((env) =>
+                    env.youwolEnvironment.projects.finders.find((finder) =>
+                        p.path.startsWith(finder.fromPath),
+                    ),
+                ),
+                map((finder) => ({
+                    project: p,
+                    path: `projects/${window.btoa(finder.fromPath)}/${projectId}`,
+                })),
+            )
+        }),
+    )
+    return {
+        tag: 'button',
+        class: 'btn btn-sm bg-light py-0 px-1 rounded',
+        children: [
+            {
+                source$: nav$,
+                vdomMap: ({ project, path }) => {
+                    return {
+                        tag: 'a',
+                        href: `@nav/${path}`,
+                        onclick: (ev: MouseEvent) => {
+                            ev.preventDefault()
+                            ev.stopPropagation()
+                            router.navigateTo({ path })
+                        },
+                        class: 'd-flex',
+                        children: [
+                            icon(project),
+                            {
+                                tag: 'span',
+                                style: {
+                                    display: 'inline-block',
+                                },
+                                innerText: project.name,
+                            },
+                        ],
+                    }
+                },
+                untilFirst: {
+                    tag: 'i',
+                    class: 'border rounded p-1 text-disabled',
+                    innerText: `⚠️ Project '${project}' not available ⚠️`,
+                },
+            },
+        ],
+    }
+}
+
+export function defaultUserDrive(
+    elem: HTMLElement,
+    { router }: { router: Router },
+): AnyVirtualDOM {
+    const target = elem.getAttribute('target')
+    const factory = {
+        download: {
+            name: 'Download',
+            icon: 'fas fa-download',
+            attr: 'downloadFolderId',
+        },
+    }
+    const client = new AssetsGateway.Client().explorer
+    const target$ = client.getDefaultUserDrive$().pipe(
+        raiseHTTPErrors(),
+        map((d) => `explorer/${d.groupId}/folder_${d[factory[target].attr]}`),
+    )
+    return {
+        tag: 'button',
+        class: 'btn btn-sm bg-light py-0 px-1 rounded',
+        children: [
+            {
+                source$: target$,
+                vdomMap: (path: string) => {
+                    return {
+                        tag: 'a',
+                        href: `@nav/${path}`,
+                        onclick: (ev: MouseEvent) => {
+                            ev.preventDefault()
+                            ev.stopPropagation()
+                            router.navigateTo({ path })
+                        },
+                        class: 'd-flex align-items-center',
+                        children: [
+                            {
+                                tag: 'i',
+                                class: `fas fa-${factory[target].icon} me-1`,
+                            },
+                            {
+                                tag: 'div',
+                                style: {
+                                    display: 'inline-block',
+                                },
+                                innerText: factory[target].name,
+                            },
+                        ],
+                    }
+                },
+            },
+        ],
+    }
+}
 const ApiLinksDict = {
     ProjectsFinder: {
         path: 'youwol/app/environment/models.models_project.ProjectsFinder',
@@ -114,6 +273,10 @@ const ApiLinksDict = {
     'pipeline_raw_app.template': {
         path: 'youwol/pipelines/pipeline_raw_app.template.template',
         role: 'function',
+    },
+    Backends: {
+        path: 'youwol/app/routers/backends',
+        role: 'module',
     },
 }
 

@@ -197,6 +197,8 @@ export class AppState {
             basePath: `/applications/${setup.name}/${setup.version}`,
             redirects: (target) => this.getRedirects(target),
         })
+        // A workaround for now, it simplifies e.g. defining MD widgets where only the router is known
+        this.router['appState'] = this
         this.navBroadcastChannel.onmessage = (e) => {
             e.data.path && this.router.navigateTo({ path: e.data.path })
             e.data === 'done' && this.appMode$.next('normal')
