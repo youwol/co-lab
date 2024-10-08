@@ -102,8 +102,8 @@ export const navigation = (appState: AppState): Navigation => ({
         name: 'API',
         decoration: decoration('fa-code', appState),
         tableOfContent: Views.tocView,
-        html: fromMarkdown({
-            url: `/applications/@youwol/py-youwol-doc/*/assets/api.md`,
+        html: fromMd({
+            file: 'doc.api.md',
         }),
         '/youwol': CodeApiModule.codeApiEntryNode({
             name: 'youwol',
@@ -118,6 +118,13 @@ export const navigation = (appState: AppState): Navigation => ({
             entryModule: 'yw_clients',
             docBasePath: '/applications/@youwol/py-youwol-doc/*/assets/api',
             configuration: configuration,
+        }),
+        '/co-lab': CodeApiModule.codeApiEntryNode({
+            name: 'co-lab',
+            decoration: decoration('fa-box-open', appState),
+            entryModule: 'co-lab',
+            docBasePath: '../assets/api',
+            configuration: CodeApiModule.configurationTsTypedoc,
         }),
     },
 })
