@@ -11,3 +11,4 @@ __pycache__
 .venv
 /src/tests/**/result.zip
 *.egg-info
+/assets/api
