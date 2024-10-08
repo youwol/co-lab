@@ -162,7 +162,7 @@ export class ExplorerView implements VirtualDOM<'div'> {
             },
             {
                 source$: this.state.items$,
-                vdomMap: ({ files, folders }) => {
+                vdomMap: ({ files, folders }: CdnBackend.QueryExplorerResponse) => {
                     return {
                         tag: 'div',
                         class: 'd-flex flex-column',
