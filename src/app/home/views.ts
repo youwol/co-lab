@@ -1,220 +1,152 @@
-import { ChildrenLike, RxChild, VirtualDOM } from '@youwol/rx-vdom'
-import {
-    PlatformState,
-    PreferencesFacade,
-    Preferences,
-    PreferencesExtractor,
-} from '@youwol/os-core'
-import * as OsCore from '@youwol/os-core'
-import { Router } from '@youwol/mkdocs-ts'
-import { map } from 'rxjs/operators'
-import { BehaviorSubject } from 'rxjs'
-import { SideAppActionsView } from './actions.view'
+import { ChildrenLike, VirtualDOM, AnyVirtualDOM } from '@youwol/rx-vdom'
 
-/**
- * @category View
- */
-export class DesktopWidgetsView implements VirtualDOM<'div'> {
-    /**
-     * @group Immutable DOM Constants
-     */
+import { MdWidgets } from '@youwol/mkdocs-ts'
+import { BehaviorSubject, combineLatest, debounceTime, from, of } from 'rxjs'
+import { Content, Language, State } from './state'
+import { switchMap } from 'rxjs/operators'
+import { buttonsFactory, internalDocLink } from '../common/buttons'
+
+type HomePageMode = 'view' | 'edit'
+
+export const editHomeAction = (state: State): VirtualDOM<'i'> => ({
+    tag: 'i' as const,
+    class: 'flex-grow-1',
+    style: {
+        padding: '0px',
+    },
+    children: [
+        {
+            source$: state.mode$,
+            vdomMap: (mode) =>
+                mode === 'view'
+                    ? {
+                          ...buttonsFactory.HomeEdit,
+                          onclick: () => state.toggleMode(),
+                      }
+                    : {
+                          ...buttonsFactory.HomeView,
+                          onclick: () => state.toggleMode(),
+                      },
+        },
+    ],
+})
+
+export class HomeView implements VirtualDOM<'div'> {
     public readonly tag = 'div'
-    /**
-     * @group Immutable DOM Constants
-     */
-    public readonly class = 'd-flex flex-column w-100'
-    /**
-     * @group Immutable DOM Constants
-     */
     public readonly children: ChildrenLike
 
-    constructor() {
-        const state = new PlatformState()
-        this.children = {
-            policy: 'replace',
-            source$: PreferencesFacade.getPreferences$(),
-            vdomMap: (preferences: Preferences) =>
-                PreferencesExtractor.getDesktopWidgets(preferences, {
-                    platformState: state,
-                }),
-        }
-    }
-}
+    private readonly state: State
 
-/**
- * @category View
- */
-export class NewAppsView implements VirtualDOM<'div'> {
-    /**
-     * @group Immutable DOM Constants
-     */
-    public readonly tag = 'div'
-    /**
-     * @group Immutable DOM Constants
-     */
-    public readonly class = 'w-100 flex-grow-1 d-flex flex-column '
-    /**
-     * @group Immutable DOM Constants
-     */
-    public readonly style = {
-        minHeight: '0px',
-    }
-    /**
-     * @group Immutable DOM Constants
-     */
-    public readonly children: ChildrenLike
-    /**
-     * @group State
-     */
-    public readonly state: OsCore.PlatformState
-
-    constructor(params: { state: OsCore.PlatformState; router: Router }) {
+    constructor(params: { state: State }) {
         Object.assign(this, params)
-        const spinner: RxChild = {
-            source$: OsCore.Installer.getApplicationsInfo$(),
-            vdomMap: () => {
-                return { tag: 'div' }
-            },
-            untilFirst: {
-                tag: 'div',
-                class: 'fas fa-spinner fa-spin mx-2',
-            },
-        }
 
         this.children = [
             {
-                tag: 'div',
-                class: 'fv-text-primary d-flex align-items-center',
-                children: [spinner],
+                source$: combineLatest([
+                    this.state.content$,
+                    this.state.mode$,
+                ]).pipe(
+                    debounceTime(100),
+                    switchMap(([content, mode]: [Content, HomePageMode]) => {
+                        return mode == 'view'
+                            ? from(this.state.generateView(content))
+                            : of(new EditorView({ state: this.state, content }))
+                    }),
+                ),
+                vdomMap: (vdom: AnyVirtualDOM) => vdom,
             },
+        ]
+    }
+}
+
+class EditorView implements VirtualDOM<'div'> {
+    public readonly tag = 'div'
+    public readonly children: ChildrenLike
+    public readonly selectedMode$ = new BehaviorSubject<Language>('md')
+
+    constructor({ state, content }: { state: State; content: Content }) {
+        const sepV: AnyVirtualDOM = {
+            tag: 'div',
+            class: 'my-2 border w-100',
+        }
+        const sepH: AnyVirtualDOM = {
+            tag: 'i',
+            class: 'mx-2',
+        }
+        this.children = [
+            this.banner(),
+            sepH,
+            internalDocLink({
+                nav: '/doc/how-to/custom-home',
+                router: state.appState.router,
+            }),
+            sepV,
             {
-                tag: 'div',
-                class: 'flex-grow-1 overflow-auto',
-                style: {
-                    minHeight: '0px',
-                },
-                children: [
-                    {
-                        tag: 'div',
-                        class: 'd-flex p-2 mx-auto flex-wrap justify-content-start align-items-center',
-                        children: {
-                            policy: 'replace',
-                            source$:
-                                OsCore.Installer.getApplicationsInfo$().pipe(
-                                    map((apps) => {
-                                        return apps.filter(
-                                            (app) => app.execution.standalone,
-                                        )
-                                    }),
-                                ),
-                            vdomMap: (apps: OsCore.ApplicationInfo[]) => {
-                                return apps.map((app) => {
-                                    return new NewAppView({
-                                        state: this.state,
-                                        app,
-                                        router: params.router,
-                                    })
-                                })
+                source$: this.selectedMode$,
+                vdomMap: (mode: Language) => {
+                    const languages: Record<Language, MdWidgets.CodeLanguage> =
+                        {
+                            md: 'markdown',
+                            js: 'javascript',
+                            css: 'css',
+                        }
+                    const editor = new MdWidgets.CodeSnippetView({
+                        language: languages[mode],
+                        content: content[mode],
+                        cmConfig: {
+                            readOnly: false,
+                            extraKeys: {
+                                'Ctrl-Enter': () => state.toggleMode(),
                             },
                         },
-                    },
-                ],
-            },
-        ]
-    }
-}
-
-/**
- * @category View
- */
-class NewAppView implements VirtualDOM<'div'> {
-    /**
-     * @group Immutable DOM Constants
-     */
-    public readonly tag = 'div'
-    /**
-     * @group Immutable DOM Constants
-     */
-    public readonly class =
-        'p-1 d-flex flex-column align-items-center yw-hover-app m-1'
-    public readonly style = {
-        position: 'relative' as const,
-        width: '116px',
-        height: '125px',
-        overflowWrap: 'anywhere' as const,
-        textAlign: 'center' as const,
-        justifyContent: 'center' as const,
-    }
-    /**
-     * @group States
-     */
-    public readonly state: OsCore.PlatformState
-    /**
-     * @group Immutable Constants
-     */
-    public readonly app: OsCore.ApplicationInfo
-    /**
-     * @group Immutable DOM Constants
-     */
-    public readonly children: ChildrenLike
-    public readonly hovered$ = new BehaviorSubject(false)
-
-    public readonly onmouseenter = () => {
-        this.hovered$.next(true)
-    }
-    public readonly onmouseleave = () => {
-        this.hovered$.next(false)
-    }
-
-    /**
-     * @group Immutable DOM Constants
-     */
-    public readonly ondblclick: (ev: MouseEvent) => void
-
-    constructor(params: {
-        state: OsCore.PlatformState
-        app: OsCore.ApplicationInfo
-        router: Router
-    }) {
-        Object.assign(this, params)
-        this.children = [
-            {
-                tag: 'div',
-                class: 'd-flex justify-content-center align-items-center',
-                style: {
-                    width: '70px',
-                    height: '70px',
-                },
-                children: [this.app.graphics.appIcon],
-            },
-            {
-                tag: 'div',
-                class: 'd-flex justify-content-center align-items-center mt-1',
-                children: [
-                    {
+                    })
+                    return {
                         tag: 'div',
-                        style: {
-                            height: '43px',
+                        children: [editor],
+                        connectedCallback: (elem) => {
+                            const updateSub = editor.content$.subscribe((c) => {
+                                state.updateContent(mode, c)
+                            })
+                            elem.ownSubscriptions(updateSub)
                         },
-                        innerText: this.app.displayName,
-                    },
-                ],
-            },
-            {
-                source$: this.hovered$,
-                vdomMap: (isHovered) =>
-                    isHovered
-                        ? new SideAppActionsView({
-                              state: params.state,
-                              router: params.router,
-                              app: params.app,
-                          })
-                        : { tag: 'div' },
+                    }
+                },
             },
         ]
-        this.ondblclick = () => {
-            const url = `/applications/${this.app.cdnPackage}/latest`
-            window.open(url, '_blank')
+    }
+
+    private banner(): AnyVirtualDOM {
+        return {
+            tag: 'div',
+            class: 'btn-group btn-group-toggle',
+            customAttributes: {
+                dataToggle: 'buttons',
+            },
+            children: [
+                this.toggleButton('md'),
+                this.toggleButton('js'),
+                this.toggleButton('css'),
+            ],
+        }
+    }
+
+    private toggleButton(target: Language): AnyVirtualDOM {
+        const urls: Record<Language, string> = {
+            md: '../assets/icon-md.svg',
+            js: '../assets/icon-js.svg',
+            css: '../assets/icon-css.svg',
+        }
+        return {
+            tag: 'label',
+            class: {
+                source$: this.selectedMode$,
+                vdomMap: (selected) => (selected === target ? 'active' : ''),
+                wrapper: (d) => `${d} btn btn-light p-1`,
+            },
+            children: [
+                { tag: 'img', style: { width: '25px' }, src: urls[target] },
+            ],
+            onclick: () => this.selectedMode$.next(target),
         }
     }
 }

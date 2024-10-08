@@ -14,6 +14,11 @@ import { onHTTPErrors } from '@youwol/http-primitives'
 import { AssetsGateway, ExplorerBackend } from '@youwol/http-clients'
 import { getProjectNav$ } from './utils-nav'
 
+/**
+ * Prefix for class name of views' type.
+ */
+export const colabClassPrefix = 'colab'
+
 export const styleShellStdOut = {
     tag: 'pre' as const,
     class: 'px-2',
