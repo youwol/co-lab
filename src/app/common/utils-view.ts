@@ -388,7 +388,7 @@ export class HdPathBookView implements VirtualDOM<'div'> {
 
 export function fromMd(file: string) {
     return fromMarkdown({
-        url: `/api/assets-gateway/raw/package/${setup.assetId}/${setup.version}/assets/${file}`,
+        url: `../assets/${file}`,
     })
 }
 
