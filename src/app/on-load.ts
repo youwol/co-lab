@@ -13,6 +13,11 @@ import {
     navNode,
     projectNav,
 } from './doc/md-widgets'
+import {
+    componentsDonutChart,
+    launchPad,
+    projectsDonutChart,
+} from './home/md-widgets'
 
 GlobalMarkdownViews.factory = {
     ...GlobalMarkdownViews.factory,
@@ -28,6 +33,9 @@ GlobalMarkdownViews.factory = {
     copyClipboard,
     projectNav,
     defaultUserDrive,
+    launchPad,
+    projectsDonutChart,
+    componentsDonutChart,
 }
 
 const appState = new AppState()
