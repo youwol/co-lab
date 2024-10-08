@@ -36,3 +36,5 @@ type DevTags =
     | 'br'
     | 'header'
     | 'footer'
+    | 'label'
+    | 'canvas'
