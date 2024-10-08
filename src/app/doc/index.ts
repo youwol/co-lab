@@ -6,6 +6,7 @@ import {
     Views,
     fromMarkdown,
     installCodeApiModule,
+    installNotebookModule,
 } from '@youwol/mkdocs-ts'
 import { pyYwDocLink } from '../common/py-yw-references.view'
 import { AppMode, AppState } from '../app-state'
@@ -26,6 +27,15 @@ function fromMd({
 }
 
 const CodeApiModule = await installCodeApiModule()
+const NotebookModule = await installNotebookModule()
+const notebookOptions = {
+    runAtStart: true,
+    defaultCellAttributes: {
+        lineNumbers: false,
+    },
+    markdown: {},
+}
+
 const configuration = {
     ...CodeApiModule.configurationPython,
     codeUrl: ({ path, startLine }: { path: string; startLine: number }) => {
@@ -96,6 +106,16 @@ export const navigation = (appState: AppState): Navigation => ({
                     file: 'doc.how-to.config.projects.md',
                 }),
             },
+        },
+        '/custom-home': {
+            name: 'Custom Home Page',
+            tableOfContent: Views.tocView,
+            html: ({ router }) =>
+                new NotebookModule.NotebookPage({
+                    url: '../assets/doc.how-to.custom-home.md',
+                    router: router,
+                    options: notebookOptions,
+                }),
         },
     },
     '/api': {

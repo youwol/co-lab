@@ -7,11 +7,16 @@ import { InfoSectionView } from './common'
 import { AppView } from './app-view'
 import {
     apiLink,
+    colabButton,
     copyClipboard,
     defaultUserDrive,
     label,
+    mkdocsDoc,
     navNode,
     projectNav,
+    rxvdomDoc,
+    todo,
+    webpmDoc,
 } from './doc/md-widgets'
 import {
     componentsDonutChart,
@@ -36,6 +41,11 @@ GlobalMarkdownViews.factory = {
     launchPad,
     projectsDonutChart,
     componentsDonutChart,
+    colabButton,
+    webpmDoc,
+    mkdocsDoc,
+    rxvdomDoc,
+    todo,
 }
 
 const appState = new AppState()
