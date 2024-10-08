@@ -1,10 +1,11 @@
 import {
     BehaviorSubject,
-    combineLatest,
     distinctUntilChanged,
     firstValueFrom,
+    from,
     Observable,
 } from 'rxjs'
+import { install } from '@youwol/webpm-client'
 import { filter, map, mergeMap, shareReplay, take, tap } from 'rxjs/operators'
 import * as Home from './home'
 import * as Projects from './projects'
@@ -136,6 +137,23 @@ export class AppState {
     public readonly navBroadcastChannel = new BroadcastChannel(
         `colab-${Math.floor(Math.random() * 1e6)}`,
     )
+
+    install(id: string) {
+        if (this._installed[id]) {
+            return this._installed[id]
+        }
+        this._installed[id] = from(install(this.dynamicInstallBodies[id])).pipe(
+            shareReplay(1),
+        )
+        return this._installed[id]
+    }
+    private dynamicInstallBodies = {
+        d3: {
+            esm: [`d3#${setup.runTimeDependencies.externals.d3} as d3`],
+        },
+    }
+    private _installed: { [k: string]: Observable<WindowOrWorkerGlobalScope> } =
+        {}
 
     constructor() {
         const queryString = window.location.search
