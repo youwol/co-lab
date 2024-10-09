@@ -471,7 +471,7 @@ export type LinkInput = {
 export class ComponentCrossLinksView implements VirtualDOM<'div'> {
     public readonly tag = 'div'
     public readonly class =
-        'colab-ComponentCrossLinksView d-flex align-items-center w-100 rounded p-1'
+        'colab-ComponentCrossLinksView d-flex align-items-center rounded p-1'
     public readonly children: ChildrenLike
     public readonly appState: AppState
     public readonly component: string
