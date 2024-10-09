@@ -1,11 +1,14 @@
 import {
     BehaviorSubject,
-    combineLatest,
     distinctUntilChanged,
     firstValueFrom,
+    forkJoin,
+    from,
     Observable,
 } from 'rxjs'
+import { install } from '@youwol/webpm-client'
 import { filter, map, mergeMap, shareReplay, take, tap } from 'rxjs/operators'
+import * as Home from './home'
 import * as Projects from './projects'
 import * as Components from './components'
 import * as Backends from './environment/backends'
@@ -14,24 +17,17 @@ import * as Environment from './environment'
 import * as Notification from './environment/notifications'
 import * as Explorer from './explorer'
 import * as Doc from './doc'
-import { AnyVirtualDOM, ChildrenLike, VirtualDOM } from '@youwol/rx-vdom'
+import { AnyVirtualDOM } from '@youwol/rx-vdom'
 import * as pyYw from '@youwol/local-youwol-client'
-import { Routers, WsRouter } from '@youwol/local-youwol-client'
+import { WsRouter } from '@youwol/local-youwol-client'
 import { Accounts } from '@youwol/http-clients'
 import { raiseHTTPErrors } from '@youwol/http-primitives'
-import {
-    MdWidgets,
-    Navigation,
-    parseMd,
-    Router,
-    Views,
-} from '@youwol/mkdocs-ts'
+import { MdWidgets, Navigation, Router, Views } from '@youwol/mkdocs-ts'
 import * as Mounted from './mounted'
 import { setup } from '../auto-generated'
-import { Installer, PreferencesFacade } from '@youwol/os-core'
-import { DesktopWidgetsView, NewAppsView } from './home/views'
 import { encodeHdPath } from './mounted'
 import { Patches } from './common'
+import { editHomeAction, HomeView } from './home/views'
 
 export type Topic =
     | 'Projects'
@@ -98,6 +94,11 @@ export class AppState {
     /**
      * @group State
      */
+    public readonly homeState: Home.State
+
+    /**
+     * @group State
+     */
     public readonly projectsState: Projects.State
 
     /**
@@ -138,6 +139,23 @@ export class AppState {
         `colab-${Math.floor(Math.random() * 1e6)}`,
     )
 
+    install(id: string) {
+        if (this._installed[id]) {
+            return this._installed[id]
+        }
+        this._installed[id] = from(install(this.dynamicInstallBodies[id])).pipe(
+            shareReplay(1),
+        )
+        return this._installed[id]
+    }
+    private dynamicInstallBodies = {
+        d3: {
+            esm: [`d3#${setup.runTimeDependencies.externals.d3} as d3`],
+        },
+    }
+    private _installed: { [k: string]: Observable<WindowOrWorkerGlobalScope> } =
+        {}
+
     constructor() {
         const queryString = window.location.search
         const urlParams = new URLSearchParams(queryString)
@@ -162,6 +180,7 @@ export class AppState {
         )
         this.connectedLocal$ = pyYw.PyYouwolClient.ws.connected$
 
+        this.homeState = new Home.State({ appState: this })
         this.projectsState = new Projects.State({ appState: this })
         this.cdnState = new Components.State({ appState: this })
         this.esmServersState = new EsmServers.State({ appState: this })
@@ -211,7 +230,6 @@ export class AppState {
                 this.navBroadcastChannel.postMessage('done')
             })
         }
-        PageView.warmUp()
     }
 
     mountHdPath(path: string, type: 'file' | 'folder') {
@@ -243,6 +261,7 @@ export class AppState {
     }
 
     private getNav() {
+        const homeView = new HomeView({ state: this.homeState })
         const navs: Record<
             Exclude<AppMode, 'docRemoteBelow' | 'docRemoteInTab'>,
             Navigation
@@ -251,9 +270,10 @@ export class AppState {
                 name: 'Home',
                 decoration: {
                     icon: { tag: 'div', class: 'fas fa-home pe-1' },
+                    actions: [editHomeAction(this.homeState)],
                 },
                 tableOfContent: Views.tocView,
-                html: ({ router }) => new PageView({ router, appState: this }),
+                html: () => homeView,
                 '/environment': Environment.navigation(this),
                 '/components': Components.navigation(this),
                 '/projects': Projects.navigation(this),
@@ -270,7 +290,7 @@ export class AppState {
                     wrapperClass: 'd-none',
                 },
                 tableOfContent: Views.tocView,
-                html: ({ router }) => new PageView({ router, appState: this }),
+                html: () => homeView,
                 '/doc': Doc.navigation(this),
             },
         }
@@ -286,7 +306,12 @@ export class AppState {
             // If not done, the code snippet views update after the navigation is done, translating the location of the
             // elements and result in discrepancy with the expected location.
             await firstValueFrom(
-                MdWidgets.CodeSnippetView.fetchCmDependencies$('python'),
+                forkJoin(
+                    ['python', 'html', 'javascript'].map(
+                        (l: MdWidgets.CodeLanguage) =>
+                            MdWidgets.CodeSnippetView.fetchCmDependencies$(l),
+                    ),
+                ),
             )
         }
         if (target.startsWith('/api/youwol')) {
@@ -308,76 +333,5 @@ export class AppState {
             return
         }
         return to
-    }
-}
-
-export class PageView implements VirtualDOM<'div'> {
-    public readonly tag = 'div'
-    public readonly children: ChildrenLike
-
-    static readonly warmUp = () => {
-        combineLatest([
-            Installer.getApplicationsInfo$(),
-            PreferencesFacade.getPreferences$(),
-        ]).subscribe()
-    }
-
-    constructor({ router, appState }: { router: Router; appState: AppState }) {
-        this.children = [
-            parseMd({
-                src: `
-# Home    
-
-The server is running using the configuration file <configFile></configFile>
-
-## Launch-pad
-
-<info>
-Here are displayed the applications reference by the [installer script](@nav/environment/profiles.installers), 
-they are similar to 'pined' applications.   
-
-You may want to use this 
-<a href='https://chromewebstore.google.com/detail/auto-tab-groups/nicjeeimgboiijpfcgfkbemiclbhfnio?pli=1'
-target='_blank'>plugin</a> to group YouWol's applications in a tab group (for chrome).
-
-</info>
- 
-<appsView></appsView>
-
-## Widgets
-
-<info>
-Here are the widgets referenced by the [preferences script](@nav/environment/profiles.preferences).
-
-</info>
-
-
-<desktopWidgets></desktopWidgets>
-`,
-                router,
-                views: {
-                    configFile: () => ({
-                        tag: 'a',
-                        href: '@nav/environment/yw-configuration',
-                        innerText: {
-                            source$: appState.environment$,
-                            vdomMap: (
-                                env: Routers.Environment.EnvironmentStatusResponse,
-                            ) => {
-                                return env.configuration.pathsBook.config.match(
-                                    /[^\\/]+$/,
-                                )[0]
-                            },
-                        },
-                    }),
-                    appsView: () =>
-                        new NewAppsView({
-                            state: undefined,
-                            router,
-                        }),
-                    desktopWidgets: () => new DesktopWidgetsView(),
-                },
-            }),
-        ]
     }
 }

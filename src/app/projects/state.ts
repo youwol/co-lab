@@ -1,7 +1,18 @@
-import { BehaviorSubject, Observable, ReplaySubject, Subject } from 'rxjs'
+import {
+    BehaviorSubject,
+    combineLatest,
+    from,
+    Observable,
+    ReplaySubject,
+    Subject,
+} from 'rxjs'
 import { filter, map, mergeMap, shareReplay } from 'rxjs/operators'
 import { AppState } from '../app-state'
-import { filterCtxMessage, WebSocketResponse$ } from '@youwol/http-primitives'
+import {
+    filterCtxMessage,
+    raiseHTTPErrors,
+    WebSocketResponse$,
+} from '@youwol/http-primitives'
 import {
     ContextMessage,
     Label,
@@ -9,6 +20,8 @@ import {
     Routers,
 } from '@youwol/local-youwol-client'
 import { getProjectNav$ } from '../common/utils-nav'
+import { CdnSessionsStorage } from '@youwol/http-clients'
+import { setup } from '../../auto-generated'
 
 function projectLoadingIsSuccess(
     result: unknown,
@@ -233,6 +246,12 @@ export class State {
         Routers.Projects.Project[]
     >([])
 
+    public readonly historic$: Observable<Routers.Projects.Project[]>
+    private readonly rawHistoric$ = new BehaviorSubject<string[]>([])
+
+    private readonly storageClient = new CdnSessionsStorage.Client()
+    private static readonly STORAGE_KEY = 'colab-projects-v0'
+
     constructor(params: { appState: AppState }) {
         Object.assign(this, params)
 
@@ -255,6 +274,40 @@ export class State {
             map((data) => data.failures),
             shareReplay(1),
         )
+
+        this.historic$ = combineLatest([
+            this.projects$,
+            this.rawHistoric$,
+        ]).pipe(
+            map(([projects, historic]) => {
+                return historic
+                    .map((p) => projects.find((p2) => p2.name === p))
+                    .filter((d) => d !== undefined)
+            }),
+        )
+        this.rawHistoric$
+            .pipe(
+                mergeMap((historic) => {
+                    return from(
+                        this.storageClient.postData$({
+                            packageName: setup.name,
+                            dataName: State.STORAGE_KEY,
+                            body: { historic },
+                        }),
+                    )
+                }),
+            )
+            .subscribe(() => {})
+
+        this.storageClient
+            .getData$({
+                packageName: setup.name,
+                dataName: State.STORAGE_KEY,
+            })
+            .pipe(raiseHTTPErrors())
+            .subscribe((resp) => {
+                this.updatePersistedHistoric({ open: resp['historic'] })
+            })
     }
 
     runStep(projectId: string, flowId: string, stepId: string) {
@@ -271,6 +324,7 @@ export class State {
     }
 
     openProject(project: Routers.Projects.Project) {
+        this.updatePersistedHistoric({ open: [project.name] })
         if (!this.projectEvents[project.id]) {
             this.projectEvents[project.id] = new ProjectEvents(project)
         }
@@ -293,6 +347,14 @@ export class State {
         })
     }
 
+    updatePersistedHistoric({ open }: { open: string[] }) {
+        const raw = this.rawHistoric$.value
+        const base = raw.filter((p) => {
+            return !open.includes(p)
+        })
+        const newHistoric = [...open, ...base]
+        this.rawHistoric$.next(newHistoric)
+    }
     selectStep(
         projectId: string,
         flowId: string | undefined = undefined,

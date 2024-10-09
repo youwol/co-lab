@@ -5,6 +5,7 @@ import { filter, map, switchMap } from 'rxjs/operators'
 import { icon } from '../projects/icons'
 import { AssetsGateway } from '@youwol/http-clients'
 import { raiseHTTPErrors } from '@youwol/http-primitives'
+import { buttonsFactory } from '../common/buttons'
 
 const inlineBlock = {
     style: {
@@ -253,6 +254,36 @@ export function defaultUserDrive(
         ],
     }
 }
+
+export function colabButton(elem: HTMLElement): AnyVirtualDOM {
+    const target = elem.getAttribute('target')
+    return buttonsFactory[target]
+}
+
+function docLink(name: string, nav: string, text: string): AnyVirtualDOM {
+    return {
+        tag: 'a',
+        href: `/applications/@youwol/${name}/latest?nav=${nav}`,
+        target: '_blank',
+        innerText: text,
+    }
+}
+export function webpmDoc(elem: HTMLElement): AnyVirtualDOM {
+    const nav = elem.getAttribute('nav') || ''
+    return docLink('webpm-client-doc', nav, elem.innerText)
+}
+export function mkdocsDoc(elem: HTMLElement): AnyVirtualDOM {
+    const nav = elem.getAttribute('nav') || ''
+    return docLink('mkdocs-ts-doc', nav, elem.innerText)
+}
+export function rxvdomDoc(elem: HTMLElement): AnyVirtualDOM {
+    const nav = elem.getAttribute('nav') || ''
+    return docLink('rx-vdom-doc', nav, elem.innerText)
+}
+
+export function todo(elem: HTMLElement): AnyVirtualDOM {
+    return { tag: 'div', innerText: `⚠️ ${elem.textContent}` }
+}
 const ApiLinksDict = {
     ProjectsFinder: {
         path: 'youwol/app/environment/models.models_project.ProjectsFinder',
@@ -278,6 +309,34 @@ const ApiLinksDict = {
         path: 'youwol/app/routers/backends',
         role: 'module',
     },
+    CdnPackageLight: {
+        path: 'youwol/app/routers/local_cdn.models.CdnPackageLight',
+        role: 'class',
+    },
+    Project: {
+        path: 'youwol/app/routers/projects.models_project.Project',
+        role: 'class',
+    },
+    LaunchPadView: {
+        path: 'co-lab/Home/Widgets.LaunchPadView',
+        role: 'class',
+    },
+    ComponentsDonutChart: {
+        path: 'co-lab/Home/Widgets.ComponentsDonutChart',
+        role: 'class',
+    },
+    ProjectsDonutChart: {
+        path: 'co-lab/Home/Widgets.ProjectsDonutChart',
+        role: 'class',
+    },
+    ProjectsHistoricView: {
+        path: 'co-lab/Home/Widgets.ProjectsHistoricView',
+        role: 'class',
+    },
+    ColabWidgets: {
+        path: 'co-lab/Home/Widgets',
+        role: 'module',
+    },
 }
 
 const NodeLinksDict = {
@@ -290,5 +349,10 @@ const NodeLinksDict = {
         path: 'environment/backends',
         name: 'Backends',
         icon: 'fas fa-server',
+    },
+    Home: {
+        path: '/',
+        name: 'Home',
+        icon: 'fas fa-home',
     },
 }

@@ -14,6 +14,11 @@ import { onHTTPErrors } from '@youwol/http-primitives'
 import { AssetsGateway, ExplorerBackend } from '@youwol/http-clients'
 import { getProjectNav$ } from './utils-nav'
 
+/**
+ * Prefix for class name of views' type.
+ */
+export const colabClassPrefix = 'colab'
+
 export const styleShellStdOut = {
     tag: 'pre' as const,
     class: 'px-2',
@@ -383,7 +388,7 @@ export class HdPathBookView implements VirtualDOM<'div'> {
 
 export function fromMd(file: string) {
     return fromMarkdown({
-        url: `/api/assets-gateway/raw/package/${setup.assetId}/${setup.version}/assets/${file}`,
+        url: `../assets/${file}`,
     })
 }
 
@@ -466,7 +471,7 @@ export type LinkInput = {
 export class ComponentCrossLinksView implements VirtualDOM<'div'> {
     public readonly tag = 'div'
     public readonly class =
-        'colab-ComponentCrossLinksView d-flex align-items-center w-100 rounded p-1'
+        'colab-ComponentCrossLinksView d-flex align-items-center rounded p-1'
     public readonly children: ChildrenLike
     public readonly appState: AppState
     public readonly component: string

@@ -168,3 +168,12 @@ circle.pending {
 .colab-ComponentCrossLinksView a {
     text-decoration: none;
 }
+
+.mknb-MdCellView .mknb-OutputsView {
+    padding-left: 1em;
+    border-left: solid 5px;
+    border-color: #cdffc3;
+}
+.mknb-MdCellView .CodeSnippetView .CodeMirror {
+    background-color: aliceblue;
+}
