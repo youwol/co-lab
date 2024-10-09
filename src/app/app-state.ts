@@ -2,6 +2,7 @@ import {
     BehaviorSubject,
     distinctUntilChanged,
     firstValueFrom,
+    forkJoin,
     from,
     Observable,
 } from 'rxjs'
@@ -305,7 +306,12 @@ export class AppState {
             // If not done, the code snippet views update after the navigation is done, translating the location of the
             // elements and result in discrepancy with the expected location.
             await firstValueFrom(
-                MdWidgets.CodeSnippetView.fetchCmDependencies$('python'),
+                forkJoin(
+                    ['python', 'html', 'javascript'].map(
+                        (l: MdWidgets.CodeLanguage) =>
+                            MdWidgets.CodeSnippetView.fetchCmDependencies$(l),
+                    ),
+                ),
             )
         }
         if (target.startsWith('/api/youwol')) {
