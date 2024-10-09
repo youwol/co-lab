@@ -329,6 +329,10 @@ const ApiLinksDict = {
         path: 'co-lab/Home/Widgets.ProjectsDonutChart',
         role: 'class',
     },
+    ProjectsHistoricView: {
+        path: 'co-lab/Home/Widgets.ProjectsHistoricView',
+        role: 'class',
+    },
     ColabWidgets: {
         path: 'co-lab/Home/Widgets',
         role: 'module',

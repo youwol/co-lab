@@ -3,11 +3,19 @@ import { Router } from '@youwol/mkdocs-ts'
 import {
     ProjectsDonutChart,
     LaunchPadView,
+    ProjectsHistoricView,
     ComponentsDonutChart,
 } from './widgets'
 
 export function launchPad(elem: HTMLElement): AnyVirtualDOM {
     return LaunchPadView.fromHTMLElement(elem)
+}
+
+export function projectsHistoric(
+    elem: HTMLElement,
+    { router }: { router: Router },
+): AnyVirtualDOM {
+    return ProjectsHistoricView.fromHTMLElement(elem, router)
 }
 
 export function projectsDonutChart(

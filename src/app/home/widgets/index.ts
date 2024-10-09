@@ -46,9 +46,17 @@
  *     </section>
  * </componentsDonutChart>
  *
+ * ## Recent Projects
+ *
+ * This widget displays a list of the most recently edited projects, *e.g.*:
+ *
+ * <projectsHistoric count="5"></projectsHistoric>
+ *
+ *
  * @module
  */
 export * from './launch-pad.view'
+export * from './projects-historic.view'
 export * from './projects-donut-chart.view'
 export * from './components-donut-chart.view'
 export * from './donut-chart.utils'

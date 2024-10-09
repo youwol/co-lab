@@ -22,6 +22,7 @@ import {
     componentsDonutChart,
     launchPad,
     projectsDonutChart,
+    projectsHistoric,
 } from './home/md-widgets'
 
 GlobalMarkdownViews.factory = {
@@ -39,6 +40,7 @@ GlobalMarkdownViews.factory = {
     projectNav,
     defaultUserDrive,
     launchPad,
+    projectsHistoric,
     projectsDonutChart,
     componentsDonutChart,
     colabButton,

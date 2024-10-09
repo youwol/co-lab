@@ -111,6 +111,20 @@ referenced above.
 
 More information in  <apiLink target="ComponentsDonutChart"></apiLink>.
 
+
+#### Projects Historic
+
+This widget displays a list of the most recently edited projects, *e.g.*:
+
+<md-cell>
+This is an example to display recently edited projects:
+
+<projectsHistoric count="5"></projectsHistoric>
+</md-cell>
+
+More information in  <apiLink target="ProjectsHistoricView"></apiLink>.
+
+
 ### Other Widgets
 
 ####  `@youwol/mkdocs-ts` Widgets
