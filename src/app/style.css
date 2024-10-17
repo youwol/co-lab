@@ -177,3 +177,18 @@ circle.pending {
 .mknb-MdCellView .CodeSnippetView .CodeMirror {
     background-color: aliceblue;
 }
+
+.mkdocs-TopBannerClassicView .mkdocs-NavItem .mkdocs-NavItem-title {
+    display: none;
+}
+.mkdocs-TopBannerClassicView .mkdocs-NavItem:hover .mkdocs-NavItem-title {
+    display: block !important;
+}
+.mkdocs-TopBannerClassicView .mkdocs-NavItem .selected .mkdocs-NavItem-title {
+    display: block;
+}
+
+.mkdocs-TopBannerClassicView .mkdocs-NavItem .selected {
+    display: block;
+    border-bottom: solid 2px;
+}
