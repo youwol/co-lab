@@ -18,7 +18,7 @@
         "lint-eslint-check": "eslint ./src",
         "test": "jest -i",
         "test-coverage": "jest -i --collect-coverage",
-        "doc": "typedoc",
+        "doc": "typedoc && python doc.py",
         "publish-npm-public": "yarn build:prod && yarn test-coverage && yarn publish --access public",
         "start": "webpack serve"
     },
