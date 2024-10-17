@@ -337,6 +337,10 @@ const ApiLinksDict = {
         path: 'co-lab/Home/Widgets',
         role: 'module',
     },
+    ColabPlugins: {
+        path: 'co-lab/Plugins',
+        role: 'module',
+    },
 }
 
 const NodeLinksDict = {

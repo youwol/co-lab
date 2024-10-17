@@ -5,3 +5,4 @@
  */
 export * from './on-load'
 export * as Home from './home'
+export * as Plugins from './plugins'

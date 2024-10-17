@@ -519,7 +519,7 @@ export class ComponentCrossLinksView implements VirtualDOM<'div'> {
                         return this.linkView({
                             icon: 'fa-microchip',
                             nav: '',
-                            enabled: component !== undefined,
+                            enabled: false,
                         })
                     }
                     const latest = target.versions.slice(-1)[0]

@@ -1,4 +1,7 @@
 # Youwol application
+import base64
+from pathlib import Path
+
 from youwol.app.environment import YouwolEnvironment
 from youwol.app.routers.projects import (
     BrowserAppBundle,
@@ -11,7 +14,7 @@ from youwol.app.routers.projects import (
 from youwol.utils.context import Context
 
 # Youwol pipelines
-from youwol.pipelines.pipeline_raw_app import PipelineConfig, pipeline
+from youwol.pipelines.pipeline_raw_app import PipelineConfig, pipeline, PublishConfig
 
 
 class PipelineFactory(IPipelineFactory):
@@ -21,12 +24,23 @@ class PipelineFactory(IPipelineFactory):
 
     async def get(self, _env: YouwolEnvironment, context: Context):
 
-        graphics = BrowserAppGraphics(appIcon={"class": "far fa-laugh-beam fa-2x"})
+        img_path = Path(__file__).parent.parent / 'assets' / 'icon.svg'
+        svg_content = img_path.read_bytes()
+        img_base64 = base64.b64encode(svg_content).decode('utf-8')
+
         config = PipelineConfig(
             target=BrowserAppBundle(
-                displayName="foo",
+                displayName="TDSE-1D",
                 execution=Execution(standalone=True),
-                graphics=graphics,
-            )
+                graphics=BrowserAppGraphics(
+                    appIcon={
+                        "tag":'img',
+                        "style":{"width": "100%"},
+                        "src": f"data:image/svg+xml;base64,{img_base64}"
+                    },
+                    fileIcon={}
+                ),
+            ),
+            publishConfig=PublishConfig(packagedFolders=["assets"])
         )
         return await pipeline(config, context)

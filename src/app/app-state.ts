@@ -17,7 +17,7 @@ import * as Environment from './environment'
 import * as Notification from './environment/notifications'
 import * as Explorer from './explorer'
 import * as Doc from './doc'
-import { AnyVirtualDOM } from '@youwol/rx-vdom'
+import * as Plugins from './plugins'
 import * as pyYw from '@youwol/local-youwol-client'
 import { WsRouter } from '@youwol/local-youwol-client'
 import { Accounts } from '@youwol/http-clients'
@@ -36,12 +36,6 @@ export type Topic =
     | 'Admin'
     | 'Environment'
     | 'System'
-
-export interface Screen {
-    topic: Topic
-    viewId: string
-    view: AnyVirtualDOM
-}
 
 pyYw.PyYouwolClient.ws = new WsRouter({
     autoReconnect: true,
@@ -120,6 +114,11 @@ export class AppState {
      * @group State
      */
     public readonly environmentState: Environment.State
+
+    /**
+     * @group State
+     */
+    public readonly pluginsState = new Plugins.State()
 
     /**
      * @group State
@@ -281,6 +280,7 @@ export class AppState {
                     session$: this.session$,
                 }),
                 '/mounted': Mounted.navigation(this),
+                '/plugins': Plugins.navigation(this),
                 '/doc': Doc.navigation(this),
             },
             docCompanion: {

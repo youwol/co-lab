@@ -1,12 +1,13 @@
 import subprocess
+from pathlib import Path
 
 print("Generate TS API files")
+project_folder = Path(__file__).parent
 shell_command = (
-    "cd ./node_modules/@youwol/mkdocs-ts && "
     "node ./bin/index.js "
-    "--project ../../../ "
-    "--nav /api "
-    "--out ../../../assets/api"
+    f"--project {project_folder} "
+    "--nav /doc/api/co-lab "
+    f"--out {project_folder/'assets'/'api'}"
 )
 # Execute the shell command
-subprocess.run(shell_command, shell=True)
+subprocess.run(shell_command, shell=True, cwd="./node_modules/@youwol/mkdocs-ts",)

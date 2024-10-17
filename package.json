@@ -1,7 +1,7 @@
 {
     "name": "@youwol/co-lab",
     "description": "The YouWol's collaborative laboratory application.",
-    "version": "0.6.1-wip",
+    "version": "0.6.2-wip",
     "author": "greinisch@youwol.com",
     "homepage": "https://github.com/youwol/co-lab#README.md",
     "main": "dist/index.html",
@@ -18,7 +18,7 @@
         "lint-eslint-check": "eslint ./src",
         "test": "jest -i",
         "test-coverage": "jest -i --collect-coverage",
-        "doc": "typedoc",
+        "doc": "typedoc && python doc.py",
         "publish-npm-public": "yarn build:prod && yarn test-coverage && yarn publish --access public",
         "start": "webpack serve"
     },

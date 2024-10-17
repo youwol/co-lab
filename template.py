@@ -56,7 +56,12 @@ template = Template(
     userGuide=True,
     devServer=DevServer(
         port=3023
-    )
+    ),
+    inPackageJson={
+        "scripts" :{
+            "doc": "typedoc && python doc.py"
+        },
+    }
 )
 
 generate_template(template)
@@ -65,9 +70,6 @@ shutil.copyfile(
     dst=folder_path / 'src' / 'auto-generated.ts'
 )
 for file in ['README.md',
-             # '.gitignore',
-             # '.npmignore',
-             # '.prettierignore',
              'LICENSE', 'package.json',
              'tsconfig.json', 'webpack.config.ts']:
     shutil.copyfile(
