@@ -37,12 +37,6 @@ export type Topic =
     | 'Environment'
     | 'System'
 
-export interface Screen {
-    topic: Topic
-    viewId: string
-    view: AnyVirtualDOM
-}
-
 pyYw.PyYouwolClient.ws = new WsRouter({
     autoReconnect: true,
     autoReconnectDelay: 1000,
