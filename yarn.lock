@@ -1495,12 +1495,11 @@
     rxjs "^7.5.6"
 
 "@youwol/mkdocs-ts@^0.6.3":
-  version "0.6.3"
-  resolved "https://registry.yarnpkg.com/@youwol/mkdocs-ts/-/mkdocs-ts-0.6.3.tgz#7f450ac4f3f72e44003216d7c4e3deae8d99bcc5"
-  integrity sha512-JV+QpcJ1u1Rs+op8rBJ1QmUTwBM6sf/GLvp8HbgIjqETh+bS44THeZ2nLrlJdb0SFFqFhgG/yEOpyLjxwR6w0g==
+  version "0.6.4"
+  resolved "https://registry.yarnpkg.com/@youwol/mkdocs-ts/-/mkdocs-ts-0.6.4.tgz#efee7b7aa59c28bbc07897e49ab00680174e908a"
+  integrity sha512-d7ciaTvZ5qYUDlxItLoYzvSp0ja5mWV7QmFb47OYvnFDyVnL9DlCTG2WLLBhsCr7AH9WjAE68qmUWFOSfNfljA==
   dependencies:
     "@youwol/http-primitives" "^0.2.3"
-    "@youwol/os-top-banner" "^0.2.0"
     "@youwol/rx-tree-views" "^0.3.4"
     "@youwol/rx-vdom" "^1.0.1"
     "@youwol/webpm-client" "^3.0.0"
@@ -1521,14 +1520,6 @@
     "@youwol/webpm-client" "^3.0.0"
     rxjs "^7.5.6"
     uuid "^8.3.2"
-
-"@youwol/os-top-banner@^0.2.0":
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/@youwol/os-top-banner/-/os-top-banner-0.2.0.tgz#2423572cc271af3513655a368d02f2088afde175"
-  integrity sha512-avzrYY4pVEdPoBjpqbSc2imwDf5TOPltl1cbRObJTl6oBKfNFQGebNLHjrzBOvI1+K73UUtLcK3a/kemrebiQQ==
-  dependencies:
-    "@youwol/os-core" "^0.2.0"
-    "@youwol/rx-vdom" "^1.0.1"
 
 "@youwol/prettier-config@^1.2.1":
   version "1.2.1"
